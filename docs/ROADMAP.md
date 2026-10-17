@@ -31,7 +31,7 @@ Registro: [etapa 00](etapas/00-faxina.md)
 ### Pesquisa de base 🔄
 - [x] Frente 1: método de decisão
 - [x] Frente 2: hábitos e engajamento
-- [ ] Frente 3: cores e tipografia
+- [x] Frente 3: cores e tipografia (paleta "Pergaminho & Noite"; texto do app pequeno demais)
 - [ ] Frente 4: sons
 - [ ] Frente 5: citações com fonte
 - [ ] Frente 6: concorrentes e freemium

@@ -21,7 +21,7 @@ foi conferido fica marcado como **[a verificar]**.
 |---|---|---|
 | 1 | [Método de decisão: nicho, produto, canal](01-metodo-de-decisao.md) | ✅ v1 |
 | 2 | [Hábitos e engajamento diário](02-habitos-e-engajamento.md) | ✅ v1 |
-| 3 | Cores e tipografia | ⏳ |
+| 3 | [Cores e tipografia](03-cores-e-tipografia.md) | ✅ v1 |
 | 4 | Sons | ⏳ |
 | 5 | Citações com fonte verificada | ⏳ |
 | 6 | Concorrentes e modelo freemium | ⏳ |
