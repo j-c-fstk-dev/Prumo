@@ -25,20 +25,22 @@ em [`docs/etapas/`](etapas/). As decisões de produto se apoiam em [`docs/pesqui
 - [ ] Escolher o provedor de IA (pode ficar para a Fase 2)
 - [ ] Deixar o repositório público (necessário para a AGPL fazer sentido)
 - [ ] Registrar a marca "Prumo" no INPI
+- [ ] Criar e-mail de privacidade (canal exigido pela ANPD)
+- [ ] Passar o nome do app de "mapa humano" para análise
 
 ## Fases
 
 ### Fase 0: Faxina ✅
 Registro: [etapa 00](etapas/00-faxina.md)
 
-### Pesquisa de base 🔄
+### Pesquisa de base ✅
 - [x] Frente 1: método de decisão
 - [x] Frente 2: hábitos e engajamento
 - [x] Frente 3: cores e tipografia (paleta "Pergaminho & Noite"; texto do app pequeno demais)
 - [x] Frente 4: sons e movimento
 - [x] Frente 5: citações com fonte (`src/data/citacoes.ts`)
 - [x] Frente 6: concorrentes e freemium ("caminho grátis, aceleração paga")
-- [ ] Frente 7: LGPD e políticas da Play Store
+- [x] Frente 7: LGPD e políticas da Play Store (checklist jurídico)
 
 ### Fase 1: Núcleo funcional
 - [ ] Persistência local (IndexedDB), sem perder nada ao recarregar
@@ -56,6 +58,9 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [ ] Deploy gratuito (Cloudflare / Vercel / Render)
 - [ ] Limite de uso por usuário (rate limit) e proteção da chave
 - [ ] Logs de erro do coach visíveis (o fallback não pode esconder falhas)
+- [ ] Botão "denunciar resposta" no coach (política de IA generativa da Play)
+- [ ] Protocolo de crise no coach (CVV 188) + aviso "não é terapia"
+- [ ] Consentimento destacado antes do 1º uso do coach; enviar só o contexto mínimo
 
 ### Fase 3: Alma e conteúdo
 - [x] Splash da bússola + constelação de progresso ([etapa 03](etapas/03-bussola-e-constelacao.md))
@@ -64,7 +69,9 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [ ] Áudios reais nos micro-áudios
 
 ### Fase 4: Jurídico e empacotamento
-- [ ] Termos de uso + Política de privacidade (LGPD)
+- [ ] Termos de uso + Política de privacidade (LGPD), com revisão jurídica — ver [checklist](pesquisa/07-lgpd-e-play-store.md#checklist-jurídico-do-mvp)
+- [ ] "Exportar meus dados" e "Apagar tudo" nas configurações
+- [ ] APK com API alvo 36 (Android 16)
 - [ ] PWA instalável (manifest, service worker, ícones)
 - [ ] Capacitor + GitHub Actions gerando o AAB assinado
 - [ ] Notificações locais (1 por dia, horário escolhido)

@@ -25,5 +25,5 @@ foi conferido fica marcado como **[a verificar]**.
 | 4 | [Sons e movimento](04-sons-e-movimento.md) | ✅ v1 |
 | 5 | [Citações com fonte verificada](05-citacoes.md) | ✅ v1 |
 | 6 | [Concorrentes e modelo freemium](06-concorrentes-e-freemium.md) | ✅ v1 |
-| 7 | LGPD e políticas da Play Store | ⏳ |
+| 7 | [LGPD e políticas da Play Store](07-lgpd-e-play-store.md) | ✅ v1 |
 | — | "Mapa humano" (astrologia/numerologia opcional) | 💭 backlog |
