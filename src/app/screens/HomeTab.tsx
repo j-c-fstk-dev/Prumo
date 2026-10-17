@@ -12,6 +12,7 @@ import { useApp } from '../state/AppStore';
 import { Constellation } from '../../components/brand/Constellation';
 import { PersonalTasks } from '../components/PersonalTasks';
 import { DailyRhythm } from '../components/DailyRhythm';
+import { DailyInspiration } from '../components/QuoteCard';
 
 export const HomeTab: React.FC = () => {
   const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, actions } = useApp();
@@ -219,6 +220,15 @@ export const HomeTab: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Citação verificada ou achado de pesquisa, um por dia (docs/pesquisa/05) */}
+
+      <div className="mt-3">
+
+        <DailyInspiration />
+
+      </div>
+
 
       {/* Dica de Presença */}
       <div className="p-3 rounded-xl bg-gold-soft border border-gold-line/60 text-sm text-gold-ink mt-3 flex items-start gap-2">

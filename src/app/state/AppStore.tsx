@@ -167,6 +167,7 @@ function useAppState() {
   const [audioElapsedSec, setAudioElapsedSec] = useState(12);
 
   const [isSoundMuted, setIsSoundMuted] = useState(soundEffects.getIsMuted());
+  const [tapSounds, setTapSounds] = useState(soundEffects.getTapSounds());
   /** Por que o paywall foi aberto (mostrado na tela de planos) */
   const [paywallReason, setPaywallReason] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -481,6 +482,7 @@ function useAppState() {
     },
 
     toggleSound: () => setIsSoundMuted(soundEffects.toggleMute()),
+    toggleTapSounds: () => setTapSounds(soundEffects.toggleTapSounds()),
     /** Automático → Claro → Noite → Automático */
     cycleTheme: () => {
       soundEffects.playSoftTap();
@@ -583,6 +585,7 @@ function useAppState() {
     isPlayingAudio,
     audioElapsedSec,
     isSoundMuted,
+    tapSounds,
     isTyping,
     actions,
   };

@@ -5,6 +5,11 @@ import {
 import { ANAMNESE_SECTIONS } from '../../data/prumoData';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
+import { QuoteByTheme } from '../components/QuoteCard';
+import type { TemaCitacao } from '../../data/citacoes';
+
+/** Citação de abertura de alguns blocos da anamnese */
+const QUOTE_BY_SECTION: Record<number, TemaCitacao> = { 1: 'comecar', 3: 'recursos', 5: 'medo', 7: 'habito' };
 
 export const ValueSignalScreen: React.FC = () => {
   const { sectionIndex, actions } = useApp();
@@ -32,6 +37,12 @@ export const ValueSignalScreen: React.FC = () => {
         <p className="text-sm text-muted leading-relaxed max-w-[280px]">
           {currentSection.valueSignal.subtitle}
         </p>
+
+        {QUOTE_BY_SECTION[currentSection.id] && (
+          <div className="mt-5 w-full max-w-[300px] text-left">
+            <QuoteByTheme tema={QUOTE_BY_SECTION[currentSection.id]} />
+          </div>
+        )}
       </div>
 
       <div className="pt-4 border-t border-line">

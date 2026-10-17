@@ -33,7 +33,7 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
     iconName: 'Wrench',
     valueSignal: {
       title: 'Mapeando sua facilidade natural',
-      subtitle: 'Construir sobre o que você já faz bem sem esforço reduz em 80% o atrito para começar.',
+      subtitle: 'Começar pelo que você já faz bem e pelo que já te interessa deixa o primeiro passo mais leve, e ajuda a continuar quando ficar difícil.',
       icon: '✨'
     },
     questions: [
@@ -81,7 +81,7 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
     iconName: 'Compass',
     valueSignal: {
       title: 'Identificando sua energia sustentável',
-      subtitle: 'Quando o assunto te fascina, a disciplina deixa de ser um sacrifício pesado.',
+      subtitle: 'Interesse se fortalece fazendo. Unir o plano ao que você já gosta ajuda nos dias em que a vontade falta.',
       icon: '🧭'
     },
     questions: [
@@ -205,7 +205,7 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
     iconName: 'Brain',
     valueSignal: {
       title: 'Respeitando sua personalidade',
-      subtitle: 'Não existe fórmula única: há modelos altamente lucrativos e respeitados sem aparecer na câmera.',
+      subtitle: 'Não existe fórmula única: dá para construir algo sério e respeitado sem aparecer na câmera.',
       icon: '🛡️'
     },
     questions: [
@@ -214,7 +214,7 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         sectionId: 5,
         sectionName: 'Perfil',
         question: 'Quão confortável você se sente aparecendo (câmera, voz, stories)?',
-        subtext: 'Não existe certo ou errado: há modelos lucrativos sem aparecer.',
+        subtext: 'Não existe certo ou errado: dá para começar sem aparecer.',
         type: 'single',
         options: [
           { id: 'sem_camera', label: 'Zero câmera: prefiro texto, áudio ou bastidores', icon: '🙈' },

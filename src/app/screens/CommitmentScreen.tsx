@@ -6,6 +6,7 @@ import {
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
+import { QuoteByTheme } from '../components/QuoteCard';
 
 export const CommitmentScreen: React.FC = () => {
   const { personalAnchor, diagnosis, actions } = useApp();
@@ -92,6 +93,8 @@ export const CommitmentScreen: React.FC = () => {
             Se {diagnosis.obstacle}, então {diagnosis.planB}
           </p>
         </div>
+
+        <QuoteByTheme tema="obstaculo" />
       </div>
 
       {/* Botão Tátil de Pressão Contínua (Hold to Sign) */}

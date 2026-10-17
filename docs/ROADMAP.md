@@ -68,12 +68,14 @@ Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
 ### Fase 3: Alma e conteúdo
 - [x] Splash da bússola + constelação de progresso ([etapa 03](etapas/03-bussola-e-constelacao.md))
 - [x] Paleta "Pergaminho & Noite", tema claro/escuro e texto maior ([etapa 13](etapas/13-paleta-e-texto.md))
-- [ ] Alvos de toque 48 px + duas velocidades de animação
-- [ ] Sons com ataque suave e só em momentos com significado (frente 4)
-- [ ] Citações nas telas e na rotação diária (frente 5)
+- [x] Alvos de toque (44/40 px) + duas velocidades de animação ([etapa 15](etapas/15-movimento-sons-citacoes.md))
+- [x] Sons com ataque suave; sons de toque opcionais ([etapa 15](etapas/15-movimento-sons-citacoes.md))
+- [x] Citações e cartões "Você sabia?" nas telas e na rotação diária ([etapa 15](etapas/15-movimento-sons-citacoes.md))
 - [x] Ferramentas complementares em 3 camadas ([etapa 14](etapas/14-ferramentas.md)); **revisão trimestral** da caixa curada
-- [ ] Mensagens autocompassivas de retorno; convites de recomeço em datas-marco
-- [ ] Áudios reais nos micro-áudios
+- [x] Mensagens autocompassivas de retorno; convites de recomeço em datas-marco (feito na [etapa 10](etapas/10-ritmo-diario.md))
+- [ ] Áudios reais nos micro-áudios (hoje o player é simulado)
+- [ ] Kit de execução (modelos de mensagem, roteiro de conversa, calculadora de preço, página de venda)
+- [ ] Ambiente sonoro de natureza opcional nas tarefas de foco (pesquisa 04)
 
 ### Fase 4: Jurídico e empacotamento
 - [ ] Termos de uso + Política de privacidade (LGPD), com revisão jurídica — ver [checklist](pesquisa/07-lgpd-e-play-store.md#checklist-jurídico-do-mvp)

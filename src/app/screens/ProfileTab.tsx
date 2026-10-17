@@ -9,7 +9,7 @@ import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 
 export const ProfileTab: React.FC = () => {
-  const { userName, isSoundMuted, timeline, plan, trialDaysLeft, theme, actions } = useApp();
+  const { userName, isSoundMuted, tapSounds, timeline, plan, trialDaysLeft, theme, actions } = useApp();
   const themeLabel = { auto: 'Automático (segue o celular)', light: 'Pergaminho (claro)', dark: 'Noite (escuro)' }[theme];
   const planLabel = {
     open_beta: 'Acesso completo · fase de testes',
@@ -124,6 +124,17 @@ export const ProfileTab: React.FC = () => {
             <span>Sons do app: {isSoundMuted ? 'Desligados' : 'Ligados'}</span>
             {isSoundMuted ? <VolumeX className="w-4 h-4 text-muted" /> : <Volume2 className="w-4 h-4 text-primary" />}
           </div>
+          {!isSoundMuted && (
+            <div
+              onClick={actions.toggleTapSounds}
+              className="p-3 bg-surface border border-line rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-2"
+            >
+              <span>
+                Sons de toque: {tapSounds ? 'Ligados' : 'Desligados'}
+                <span className="block text-xs text-muted">Botões e trocas de tela. Conquistas sempre têm som.</span>
+              </span>
+            </div>
+          )}
           <a
             href="https://github.com/j-c-fstk-dev/Prumo"
             target="_blank"

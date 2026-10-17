@@ -188,20 +188,22 @@
 }
 
 /* Classes de Animação com cadência lenta, fluida e serena */
+/* Duas velocidades (docs/pesquisa/04): dia a dia 250–320 ms; rituais (scale-in, letter-unroll,
+   bússola, constelação) continuam lentos e cerimoniais. */
 .animate-fadeIn {
-  animation: fadeIn 550ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: fadeIn 250ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .animate-slide-in-right {
-  animation: slideInRight 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: slideInRight 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .animate-slide-in-left {
-  animation: slideInLeft 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: slideInLeft 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .animate-slide-up {
-  animation: slideUp 650ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: slideUp 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .animate-scale-in {
@@ -213,7 +215,7 @@
 }
 
 .animate-tab-fade {
-  animation: fadeIn 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: fadeIn 250ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .pulse-subtle {
@@ -319,6 +321,11 @@
 
 /* Quem pede menos movimento vê tudo estático (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn, .animate-slide-in-right, .animate-slide-in-left, .animate-slide-up,
+  .animate-scale-in, .animate-letter-unroll, .animate-tab-fade, .pulse-subtle {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
   .needle-settle, .needle-seek, .star-twinkle, .star-ignite, .star-pulse, .constellation-line {
     animation: none !important;
   }

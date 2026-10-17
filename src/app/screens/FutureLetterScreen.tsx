@@ -96,7 +96,7 @@ export const FutureLetterScreen: React.FC = () => {
                 soundEffects.playBack();
                 setStep('to');
               }}
-              className="p-1 -ml-1 text-muted hover:text-ink cursor-pointer"
+              className="-ml-3 min-w-11 min-h-11 inline-flex items-center justify-center text-muted hover:text-ink cursor-pointer"
               aria-label="Voltar para a carta 1"
             >
               <ArrowLeft className="w-5 h-5" />

@@ -14,6 +14,11 @@ import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { WhenPicker } from '../components/WhenPicker';
 import { ToolSuggestions } from '../components/ToolSuggestions';
+import { QuoteByTheme } from '../components/QuoteCard';
+import type { TemaCitacao } from '../../data/citacoes';
+
+/** Citação para as tarefas em que a trava mais aparece */
+const QUOTE_BY_TASK: Record<string, TemaCitacao> = { t2: 'perfeccionismo', t6: 'medo' };
 
 export const TaskDetailScreen: React.FC = () => {
   const { selectedTask, reflections, activeAudioTaskId, isPlayingAudio, audioElapsedSec, actions } = useApp();
@@ -30,7 +35,7 @@ export const TaskDetailScreen: React.FC = () => {
               soundEffects.playBack();
               actions.go('home');
             }}
-            className="p-1 -ml-1 text-muted hover:text-ink cursor-pointer"
+            className="-ml-3 min-w-11 min-h-11 inline-flex items-center justify-center text-muted hover:text-ink cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -197,6 +202,9 @@ export const TaskDetailScreen: React.FC = () => {
             ))}
           </ul>
         </div>
+
+        {QUOTE_BY_TASK[selectedTask.id] && <QuoteByTheme tema={QUOTE_BY_TASK[selectedTask.id]} />}
+
 
         {/* Ferramentas por categoria + exemplos curados, sem preços (docs/etapas/14) */}
 

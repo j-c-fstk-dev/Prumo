@@ -47,7 +47,7 @@ export const AnamneseScreen: React.FC = () => {
           <div className="flex items-center justify-between mb-2">
             <button 
               onClick={actions.prevQuestion}
-              className="p-1 -ml-1 text-muted hover:text-ink transition-transform active:scale-90"
+              className="-ml-3 min-w-11 min-h-11 inline-flex items-center justify-center text-muted hover:text-ink transition-transform active:scale-90"
               title="Voltar"
             >
               <ArrowLeft className="w-5 h-5" />

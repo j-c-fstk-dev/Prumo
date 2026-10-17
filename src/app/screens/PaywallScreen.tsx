@@ -33,7 +33,7 @@ export const PaywallScreen: React.FC = () => {
             soundEffects.playBack();
             actions.go('home');
           }}
-          className="p-1 -ml-1 text-muted hover:text-ink mb-2 cursor-pointer"
+          className="-ml-3 min-w-11 min-h-11 inline-flex items-center justify-center text-muted hover:text-ink mb-2 cursor-pointer"
           aria-label="Voltar"
         >
           <ArrowLeft className="w-5 h-5" />

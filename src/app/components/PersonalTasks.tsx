@@ -11,7 +11,7 @@ const PersonalTaskRow: React.FC<{ task: PersonalTask; isFirst: boolean; isLast: 
   return (
     <div className={`p-2.5 rounded-xl border ${task.done ? 'bg-success-soft/50 border-success/30' : 'bg-surface border-line'}`}>
       <div className="flex items-start gap-2">
-        <button onClick={() => actions.togglePersonalTask(task.id)} className="mt-0.5 cursor-pointer" aria-label={task.done ? 'Marcar como pendente' : 'Concluir'}>
+        <button onClick={() => actions.togglePersonalTask(task.id)} className="-m-2 min-w-10 min-h-10 inline-flex items-center justify-center cursor-pointer" aria-label={task.done ? 'Marcar como pendente' : 'Concluir'}>
           {task.done ? <CheckCircle2 className="w-5 h-5 text-success" /> : <Circle className="w-5 h-5 text-muted" />}
         </button>
         <div className="flex-1 min-w-0">
@@ -28,16 +28,16 @@ const PersonalTaskRow: React.FC<{ task: PersonalTask; isFirst: boolean; isLast: 
           {!editing && task.when && <span className="text-xs text-primary block mt-0.5">⏰ {task.when}</span>}
         </div>
         <div className="flex items-center gap-0.5 text-muted shrink-0">
-          <button disabled={isFirst} onClick={() => actions.movePersonalTask(task.id, -1)} className="p-1 disabled:opacity-25 cursor-pointer" aria-label="Subir">
+          <button disabled={isFirst} onClick={() => actions.movePersonalTask(task.id, -1)} className="min-w-10 min-h-10 inline-flex items-center justify-center disabled:opacity-25 cursor-pointer" aria-label="Subir">
             <ChevronUp className="w-3.5 h-3.5" />
           </button>
-          <button disabled={isLast} onClick={() => actions.movePersonalTask(task.id, 1)} className="p-1 disabled:opacity-25 cursor-pointer" aria-label="Descer">
+          <button disabled={isLast} onClick={() => actions.movePersonalTask(task.id, 1)} className="min-w-10 min-h-10 inline-flex items-center justify-center disabled:opacity-25 cursor-pointer" aria-label="Descer">
             <ChevronDown className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => setEditing(!editing)} className="p-1 cursor-pointer" aria-label="Editar">
+          <button onClick={() => setEditing(!editing)} className="min-w-10 min-h-10 inline-flex items-center justify-center cursor-pointer" aria-label="Editar">
             <Pencil className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => actions.deletePersonalTask(task.id)} className="p-1 cursor-pointer hover:text-[#D64545]" aria-label="Apagar">
+          <button onClick={() => actions.deletePersonalTask(task.id)} className="min-w-10 min-h-10 inline-flex items-center justify-center cursor-pointer hover:text-[#D64545]" aria-label="Apagar">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>

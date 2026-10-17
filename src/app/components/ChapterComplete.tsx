@@ -3,6 +3,7 @@ import confetti from 'canvas-confetti';
 import { Constellation } from '../../components/brand/Constellation';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
+import { QuoteByTheme } from './QuoteCard';
 
 /** Fim de capítulo: a constelação completa ganha nome (docs/pesquisa/04). Aparece uma vez por capítulo. */
 export const ChapterComplete: React.FC = () => {
@@ -44,6 +45,9 @@ export const ChapterComplete: React.FC = () => {
         <p className="text-sm text-center leading-relaxed" style={{ color: 'var(--night-muted)' }}>
           Cada estrela foi um passo seu. {next ? 'O próximo capítulo começa com o que você já construiu.' : 'Você completou a jornada inteira.'}
         </p>
+
+        <QuoteByTheme tema="habito" />
+
 
         <button
           onClick={() => {

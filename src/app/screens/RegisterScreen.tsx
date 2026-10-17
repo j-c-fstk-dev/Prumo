@@ -17,7 +17,7 @@ export const RegisterScreen: React.FC = () => {
             soundEffects.playBack();
             actions.go('splash');
           }}
-          className="p-1 -ml-1 text-muted hover:text-ink mb-4 cursor-pointer"
+          className="-ml-3 min-w-11 min-h-11 inline-flex items-center justify-center text-muted hover:text-ink mb-4 cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
