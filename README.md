@@ -47,3 +47,13 @@ Para testar no celular, acesse `http://<ip-do-seu-computador>:3000` na mesma red
 - `npm run dev`: servidor de desenvolvimento
 - `npm run build`: build de produção em `dist/`
 - `npm run lint`: checagem de tipos (`tsc --noEmit`)
+
+## Licença
+
+Copyright (C) 2026 os autores do Prumo.
+
+Este programa é software livre sob a [GNU Affero General Public License v3.0 ou posterior](LICENSE)
+(AGPL-3.0-or-later). Quem modificar o código e oferecê-lo a outras pessoas, inclusive como
+serviço pela internet, deve disponibilizar o código-fonte modificado sob a mesma licença.
+
+A marca e o nome "Prumo" não são cobertos por esta licença.

@@ -1861,6 +1861,15 @@ export const PrumoAppSimulator: React.FC = () => {
                     <span>Sons do app: {isSoundMuted ? 'Desligados' : 'Ligados'}</span>
                     {isSoundMuted ? <VolumeX className="w-4 h-4 text-[#5B615D]" /> : <Volume2 className="w-4 h-4 text-[#1F6F5C]" />}
                   </div>
+                  <a
+                    href="https://github.com/j-c-fstk-dev/Prumo"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-white border border-[#E6E8E6] rounded-xl flex items-center justify-between cursor-pointer hover:bg-neutral-50"
+                  >
+                    <span>Código-fonte (AGPL-3.0)</span>
+                    <ExternalLink className="w-4 h-4 text-[#5B615D]" />
+                  </a>
                 </div>
               </div>
             </div>
