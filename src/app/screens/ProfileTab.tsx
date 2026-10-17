@@ -9,7 +9,8 @@ import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 
 export const ProfileTab: React.FC = () => {
-  const { userName, isSoundMuted, timeline, plan, trialDaysLeft, actions } = useApp();
+  const { userName, isSoundMuted, timeline, plan, trialDaysLeft, theme, actions } = useApp();
+  const themeLabel = { auto: 'Automático (segue o celular)', light: 'Pergaminho (claro)', dark: 'Noite (escuro)' }[theme];
   const planLabel = {
     open_beta: 'Acesso completo · fase de testes',
     founder_trial: `Premium de fundador · ${trialDaysLeft} dias restantes`,
@@ -21,22 +22,22 @@ export const ProfileTab: React.FC = () => {
     <div key="tab-profile" className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-tab-fade">
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-[#1F6F5C] text-white font-bold flex items-center justify-center text-lg">
+          <div className="w-12 h-12 rounded-full bg-primary text-on-primary font-bold flex items-center justify-center text-lg">
             {userName[0]}
           </div>
           <div>
-            <h3 className="text-base font-bold text-[#1A1D1B]">{userName}</h3>
-            <span className="text-xs text-[#5B615D]">{planLabel}</span>
+            <h3 className="text-lg font-bold text-ink">{userName}</h3>
+            <span className="text-sm text-muted">{planLabel}</span>
           </div>
         </div>
 
         {/* Upgrade Card */}
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1F6F5C] to-[#164e41] text-white shadow-sm">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#F2A93B] block mb-1">
+        <div className="p-4 rounded-2xl bg-night-sky shadow-sm" style={{ color: 'var(--night-text)' }}>
+          <span className="text-xs font-bold uppercase tracking-wider block mb-1" style={{ color: 'var(--gold)' }}>
             Prumo Premium
           </span>
-          <h4 className="text-sm font-bold">Acelere o seu caminho</h4>
-          <p className="text-xs text-white/80 mt-1 mb-3">
+          <h4 className="text-base font-bold">Acelere o seu caminho</h4>
+          <p className="text-sm mt-1 mb-3" style={{ color: 'var(--night-muted)' }}>
             Coach ilimitado, kit de execução completo e áudios guiados. O roteiro continua grátis.
           </p>
           <button
@@ -44,7 +45,8 @@ export const ProfileTab: React.FC = () => {
               soundEffects.playSoftTap();
               actions.go('paywall');
             }}
-            className="w-full py-2 bg-[#F2A93B] hover:bg-[#e0982c] text-[#1A1D1B] font-bold text-xs rounded-lg transition-colors cursor-pointer"
+            className="w-full py-2 font-bold text-sm rounded-lg transition-opacity hover:opacity-90 cursor-pointer"
+            style={{ background: 'var(--gold)', color: 'var(--night-900)' }}
           >
             Conhecer Planos
           </button>
@@ -52,13 +54,13 @@ export const ProfileTab: React.FC = () => {
 
         {/* Linha do tempo de conquistas (registrar o progresso ajuda a chegar lá: Harkin et al. 2016) */}
 
-        <div className="p-4 rounded-2xl bg-white border border-[#E6E8E6] space-y-2">
+        <div className="p-4 rounded-2xl bg-surface border border-line space-y-2">
 
-          <span className="text-xs font-bold text-[#1A1D1B] block">Sua linha do tempo</span>
+          <span className="text-sm font-bold text-ink block">Sua linha do tempo</span>
 
           {timeline.length === 0 ? (
 
-            <p className="text-[11px] text-[#5B615D]">Suas conquistas aparecem aqui conforme você avança.</p>
+            <p className="text-[13px] text-muted">Suas conquistas aparecem aqui conforme você avança.</p>
 
           ) : (
 
@@ -66,13 +68,13 @@ export const ProfileTab: React.FC = () => {
 
               {timeline.map((e) => (
 
-                <li key={`${e.kind}-${e.at}`} className="flex items-start gap-2 text-xs">
+                <li key={`${e.kind}-${e.at}`} className="flex items-start gap-2 text-sm">
 
                   <span style={{ color: 'var(--gold-deco)' }}>{e.kind === 'capitulo' ? '✦' : '•'}</span>
 
-                  <span className="flex-1 text-[#1A1D1B]">{e.title}</span>
+                  <span className="flex-1 text-ink">{e.title}</span>
 
-                  <span className="text-[10px] text-[#5B615D] shrink-0">{new Date(e.at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+                  <span className="text-xs text-muted shrink-0">{new Date(e.at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
 
                 </li>
 
@@ -86,16 +88,16 @@ export const ProfileTab: React.FC = () => {
 
 
         {/* Opções de Conta */}
-        <div className="space-y-2 text-xs">
+        <div className="space-y-2 text-sm">
           <div 
             onClick={() => {
               soundEffects.playSoftTap();
               actions.go('result');
             }}
-            className="p-3 bg-white border border-[#E6E8E6] rounded-xl flex items-center justify-between cursor-pointer hover:bg-neutral-50"
+            className="p-3 bg-surface border border-line rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-2"
           >
             <span>Ver Diagnóstico Completo</span>
-            <ChevronRight className="w-4 h-4 text-[#5B615D]" />
+            <ChevronRight className="w-4 h-4 text-muted" />
           </div>
           <div 
             onClick={() => {
@@ -103,26 +105,33 @@ export const ProfileTab: React.FC = () => {
               actions.go('anamnese');
               actions.startAnamnese();
             }}
-            className="p-3 bg-white border border-[#E6E8E6] rounded-xl flex items-center justify-between cursor-pointer hover:bg-neutral-50"
+            className="p-3 bg-surface border border-line rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-2"
           >
             <span>Refazer a anamnese</span>
-            <ChevronRight className="w-4 h-4 text-[#5B615D]" />
+            <ChevronRight className="w-4 h-4 text-muted" />
+          </div>
+          <div
+            onClick={actions.cycleTheme}
+            className="p-3 bg-surface border border-line rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-2"
+          >
+            <span>Tema: {themeLabel}</span>
+            <span aria-hidden="true">{theme === 'dark' ? '🌙' : theme === 'light' ? '📜' : '🌓'}</span>
           </div>
           <div 
             onClick={actions.toggleSound}
-            className="p-3 bg-white border border-[#E6E8E6] rounded-xl flex items-center justify-between cursor-pointer hover:bg-neutral-50"
+            className="p-3 bg-surface border border-line rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-2"
           >
             <span>Sons do app: {isSoundMuted ? 'Desligados' : 'Ligados'}</span>
-            {isSoundMuted ? <VolumeX className="w-4 h-4 text-[#5B615D]" /> : <Volume2 className="w-4 h-4 text-[#1F6F5C]" />}
+            {isSoundMuted ? <VolumeX className="w-4 h-4 text-muted" /> : <Volume2 className="w-4 h-4 text-primary" />}
           </div>
           <a
             href="https://github.com/j-c-fstk-dev/Prumo"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-3 bg-white border border-[#E6E8E6] rounded-xl flex items-center justify-between cursor-pointer hover:bg-neutral-50"
+            className="p-3 bg-surface border border-line rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-2"
           >
             <span>Código-fonte (AGPL-3.0)</span>
-            <ExternalLink className="w-4 h-4 text-[#5B615D]" />
+            <ExternalLink className="w-4 h-4 text-muted" />
           </a>
         </div>
       </div>

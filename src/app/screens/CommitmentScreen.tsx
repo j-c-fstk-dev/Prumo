@@ -54,41 +54,41 @@ export const CommitmentScreen: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 select-none animate-scale-in bg-gradient-to-b from-[#FDFCF9] via-[#FAF6F0] to-[#F3EDE2] text-center">
+    <div className="flex-1 flex flex-col justify-between p-6 select-none animate-scale-in bg-gradient-to-b from-canvas via-gold-soft to-gold-soft text-center">
       <div className="pt-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-[11px] font-semibold mb-4">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#D97746]" />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-soft text-gold-ink text-[13px] font-semibold mb-4">
+          <ShieldCheck className="w-3.5 h-3.5 text-gold-text" />
           <span>Pacto de Compromisso Consciente</span>
         </div>
 
-        <div className="w-16 h-16 rounded-full bg-white border border-amber-200 shadow-sm flex items-center justify-center mx-auto mb-3 text-[#1F6F5C]">
-          <Compass className="w-8 h-8 text-[#1F6F5C]" />
+        <div className="w-16 h-16 rounded-full bg-surface border border-gold-line shadow-sm flex items-center justify-center mx-auto mb-3 text-primary">
+          <Compass className="w-8 h-8 text-primary" />
         </div>
 
-        <h2 className="text-2xl font-bold font-serif text-[#1A1D1B] leading-tight mb-2">
+        <h2 className="text-2xl font-bold font-serif text-ink leading-tight mb-2">
           Assumir seu Prumo
         </h2>
 
-        <p className="text-xs text-[#5B615D] leading-relaxed max-w-[280px] mx-auto mb-4">
+        <p className="text-sm text-muted leading-relaxed max-w-[280px] mx-auto mb-4">
           Mudar de direção não é riscar tarefas: é um compromisso consciente com quem você escolhe se tornar daqui a 90 dias.
         </p>
 
         {/* Card de Âncora */}
-        <div className="p-3.5 rounded-xl bg-white/90 border border-amber-200 text-left shadow-2xs mb-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#D97746] block mb-1">
+        <div className="p-3.5 rounded-xl bg-surface/90 border border-gold-line text-left shadow-2xs mb-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-gold-text block mb-1">
             Sua Promessa para Si Mesmo
           </span>
-          <p className="text-xs text-[#1A1D1B] font-serif italic">
+          <p className="text-sm text-ink font-serif italic">
             "{personalAnchor}"
           </p>
         </div>
 
         {/* Plano B combinado antes de começar (WOOP: obstáculo previsto + "se… então…") */}
-        <div className="p-3.5 rounded-xl bg-white/90 border border-[#1F6F5C]/25 text-left shadow-2xs mb-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#1F6F5C] block mb-1">
+        <div className="p-3.5 rounded-xl bg-surface/90 border border-primary/25 text-left shadow-2xs mb-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-primary block mb-1">
             Seu plano B
           </span>
-          <p className="text-xs text-[#1A1D1B] leading-relaxed">
+          <p className="text-sm text-ink leading-relaxed">
             Se {diagnosis.obstacle}, então {diagnosis.planB}
           </p>
         </div>
@@ -103,7 +103,7 @@ export const CommitmentScreen: React.FC = () => {
               cx="64"
               cy="64"
               r="56"
-              stroke="#E6E8E6"
+              stroke="var(--c-line)"
               strokeWidth="6"
               fill="transparent"
             />
@@ -111,7 +111,7 @@ export const CommitmentScreen: React.FC = () => {
               cx="64"
               cy="64"
               r="56"
-              stroke="#1F6F5C"
+              stroke="var(--c-primary)"
               strokeWidth="6"
               fill="transparent"
               strokeDasharray="351.86"
@@ -129,20 +129,20 @@ export const CommitmentScreen: React.FC = () => {
             onTouchEnd={handleCancelHold}
             className={`absolute w-24 h-24 rounded-full flex flex-col items-center justify-center transition-all select-none cursor-pointer ${
               isHolding 
-                ? 'bg-[#1F6F5C] text-white scale-95 shadow-inner' 
-                : 'bg-[#1F6F5C] hover:bg-[#2E8B73] text-white shadow-lg active:scale-95'
+                ? 'bg-primary text-on-primary scale-95 shadow-inner' 
+                : 'bg-primary hover:bg-primary-hover text-on-primary shadow-lg active:scale-95'
             }`}
           >
             <Compass className={`w-6 h-6 mb-1 ${isHolding ? 'animate-spin' : ''}`} style={{ animationDuration: '3s' }} />
-            <span className="text-[10px] font-bold uppercase tracking-tight text-center leading-tight px-1">
+            <span className="text-xs font-bold uppercase tracking-tight text-center leading-tight px-1">
               {holdProgress > 0 ? `${holdProgress}%` : 'Segurar'}
             </span>
           </button>
         </div>
 
-        <p className="text-[11px] text-[#5B615D] font-medium">
+        <p className="text-[13px] text-muted font-medium">
           {isHolding ? (
-            <span className="text-[#1F6F5C] font-semibold animate-pulse">
+            <span className="text-primary font-semibold animate-pulse">
               Firmando seu prumo...
             </span>
           ) : (
@@ -157,7 +157,7 @@ export const CommitmentScreen: React.FC = () => {
             soundEffects.playBack();
             actions.go('result');
           }}
-          className="w-full py-2 text-xs text-[#5B615D] hover:text-[#1A1D1B] cursor-pointer"
+          className="w-full py-2 text-sm text-muted hover:text-ink cursor-pointer"
         >
           Voltar ao diagnóstico
         </button>

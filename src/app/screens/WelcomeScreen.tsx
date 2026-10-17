@@ -10,15 +10,15 @@ export const WelcomeScreen: React.FC = () => {
     <div className="flex-1 flex flex-col justify-between p-6 text-center select-none animate-fadeIn">
       <div className="flex-1 flex flex-col items-center justify-center space-y-6">
         {/* Logo da Bússola */}
-        <div className="w-24 h-24 rounded-full bg-[#E3F2ED] flex items-center justify-center text-[#1F6F5C] shadow-sm">
+        <div className="w-24 h-24 rounded-full bg-primary-soft flex items-center justify-center text-primary shadow-sm">
           <CompassMark size={76} />
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold font-display text-[#1A1D1B] tracking-tight">
+          <h1 className="text-3xl font-bold font-display text-ink tracking-tight">
             Descubra seu caminho no digital.
           </h1>
-          <p className="text-sm text-[#5B615D] max-w-[260px] mx-auto leading-relaxed">
+          <p className="text-base text-muted max-w-[260px] mx-auto leading-relaxed">
             Em 15 minutos, você sabe o que criar, para quem e como começar. Sem paralisia.
           </p>
         </div>
@@ -30,7 +30,7 @@ export const WelcomeScreen: React.FC = () => {
             soundEffects.playTransition();
             actions.go('register');
           }}
-          className="w-full py-3.5 bg-[#1F6F5C] hover:bg-[#2E8B73] text-white font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer"
+          className="w-full py-3.5 bg-primary hover:bg-primary-hover text-on-primary font-semibold text-base rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer"
         >
           Começar diagnóstico
         </button>

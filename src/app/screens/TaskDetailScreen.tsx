@@ -29,28 +29,28 @@ export const TaskDetailScreen: React.FC = () => {
               soundEffects.playBack();
               actions.go('home');
             }}
-            className="p-1 -ml-1 text-[#5B615D] hover:text-[#1A1D1B] cursor-pointer"
+            className="p-1 -ml-1 text-muted hover:text-ink cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <span className="text-xs text-[#1F6F5C] font-semibold bg-[#E3F2ED] px-2.5 py-0.5 rounded-full">
+          <span className="text-sm text-primary font-semibold bg-primary-soft px-2.5 py-0.5 rounded-full">
             {selectedTask.chapterTitle.split(':')[0]}
           </span>
         </div>
 
         {/* Card de Ilustração-Âncora */}
-        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#E3F2ED] to-[#FAF6F0] border border-[#1F6F5C]/20 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-white shadow-xs flex items-center justify-center text-2xl shrink-0">
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-primary-soft to-gold-soft border border-primary/20 flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-surface shadow-xs flex items-center justify-center text-2xl shrink-0">
             {selectedTask.anchorIllustration.symbol}
           </div>
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#1F6F5C] block">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary block">
               {selectedTask.anchorIllustration.badge} · Âncora Visual
             </span>
-            <strong className="text-xs text-[#1A1D1B] block">
+            <strong className="text-sm text-ink block">
               {selectedTask.anchorIllustration.title}
             </strong>
-            <span className="text-[11px] text-[#5B615D]">
+            <span className="text-[13px] text-muted">
               {selectedTask.anchorIllustration.meaning}
             </span>
           </div>
@@ -63,27 +63,27 @@ export const TaskDetailScreen: React.FC = () => {
                 autoFocus
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="flex-1 px-2 py-1 border border-[#1F6F5C] rounded-md text-sm focus:outline-none"
+                className="flex-1 px-2 py-1 border border-primary rounded-md text-base focus:outline-none"
               />
               <button
                 onClick={() => {
                   actions.renamePlanTask(selectedTask.id, newTitle);
                   setRenaming(false);
                 }}
-                className="px-3 py-1 bg-[#1F6F5C] text-white text-xs font-semibold rounded-lg cursor-pointer"
+                className="px-3 py-1 bg-primary text-on-primary text-sm font-semibold rounded-lg cursor-pointer"
               >
                 Salvar
               </button>
             </div>
           ) : (
-            <h2 className="text-lg font-bold font-display text-[#1A1D1B]">
+            <h2 className="text-lg font-bold font-display text-ink">
               {selectedTask.title}{' '}
-              <button onClick={() => setRenaming(true)} className="align-middle text-[#5B615D] cursor-pointer" aria-label="Editar título">
+              <button onClick={() => setRenaming(true)} className="align-middle text-muted cursor-pointer" aria-label="Editar título">
                 <Pencil className="w-3.5 h-3.5 inline" />
               </button>
             </h2>
           )}
-          <div className="flex items-center gap-2 mt-0.5 text-xs text-[#5B615D]">
+          <div className="flex items-center gap-2 mt-0.5 text-sm text-muted">
             <Clock className="w-3.5 h-3.5" />
             <span>Duração recomendada: {selectedTask.durationMinutes} min</span>
           </div>
@@ -91,12 +91,12 @@ export const TaskDetailScreen: React.FC = () => {
 
         {/* Player de Micro-Áudio Coaching */}
         {selectedTask.audioCoach && (
-          <div className="p-3 rounded-xl bg-white border border-[#1F6F5C]/30 shadow-xs space-y-2">
+          <div className="p-3 rounded-xl bg-surface border border-primary/30 shadow-xs space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => actions.toggleAudio(selectedTask.id)}
-                  className="w-8 h-8 rounded-full bg-[#1F6F5C] text-white flex items-center justify-center hover:bg-[#2E8B73] transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center hover:bg-primary-hover transition-colors cursor-pointer"
                 >
                   {isPlayingAudio && activeAudioTaskId === selectedTask.id ? (
                     <Pause className="w-4 h-4" />
@@ -105,10 +105,10 @@ export const TaskDetailScreen: React.FC = () => {
                   )}
                 </button>
                 <div>
-                  <strong className="text-xs text-[#1A1D1B] block">
+                  <strong className="text-sm text-ink block">
                     {selectedTask.audioCoach.title}
                   </strong>
-                  <span className="text-[10px] text-[#5B615D]">
+                  <span className="text-xs text-muted">
                     {selectedTask.audioCoach.narrator} · {selectedTask.audioCoach.duration}
                   </span>
                 </div>
@@ -119,7 +119,7 @@ export const TaskDetailScreen: React.FC = () => {
                 {selectedTask.audioCoach.audioWaveHeights.map((h, i) => (
                   <div 
                     key={i} 
-                    className={`w-0.75 rounded-full transition-all duration-300 ${isPlayingAudio && activeAudioTaskId === selectedTask.id ? 'bg-[#1F6F5C] animate-pulse' : 'bg-neutral-300'}`}
+                    className={`w-0.75 rounded-full transition-all duration-300 ${isPlayingAudio && activeAudioTaskId === selectedTask.id ? 'bg-primary animate-pulse' : 'bg-line'}`}
                     style={{ height: isPlayingAudio && activeAudioTaskId === selectedTask.id ? `${Math.max(20, (h * (0.6 + Math.sin((audioElapsedSec + i) * 1.2) * 0.4)))}%` : `${h * 0.35}%` }}
                   />
                 ))}
@@ -127,19 +127,19 @@ export const TaskDetailScreen: React.FC = () => {
             </div>
 
             {/* Transcrição Inspiradora Expansível */}
-            <div className="pt-2 border-t border-neutral-100">
+            <div className="pt-2 border-t border-line">
               <button
                 onClick={() => {
                   soundEffects.playSoftTap();
                   setShowTranscript(!showTranscript);
                 }}
-                className="text-[11px] text-[#1F6F5C] font-medium hover:underline flex items-center justify-between w-full cursor-pointer"
+                className="text-[13px] text-primary font-medium hover:underline flex items-center justify-between w-full cursor-pointer"
               >
                 <span>{showTranscript ? 'Ocultar transcrição' : 'Ler palavras de encorajamento'}</span>
                 {showTranscript ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
               {showTranscript && (
-                <p className="text-xs font-serif italic text-[#2D3748] mt-1.5 bg-[#F7F9F8] p-2.5 rounded-lg leading-relaxed border-l-2 border-[#1F6F5C]">
+                <p className="text-sm font-serif italic text-ink mt-1.5 bg-surface-2 p-2.5 rounded-lg leading-relaxed border-l-2 border-primary">
                   "{selectedTask.audioCoach.transcript}"
                 </p>
               )}
@@ -151,10 +151,10 @@ export const TaskDetailScreen: React.FC = () => {
         {/* Intenção de implementação: o recurso com mais evidência (docs/pesquisa/02) */}
 
 
-        <div className="p-3.5 rounded-xl bg-white border border-[#1F6F5C]/30">
+        <div className="p-3.5 rounded-xl bg-surface border border-primary/30">
 
 
-          <strong className="text-xs text-[#1A1D1B] block mb-2">Quando vou fazer:</strong>
+          <strong className="text-sm text-ink block mb-2">Quando vou fazer:</strong>
 
 
           <WhenPicker
@@ -177,20 +177,20 @@ export const TaskDetailScreen: React.FC = () => {
 
 
         {/* O Que Fazer */}
-        <div className="p-3.5 rounded-xl bg-white border border-[#E6E8E6]">
-          <strong className="text-xs text-[#1A1D1B] block mb-1">O que fazer:</strong>
-          <p className="text-xs text-[#5B615D] leading-relaxed">
+        <div className="p-3.5 rounded-xl bg-surface border border-line">
+          <strong className="text-sm text-ink block mb-1">O que fazer:</strong>
+          <p className="text-sm text-muted leading-relaxed">
             {selectedTask.whatToDo}
           </p>
         </div>
 
         {/* Como saber que ficou bom */}
-        <div className="p-3.5 rounded-xl bg-[#E3F2ED]/60 border border-[#1F6F5C]/20">
-          <strong className="text-xs text-[#1F6F5C] block mb-1.5">Como saber que ficou bom:</strong>
-          <ul className="space-y-1.5 text-xs text-[#1A1D1B]">
+        <div className="p-3.5 rounded-xl bg-primary-soft/60 border border-primary/20">
+          <strong className="text-sm text-primary block mb-1.5">Como saber que ficou bom:</strong>
+          <ul className="space-y-1.5 text-sm text-ink">
             {selectedTask.howToKnowItIsGood.map((item, idx) => (
               <li key={idx} className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#3BAA6B] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
                 <span>{item}</span>
               </li>
             ))}
@@ -199,13 +199,13 @@ export const TaskDetailScreen: React.FC = () => {
 
         {/* Recursos de apoio */}
         {selectedTask.resources && selectedTask.resources.length > 0 && (
-          <div className="p-3.5 rounded-xl bg-white border border-[#E6E8E6]">
-            <strong className="text-xs text-[#1A1D1B] block mb-2">📎 Recursos de apoio:</strong>
+          <div className="p-3.5 rounded-xl bg-surface border border-line">
+            <strong className="text-sm text-ink block mb-2">📎 Recursos de apoio:</strong>
             <div className="space-y-1.5">
               {selectedTask.resources.map((res, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs text-[#1F6F5C] bg-[#F7F9F8] p-2 rounded-lg">
+                <div key={idx} className="flex items-center justify-between text-sm text-primary bg-surface-2 p-2 rounded-lg">
                   <span>• {res.title}</span>
-                  <span className="text-[10px] text-[#5B615D] bg-white px-1.5 py-0.5 rounded border border-[#E6E8E6]">
+                  <span className="text-xs text-muted bg-surface px-1.5 py-0.5 rounded border border-line">
                     {res.type}
                   </span>
                 </div>
@@ -222,10 +222,10 @@ export const TaskDetailScreen: React.FC = () => {
             actions.toggleTaskStatus(selectedTask.id);
             actions.go('home');
           }}
-          className={`w-full py-3.5 text-sm font-semibold rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${
+          className={`w-full py-3.5 text-base font-semibold rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${
             selectedTask.status === 'completed'
-              ? 'bg-neutral-200 text-[#1A1D1B]'
-              : 'bg-[#1F6F5C] hover:bg-[#2E8B73] text-white'
+              ? 'bg-line text-ink'
+              : 'bg-primary hover:bg-primary-hover text-on-primary'
           }`}
         >
           <CheckCircle2 className="w-4 h-4" />
@@ -238,7 +238,7 @@ export const TaskDetailScreen: React.FC = () => {
             actions.goTab('coach');
             actions.go('home');
           }}
-          className="w-full py-2 text-xs font-semibold text-[#1F6F5C] text-center flex items-center justify-center gap-1.5 cursor-pointer"
+          className="w-full py-2 text-sm font-semibold text-primary text-center flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <MessageSquare className="w-3.5 h-3.5" />
           <span>Preciso de ajuda nisso (Abrir Coach)</span>

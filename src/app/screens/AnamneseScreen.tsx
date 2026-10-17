@@ -47,23 +47,23 @@ export const AnamneseScreen: React.FC = () => {
           <div className="flex items-center justify-between mb-2">
             <button 
               onClick={actions.prevQuestion}
-              className="p-1 -ml-1 text-[#5B615D] hover:text-[#1A1D1B] transition-transform active:scale-90"
+              className="p-1 -ml-1 text-muted hover:text-ink transition-transform active:scale-90"
               title="Voltar"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1F6F5C]">
-              <span className="px-2 py-0.5 rounded bg-[#E3F2ED] transition-all duration-300">
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-primary">
+              <span className="px-2 py-0.5 rounded bg-primary-soft transition-all duration-300">
                 {currentSection.id}/{ANAMNESE_SECTIONS.length} · {currentSection.title}
               </span>
             </div>
           </div>
 
           {/* Barra Fina de Progresso com transição lenta e serena */}
-          <div className="w-full bg-[#E6E8E6] h-1.5 rounded-full overflow-hidden mb-4">
+          <div className="w-full bg-line h-1.5 rounded-full overflow-hidden mb-4">
             <div 
-              className="bg-[#1F6F5C] h-full transition-all duration-700 ease-out"
+              className="bg-primary h-full transition-all duration-700 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -71,10 +71,10 @@ export const AnamneseScreen: React.FC = () => {
 
           {/* Pergunta */}
           <div className="mb-3">
-            <h2 className="text-lg font-bold font-display text-[#1A1D1B] leading-snug">
+            <h2 className="text-lg font-bold font-display text-ink leading-snug">
               {currentQuestion.question}
             </h2>
-            <p className="text-xs text-[#5B615D] mt-0.5">
+            <p className="text-sm text-muted mt-0.5">
               {currentQuestion.subtext}
             </p>
           </div>
@@ -92,17 +92,17 @@ export const AnamneseScreen: React.FC = () => {
                     currentQuestion.type === 'multiple',
                     currentQuestion.maxChoices
                   )}
-                  className={`p-3 rounded-xl border text-xs cursor-pointer transition-all duration-200 flex items-center justify-between transform active:scale-[0.98] ${
+                  className={`p-3 rounded-xl border text-sm cursor-pointer transition-all duration-200 flex items-center justify-between transform active:scale-[0.98] ${
                     selected
-                      ? 'bg-[#E3F2ED] border-[#1F6F5C] text-[#1F6F5C] font-semibold shadow-xs ring-1 ring-[#1F6F5C]/30'
-                      : 'bg-white border-[#E6E8E6] text-[#1A1D1B] hover:bg-neutral-50 hover:border-neutral-300'
+                      ? 'bg-primary-soft border-primary text-primary font-semibold shadow-xs ring-1 ring-primary/30'
+                      : 'bg-surface border-line text-ink hover:bg-surface-2 hover:border-line'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    {opt.icon && <span className="text-base">{opt.icon}</span>}
+                    {opt.icon && <span className="text-lg">{opt.icon}</span>}
                     <span>{opt.label}</span>
                   </div>
-                  {selected && <CheckCircle2 className="w-4 h-4 text-[#1F6F5C] shrink-0 animate-scale-in" />}
+                  {selected && <CheckCircle2 className="w-4 h-4 text-primary shrink-0 animate-scale-in" />}
                 </div>
               );
             })}
@@ -110,24 +110,24 @@ export const AnamneseScreen: React.FC = () => {
 
           {/* Campo de reflexão aberta com as próprias palavras */}
           {currentQuestion.reflectionPrompt && (
-            <div className="mt-3 p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/70 text-xs transition-all duration-200">
+            <div className="mt-3 p-2.5 rounded-xl bg-gold-soft/70 border border-gold-line/70 text-sm transition-all duration-200">
               <button
                 type="button"
                 onClick={() => setShowReflectionInput(!showReflectionInput)}
-                className="w-full flex items-center justify-between text-[11px] font-semibold text-amber-900 text-left cursor-pointer"
+                className="w-full flex items-center justify-between text-[13px] font-semibold text-gold-ink text-left cursor-pointer"
               >
                 <span className="flex items-center gap-1.5">
                   <span>✍️</span>
                   <span>Detalhar com suas próprias palavras</span>
                 </span>
-                <span className="text-[10px] text-amber-700 underline font-medium">
+                <span className="text-xs text-gold-ink underline font-medium">
                   {showReflectionInput ? 'Ocultar' : 'Escrever'}
                 </span>
               </button>
 
               {showReflectionInput && (
                 <div className="mt-2 space-y-1.5 animate-fadeIn">
-                  <p className="text-[11px] text-[#5B615D] leading-tight">
+                  <p className="text-[13px] text-muted leading-tight">
                     {currentQuestion.reflectionPrompt}
                   </p>
                   <textarea
@@ -135,26 +135,26 @@ export const AnamneseScreen: React.FC = () => {
                     value={reflections[currentQuestion.id] || ''}
                     onChange={(e) => actions.setReflection(currentQuestion.id, e.target.value)}
                     placeholder={currentQuestion.reflectionPlaceholder}
-                    className="w-full p-2 text-xs rounded-lg border border-amber-300 bg-white text-[#1A1D1B] placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#1F6F5C] resize-none transition-shadow"
+                    className="w-full p-2 text-sm rounded-lg border border-gold-line bg-surface text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-primary resize-none transition-shadow"
                   />
 
                   {suggestions.map((id) => (
-                    <div key={id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white border border-[#1F6F5C]/30 animate-fadeIn">
-                      <span className="text-[11px] text-[#1A1D1B]">
+                    <div key={id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-surface border border-primary/30 animate-fadeIn">
+                      <span className="text-[13px] text-ink">
                         Isso tem a ver com <strong>{optionLabel(id)}</strong>?
                       </span>
                       <span className="flex gap-1 shrink-0">
                         <button
                           type="button"
                           onClick={() => actions.confirmTextOption(qid, id)}
-                          className="px-2 py-0.5 rounded-md bg-[#1F6F5C] text-white text-[11px] font-semibold cursor-pointer"
+                          className="px-2 py-0.5 rounded-md bg-primary text-on-primary text-[13px] font-semibold cursor-pointer"
                         >
                           Sim
                         </button>
                         <button
                           type="button"
                           onClick={() => actions.dismissTextOption(qid, id)}
-                          className="px-2 py-0.5 rounded-md border border-[#E6E8E6] text-[#5B615D] text-[11px] cursor-pointer"
+                          className="px-2 py-0.5 rounded-md border border-line text-muted text-[13px] cursor-pointer"
                         >
                           Não
                         </button>
@@ -163,13 +163,13 @@ export const AnamneseScreen: React.FC = () => {
                   ))}
 
                   {confirmed.length > 0 && (
-                    <p className="text-[11px] text-[#1F6F5C] font-medium">
+                    <p className="text-[13px] text-primary font-medium">
                       ✓ Também considerado: {confirmed.map(optionLabel).join(', ')}
                     </p>
                   )}
 
                   {currentQuestion.reflectionPurpose && (
-                    <p className="text-[10px] text-[#5B615D] leading-snug">
+                    <p className="text-xs text-muted leading-snug">
                       {currentQuestion.reflectionPurpose} Fica salvo só no seu celular. Evite escrever dados de saúde ou outros dados sensíveis.
                     </p>
                   )}
@@ -180,11 +180,11 @@ export const AnamneseScreen: React.FC = () => {
         </div>
 
         {/* Botão de Avanço */}
-        <div className="pt-3 pb-2 border-t border-[#E6E8E6]">
+        <div className="pt-3 pb-2 border-t border-line">
           <button
             disabled={!scoredAnswers[qid]?.length}
             onClick={actions.nextQuestion}
-            className="w-full py-3.5 bg-[#1F6F5C] hover:bg-[#2E8B73] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5"
+            className="w-full py-3.5 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-on-primary font-semibold text-base rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5"
           >
             <span>Continuar</span>
             <ArrowRight className="w-4 h-4" />

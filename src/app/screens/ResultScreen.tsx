@@ -17,80 +17,80 @@ export const ResultScreen: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-slide-up">
       <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E3F2ED] text-[#1F6F5C] text-xs font-semibold mb-3">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary text-sm font-semibold mb-3">
           <Sparkles className="w-3.5 h-3.5" />
           Seu perfil está pronto
         </div>
 
-        <h2 className="text-2xl font-bold font-display text-[#1A1D1B] leading-tight mb-4">
+        <h2 className="text-2xl font-bold font-display text-ink leading-tight mb-4">
           {userName}, este é o seu prumo digital.
         </h2>
 
         {/* Card de Destaque: Nicho */}
-        <div className="p-4 rounded-2xl bg-white border border-[#1F6F5C]/30 shadow-sm mb-3">
-          <span className="text-[11px] font-bold text-[#1F6F5C] uppercase tracking-wider block mb-1">
+        <div className="p-4 rounded-2xl bg-surface border border-primary/30 shadow-sm mb-3">
+          <span className="text-[13px] font-bold text-primary uppercase tracking-wider block mb-1">
             🎯 Seu Nicho Recomendado
           </span>
-          <h3 className="text-base font-bold text-[#1A1D1B]">
+          <h3 className="text-lg font-bold text-ink">
             {diagnosis.niche}
           </h3>
-          <p className="text-xs text-[#5B615D] mt-1">
+          <p className="text-sm text-muted mt-1">
             {diagnosis.nicheDescription}
           </p>
         </div>
 
         {/* Grid dos Cards Secundários */}
         <div className="grid grid-cols-2 gap-2.5 mb-4">
-          <div className="p-3 rounded-xl bg-white border border-[#E6E8E6]">
-            <span className="text-[10px] font-semibold text-[#5B615D] block mb-0.5">📦 Produto Ideal</span>
-            <strong className="text-xs text-[#1A1D1B] block">{diagnosis.product}</strong>
+          <div className="p-3 rounded-xl bg-surface border border-line">
+            <span className="text-xs font-semibold text-muted block mb-0.5">📦 Produto Ideal</span>
+            <strong className="text-sm text-ink block">{diagnosis.product}</strong>
           </div>
-          <div className="p-3 rounded-xl bg-white border border-[#E6E8E6]">
-            <span className="text-[10px] font-semibold text-[#5B615D] block mb-0.5">👥 Público-alvo</span>
-            <strong className="text-xs text-[#1A1D1B] block">{diagnosis.audience}</strong>
+          <div className="p-3 rounded-xl bg-surface border border-line">
+            <span className="text-xs font-semibold text-muted block mb-0.5">👥 Público-alvo</span>
+            <strong className="text-sm text-ink block">{diagnosis.audience}</strong>
           </div>
-          <div className="p-3 rounded-xl bg-white border border-[#E6E8E6]">
-            <span className="text-[10px] font-semibold text-[#5B615D] block mb-0.5">📣 Canal Inicial</span>
-            <strong className="text-xs text-[#1A1D1B] block">{diagnosis.channel}</strong>
+          <div className="p-3 rounded-xl bg-surface border border-line">
+            <span className="text-xs font-semibold text-muted block mb-0.5">📣 Canal Inicial</span>
+            <strong className="text-sm text-ink block">{diagnosis.channel}</strong>
           </div>
-          <div className="p-3 rounded-xl bg-white border border-[#E6E8E6]">
-            <span className="text-[10px] font-semibold text-[#5B615D] block mb-0.5">⏱️ Prazo Estimado</span>
-            <strong className="text-xs text-[#1A1D1B] block">{diagnosis.timeline}</strong>
+          <div className="p-3 rounded-xl bg-surface border border-line">
+            <span className="text-xs font-semibold text-muted block mb-0.5">⏱️ Prazo Estimado</span>
+            <strong className="text-sm text-ink block">{diagnosis.timeline}</strong>
           </div>
         </div>
 
         {/* Hipótese a testar: o diagnóstico não é veredito (docs/pesquisa/01) */}
-        <div className="p-3.5 rounded-xl bg-white border border-[#E6E8E6] mb-3 space-y-1.5">
-          <span className="text-[11px] font-bold text-[#1F6F5C] uppercase tracking-wider block">
+        <div className="p-3.5 rounded-xl bg-surface border border-line mb-3 space-y-1.5">
+          <span className="text-[13px] font-bold text-primary uppercase tracking-wider block">
             🧪 Sua hipótese para testar
           </span>
-          <p className="text-xs text-[#1A1D1B] leading-relaxed">{diagnosis.hypothesis}</p>
-          <p className="text-xs text-[#5B615D] leading-relaxed">
-            <strong className="text-[#1A1D1B]">Teste:</strong> {diagnosis.test}
+          <p className="text-sm text-ink leading-relaxed">{diagnosis.hypothesis}</p>
+          <p className="text-sm text-muted leading-relaxed">
+            <strong className="text-ink">Teste:</strong> {diagnosis.test}
           </p>
-          <p className="text-xs text-[#5B615D] leading-relaxed">
-            <strong className="text-[#1A1D1B]">Sinal de que funcionou:</strong> {diagnosis.successSignal}
+          <p className="text-sm text-muted leading-relaxed">
+            <strong className="text-ink">Sinal de que funcionou:</strong> {diagnosis.successSignal}
           </p>
         </div>
 
         {diagnosis.warnings.map((w) => (
-          <div key={w} className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 mb-3 leading-relaxed">
+          <div key={w} className="p-3 rounded-xl bg-gold-soft border border-gold-line text-sm text-gold-ink mb-3 leading-relaxed">
             {w}
           </div>
         ))}
 
         {/* Justificativa Expansível */}
-        <div className="p-3.5 rounded-xl bg-[#F7F9F8] border border-[#E6E8E6] mb-4">
+        <div className="p-3.5 rounded-xl bg-surface-2 border border-line mb-4">
           <button
             onClick={() => setShowJustification(!showJustification)}
-            className="w-full flex items-center justify-between text-xs font-semibold text-[#1F6F5C]"
+            className="w-full flex items-center justify-between text-sm font-semibold text-primary"
           >
             <span>Por que essa combinação para você?</span>
             {showJustification ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
 
           {showJustification && (
-            <p className="text-xs text-[#5B615D] mt-2 leading-relaxed pt-2 border-t border-[#E6E8E6]">
+            <p className="text-sm text-muted mt-2 leading-relaxed pt-2 border-t border-line">
               {diagnosis.justification}
             </p>
           )}
@@ -98,28 +98,28 @@ export const ResultScreen: React.FC = () => {
 
         {/* Alternativas recolhidas: 1 recomendação em destaque evita sobrecarga de escolha */}
         {diagnosis.alternatives.length > 0 && (
-          <div className="p-3.5 rounded-xl bg-[#F7F9F8] border border-[#E6E8E6] mb-4">
+          <div className="p-3.5 rounded-xl bg-surface-2 border border-line mb-4">
             <button
               onClick={() => setShowAlternatives(!showAlternatives)}
-              className="w-full flex items-center justify-between text-xs font-semibold text-[#1F6F5C]"
+              className="w-full flex items-center justify-between text-sm font-semibold text-primary"
             >
               <span>Ver {diagnosis.alternatives.length} alternativas</span>
               {showAlternatives ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
 
             {showAlternatives && (
-              <div className="mt-2 pt-2 border-t border-[#E6E8E6] space-y-2">
+              <div className="mt-2 pt-2 border-t border-line space-y-2">
                 {diagnosis.alternatives.map((alt) => (
-                  <div key={`${alt.nicheId}-${alt.productId}`} className="p-2.5 rounded-lg bg-white border border-[#E6E8E6]">
-                    <strong className="text-xs text-[#1A1D1B] block">{alt.niche}</strong>
-                    <span className="text-[11px] text-[#5B615D] block mt-0.5">{alt.product}</span>
+                  <div key={`${alt.nicheId}-${alt.productId}`} className="p-2.5 rounded-lg bg-surface border border-line">
+                    <strong className="text-sm text-ink block">{alt.niche}</strong>
+                    <span className="text-[13px] text-muted block mt-0.5">{alt.product}</span>
                     <button
                       onClick={() => {
                         soundEffects.playSelectOption();
                         actions.chooseAlternative(alt);
                         setShowAlternatives(false);
                       }}
-                      className="mt-1.5 text-[11px] font-semibold text-[#1F6F5C] hover:underline cursor-pointer"
+                      className="mt-1.5 text-[13px] font-semibold text-primary hover:underline cursor-pointer"
                     >
                       Explorar esta alternativa
                     </button>
@@ -138,9 +138,9 @@ export const ResultScreen: React.FC = () => {
             soundEffects.playTransition();
             actions.go('commitment');
           }}
-          className="w-full py-3.5 bg-[#1F6F5C] hover:bg-[#2E8B73] text-white font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-primary hover:bg-primary-hover text-on-primary font-semibold text-base rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
         >
-          <ShieldCheck className="w-4 h-4 text-emerald-200" />
+          <ShieldCheck className="w-4 h-4 text-on-primary/70" />
           <span>Assumir meu Prumo (Ritual)</span>
           <ArrowRight className="w-4 h-4" />
         </button>
@@ -150,7 +150,7 @@ export const ResultScreen: React.FC = () => {
             actions.go('value_signal');
             actions.startAnamnese();
           }}
-          className="w-full py-2 text-xs text-[#5B615D] hover:text-[#1A1D1B] text-center cursor-pointer"
+          className="w-full py-2 text-sm text-muted hover:text-ink text-center cursor-pointer"
         >
           ⟳ Refazer diagnóstico
         </button>

@@ -62,9 +62,9 @@ const DeviceFrame: React.FC = () => {
   return (
     <div className="w-full sm:w-auto flex flex-col items-center justify-center sm:p-6">
       {/* Barra de controle do preview (só no desktop) */}
-      <div className="hidden sm:flex w-full max-w-[420px] mb-3 items-center justify-between text-xs text-[#5B615D] px-2">
+      <div className="hidden sm:flex w-full max-w-[420px] mb-3 items-center justify-between text-xs text-muted px-2">
         <div className="flex items-center gap-1.5 font-medium">
-          <span className="w-2 h-2 rounded-full bg-[#1F6F5C] animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
           <span>Preview Prumo</span>
         </div>
 
@@ -75,7 +75,7 @@ const DeviceFrame: React.FC = () => {
             className={`text-[11px] flex items-center gap-1.5 px-2.5 py-1 rounded-full border shadow-2xs transition-all cursor-pointer ${
               isSoundMuted 
                 ? 'bg-neutral-100 border-neutral-300 text-neutral-500 hover:text-neutral-700' 
-                : 'bg-[#E3F2ED] border-[#1F6F5C]/30 text-[#1F6F5C] font-semibold hover:bg-[#d6ebe4]'
+                : 'bg-primary-soft border-primary/30 text-primary font-semibold'
             }`}
             title={isSoundMuted ? "Efeitos sonoros desativados (clique para ativar)" : "Efeitos sonoros táteis e sutis ativos (clique para mutar)"}
           >
@@ -86,7 +86,7 @@ const DeviceFrame: React.FC = () => {
               </>
             ) : (
               <>
-                <Volume2 className="w-3.5 h-3.5 text-[#1F6F5C]" />
+                <Volume2 className="w-3.5 h-3.5 text-primary" />
                 <span>Som: Ativo</span>
               </>
             )}
@@ -98,7 +98,7 @@ const DeviceFrame: React.FC = () => {
                 soundEffects.playSoftTap();
                 if (window.confirm('Reiniciar o preview? Isso apaga os dados salvos neste navegador.')) actions.resetAll();
               }}
-              className="text-[11px] text-[#1F6F5C] hover:underline flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-[#E6E8E6] cursor-pointer"
+              className="text-[11px] text-primary hover:underline flex items-center gap-1 px-2 py-1 rounded-full bg-surface border border-line cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" /> Reiniciar
             </button>
@@ -114,15 +114,15 @@ const DeviceFrame: React.FC = () => {
         </div>
 
         {/* Barra de Status do Android */}
-        <div className="hidden h-6 w-full pt-1 px-6 sm:flex items-center justify-between text-[11px] text-[#5B615D] z-40 shrink-0 font-medium select-none">
+        <div className="hidden h-6 w-full pt-1 px-6 sm:flex items-center justify-between text-[11px] text-muted z-40 shrink-0 font-medium select-none">
           <span>09:41</span>
           <div className="flex items-center gap-2">
             <button 
               onClick={actions.toggleSound}
               title={isSoundMuted ? "Som desativado (clique para ativar)" : "Som sutil ativo (clique para mutar)"}
-              className="hover:text-[#1F6F5C] transition-colors cursor-pointer"
+              className="hover:text-primary transition-colors cursor-pointer"
             >
-              {isSoundMuted ? <VolumeX className="w-3 h-3 text-neutral-500" /> : <Volume2 className="w-3 h-3 text-[#1F6F5C]" />}
+              {isSoundMuted ? <VolumeX className="w-3 h-3 text-neutral-500" /> : <Volume2 className="w-3 h-3 text-primary" />}
             </button>
             <span>5G</span>
             <div className="w-4 h-2.5 border border-current rounded-sm p-0.5 flex items-center">
@@ -132,7 +132,7 @@ const DeviceFrame: React.FC = () => {
         </div>
 
         {/* Área de Conteúdo da Tela (Dentro do Frame) */}
-        <div className="flex-1 bg-[#F7F9F8] sm:rounded-[36px] overflow-hidden flex flex-col relative text-[#1A1D1B]">
+        <div className="flex-1 bg-canvas sm:rounded-[36px] overflow-hidden flex flex-col relative text-ink">
           
 
           {showBrandSplash && <CompassSplash onDone={() => setShowBrandSplash(false)} />}

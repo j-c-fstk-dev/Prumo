@@ -27,6 +27,8 @@ export type ScreenState =
 
 export type TabId = 'home' | 'roadmap' | 'coach' | 'profile';
 export type MacroGoal = 'renda_extra' | 'substituir' | 'proposito';
+/** auto segue o sistema; light = "Pergaminho"; dark = "Noite" (docs/pesquisa/03) */
+export type ThemePref = 'auto' | 'light' | 'dark';
 
 /** Tarefa criada pela própria pessoa (fora do plano) */
 export interface PersonalTask {
@@ -88,6 +90,7 @@ interface PersistedState {
   isPremium: boolean;
   /** Uso dos recursos com limite no grátis */
   usage: { coachByWeek: Record<string, number>; pivots: number };
+  theme: ThemePref;
   onboardingDone: boolean;
 }
 
@@ -114,6 +117,7 @@ function initialPersisted(): PersistedState {
     celebratedChapters: [],
     isPremium: false,
     usage: { coachByWeek: {}, pivots: 0 },
+    theme: 'auto',
     onboardingDone: false,
   };
 }
@@ -191,6 +195,15 @@ function useAppState() {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => saveValue(STORAGE_KEY, data), 300);
   }, [data, hydrated]);
+
+  // Aplica o tema na página (o CSS troca as cores pelos tokens)
+  useEffect(() => {
+    const root = document.documentElement;
+    if (data.theme === 'auto') delete root.dataset.theme;
+    else root.dataset.theme = data.theme;
+    const dark = data.theme === 'dark' || (data.theme === 'auto' && window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#15122A' : '#FBF8F2');
+  }, [data.theme]);
 
   // Relógio do player simulado
   useEffect(() => {
@@ -468,6 +481,11 @@ function useAppState() {
     },
 
     toggleSound: () => setIsSoundMuted(soundEffects.toggleMute()),
+    /** Automático → Claro → Noite → Automático */
+    cycleTheme: () => {
+      soundEffects.playSoftTap();
+      setData((d) => ({ ...d, theme: ({ auto: 'light', light: 'dark', dark: 'auto' } as const)[d.theme] }));
+    },
 
     sendCoachMessage: async (text: string) => {
       if (!text.trim() || isTyping) return;

@@ -9,7 +9,7 @@ import { useApp } from '../state/AppStore';
 type Step = 'to' | 'from' | 'sealed';
 
 const textareaClass =
-  'w-full p-3 text-xs font-serif leading-relaxed rounded-xl border border-amber-300 bg-white text-[#1A1D1B] placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#1F6F5C] resize-none';
+  'w-full p-3 text-sm font-serif leading-relaxed rounded-xl border border-gold-line bg-surface text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-primary resize-none';
 
 /**
  * Carta ao eu futuro em duas vias (docs/pesquisa/02, Chishima & Wilson):
@@ -47,18 +47,18 @@ export const FutureLetterScreen: React.FC = () => {
   };
 
   const primaryButton =
-    'w-full py-3.5 bg-[#1F6F5C] hover:bg-[#2E8B73] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2';
+    'w-full py-3.5 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-on-primary font-semibold text-base rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2';
 
   if (step === 'to') {
     return (
-      <div key="to" className="flex-1 flex flex-col justify-between p-5 select-none animate-fadeIn bg-gradient-to-b from-[#FDFCF9] to-[#F5EFE6] overflow-y-auto">
+      <div key="to" className="flex-1 flex flex-col justify-between p-5 select-none animate-fadeIn bg-gradient-to-b from-canvas to-gold-soft overflow-y-auto">
         <div className="space-y-3 pt-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-[#1F6F5C] text-[11px] font-semibold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary text-[13px] font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Compromisso assinado · Carta 1 de 2</span>
           </div>
-          <h2 className="text-xl font-bold font-display text-[#1A1D1B] leading-tight">Escreva para você daqui a 90 dias</h2>
-          <p className="text-xs text-[#5B615D] leading-relaxed">
+          <h2 className="text-xl font-bold font-display text-ink leading-tight">Escreva para você daqui a 90 dias</h2>
+          <p className="text-sm text-muted leading-relaxed">
             Deixamos um rascunho com o seu plano. Mude o que quiser: quanto mais tiver o seu jeito de falar, melhor.
           </p>
           <textarea
@@ -88,7 +88,7 @@ export const FutureLetterScreen: React.FC = () => {
 
   if (step === 'from') {
     return (
-      <div key="from" className="flex-1 flex flex-col justify-between p-5 select-none animate-fadeIn bg-gradient-to-b from-[#FDFCF9] to-[#F5EFE6] overflow-y-auto">
+      <div key="from" className="flex-1 flex flex-col justify-between p-5 select-none animate-fadeIn bg-gradient-to-b from-canvas to-gold-soft overflow-y-auto">
         <div className="space-y-3 pt-1">
           <div className="flex items-center justify-between">
             <button
@@ -96,15 +96,15 @@ export const FutureLetterScreen: React.FC = () => {
                 soundEffects.playBack();
                 setStep('to');
               }}
-              className="p-1 -ml-1 text-[#5B615D] hover:text-[#1A1D1B] cursor-pointer"
+              className="p-1 -ml-1 text-muted hover:text-ink cursor-pointer"
               aria-label="Voltar para a carta 1"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <span className="text-[11px] font-semibold text-[#1F6F5C]">Carta 2 de 2</span>
+            <span className="text-[13px] font-semibold text-primary">Carta 2 de 2</span>
           </div>
-          <h2 className="text-xl font-bold font-display text-[#1A1D1B] leading-tight">Responda como o seu eu de 90 dias</h2>
-          <p className="text-xs text-[#5B615D] leading-relaxed">
+          <h2 className="text-xl font-bold font-display text-ink leading-tight">Responda como o seu eu de 90 dias</h2>
+          <p className="text-sm text-muted leading-relaxed">
             Imagine que deu certo. O que você fez? Como se sentiu nos dias difíceis? O que diria para quem está começando hoje?
             Esta parte é só sua: escrever a resposta é o que mais fortalece o compromisso.
           </p>
@@ -116,7 +116,7 @@ export const FutureLetterScreen: React.FC = () => {
             className={textareaClass}
             aria-label="Resposta do seu eu de daqui a 90 dias"
           />
-          {!canSeal && <p className="text-[11px] text-[#5B615D]">Escreva pelo menos algumas frases para selar a carta.</p>}
+          {!canSeal && <p className="text-[13px] text-muted">Escreva pelo menos algumas frases para selar a carta.</p>}
         </div>
         <div className="pt-3">
           <button
@@ -137,10 +137,10 @@ export const FutureLetterScreen: React.FC = () => {
   }
 
   return (
-    <div key="sealed" className="flex-1 flex flex-col justify-between p-5 select-none animate-letter-unroll bg-gradient-to-b from-[#FDFCF9] to-[#F5EFE6] overflow-y-auto">
+    <div key="sealed" className="flex-1 flex flex-col justify-between p-5 select-none animate-letter-unroll bg-gradient-to-b from-canvas to-gold-soft overflow-y-auto">
       <div className="space-y-3.5 pt-1">
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-[#1F6F5C] text-[11px] font-semibold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary text-[13px] font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Cartas seladas</span>
           </div>
@@ -149,30 +149,30 @@ export const FutureLetterScreen: React.FC = () => {
               soundEffects.playSoftTap();
               setStep('to');
             }}
-            className="text-[11px] text-[#5B615D] flex items-center gap-1 cursor-pointer"
+            className="text-[13px] text-muted flex items-center gap-1 cursor-pointer"
           >
             <Pencil className="w-3 h-3" /> Editar
           </button>
         </div>
 
         {/* Pergaminho com as duas vias */}
-        <div className="p-4 rounded-2xl bg-white border border-amber-300/80 shadow-md space-y-3">
+        <div className="p-4 rounded-2xl bg-surface border border-gold-line/80 shadow-md space-y-3">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 block mb-1">De você, hoje</span>
-            <p className="text-xs text-[#2D3748] font-serif leading-relaxed whitespace-pre-line">{toFuture}</p>
+            <span className="text-xs font-bold uppercase tracking-wider text-gold-ink block mb-1">De você, hoje</span>
+            <p className="text-sm text-ink font-serif leading-relaxed whitespace-pre-line">{toFuture}</p>
           </div>
-          <div className="border-t border-amber-100 pt-3">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#1F6F5C] block mb-1">Do seu eu de 90 dias</span>
-            <p className="text-xs text-[#2D3748] font-serif leading-relaxed whitespace-pre-line">{fromFuture}</p>
+          <div className="border-t border-gold-soft pt-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary block mb-1">Do seu eu de 90 dias</span>
+            <p className="text-sm text-ink font-serif leading-relaxed whitespace-pre-line">{fromFuture}</p>
           </div>
-          <div className="pt-2.5 border-t border-amber-100 flex items-center gap-1.5 text-[11px] text-amber-900 font-medium">
-            <Bookmark className="w-3.5 h-3.5 text-[#1F6F5C]" />
+          <div className="pt-2.5 border-t border-gold-soft flex items-center gap-1.5 text-[13px] text-gold-ink font-medium">
+            <Bookmark className="w-3.5 h-3.5 text-primary" />
             <span>Pacto selado{letter?.sealedAt ? ` em ${new Date(letter.sealedAt).toLocaleDateString('pt-BR')}` : ''}</span>
           </div>
         </div>
       </div>
 
-      <div className="pt-3 border-t border-[#E6E8E6]">
+      <div className="pt-3 border-t border-line">
         {onboardingDone ? (
           <button
             onClick={() => {

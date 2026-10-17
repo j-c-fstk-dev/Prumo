@@ -12,7 +12,7 @@ export const BottomNav: React.FC = () => {
   const { tab: activeTab, actions } = useApp();
 
   return (
-    <div className="h-16 bg-white border-t border-[#E6E8E6] px-4 flex items-center justify-around shrink-0 select-none">
+    <div className="h-16 bg-surface border-t border-line px-4 flex items-center justify-around shrink-0 select-none">
       {[
         { id: 'home' as const, label: 'Início', icon: Home },
         { id: 'roadmap' as const, label: 'Roteiro', icon: CheckSquare },
@@ -31,13 +31,13 @@ export const BottomNav: React.FC = () => {
               }
             }}
             className={`flex flex-col items-center gap-0.5 transition-all duration-200 cursor-pointer transform active:scale-95 ${
-              isActive ? 'text-[#1F6F5C]' : 'text-[#5B615D] hover:text-[#1A1D1B]'
+              isActive ? 'text-primary' : 'text-muted hover:text-ink'
             }`}
           >
-            <div className={`px-3 py-1 rounded-full transition-all duration-300 ${isActive ? 'bg-[#E3F2ED] scale-105 shadow-2xs' : 'bg-transparent'}`}>
+            <div className={`px-3 py-1 rounded-full transition-all duration-300 ${isActive ? 'bg-primary-soft scale-105 shadow-2xs' : 'bg-transparent'}`}>
               <Icon className="w-5 h-5" />
             </div>
-            <span className={`text-[10px] transition-all duration-200 ${isActive ? 'font-bold text-[#1F6F5C]' : 'font-medium'}`}>
+            <span className={`text-xs transition-all duration-200 ${isActive ? 'font-bold text-primary' : 'font-medium'}`}>
               {tab.label}
             </span>
           </button>

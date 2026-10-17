@@ -46,7 +46,7 @@ export const Constellation: React.FC<ConstellationProps> = ({ name, stars, seed 
   });
 
   return (
-    <div className="relative rounded-2xl overflow-hidden bg-night-sky p-4" style={{ color: 'var(--night-text)' }}>
+    <div className="relative rounded-2xl overflow-hidden bg-night-sky p-4 border border-white/10" style={{ color: 'var(--night-text)' }}>
       <Starfield count={14} seed={seed + 3} maxRadius={0.5} opacity={0.45} />
 
       <div className="relative flex items-baseline justify-between mb-1">

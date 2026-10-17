@@ -20,24 +20,24 @@ export const RoadmapTab: React.FC = () => {
     <div key="tab-roadmap" className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-tab-fade">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-bold text-[#1A1D1B]">
+          <h2 className="text-xl font-bold text-ink">
             Sua Jornada
           </h2>
-          <span className="text-xs font-semibold text-[#1F6F5C] bg-[#E3F2ED] px-2.5 py-0.5 rounded-full">
+          <span className="text-sm font-semibold text-primary bg-primary-soft px-2.5 py-0.5 rounded-full">
             {completedCount} de {totalCount} concluídas
           </span>
         </div>
 
         {/* Âncora Emocional Fixa */}
-        <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200 mb-3 text-xs flex items-center gap-2">
-          <Bookmark className="w-3.5 h-3.5 text-[#D97746] shrink-0" />
-          <span className="text-[11px] text-[#1A1D1B] font-serif italic truncate">
+        <div className="p-2.5 rounded-xl bg-gold-soft/80 border border-gold-line mb-3 text-sm flex items-center gap-2">
+          <Bookmark className="w-3.5 h-3.5 text-gold-text shrink-0" />
+          <span className="text-[13px] text-ink font-serif italic truncate">
             "{personalAnchor}"
           </span>
         </div>
 
         {/* Filtros por Capítulos */}
-        <div className="flex gap-1 mb-3 overflow-x-auto pb-1 text-[11px]">
+        <div className="flex gap-1 mb-3 overflow-x-auto pb-1 text-[13px]">
           {[
             { id: 'todas', label: 'Todos os Capítulos' },
             { id: 'fundacao', label: 'Cap. 1: Promessa' },
@@ -52,8 +52,8 @@ export const RoadmapTab: React.FC = () => {
               }}
               className={`px-3 py-1 rounded-full whitespace-nowrap transition-colors cursor-pointer ${
                 activeFilterPhase === f.id
-                  ? 'bg-[#1F6F5C] text-white font-semibold'
-                  : 'bg-white border border-[#E6E8E6] text-[#5B615D]'
+                  ? 'bg-primary text-on-primary font-semibold'
+                  : 'bg-surface border border-line text-muted'
               }`}
             >
               {f.label}
@@ -72,24 +72,24 @@ export const RoadmapTab: React.FC = () => {
                   key={task.id}
                   className={`p-3 rounded-xl border transition-all ${
                     task.isLocked 
-                      ? 'bg-neutral-100 border-[#E6E8E6] opacity-75' 
+                      ? 'bg-surface-2 border-line opacity-75' 
                       : isCompleted 
-                        ? 'bg-emerald-50/50 border-emerald-200' 
-                        : 'bg-white border-[#E6E8E6] hover:border-[#1F6F5C]'
+                        ? 'bg-success-soft/50 border-success/30' 
+                        : 'bg-surface border-line hover:border-primary'
                   }`}
                 >
                   <div className="flex items-start gap-2.5">
                     {task.isLocked ? (
-                      <Lock className="w-4 h-4 text-neutral-400 shrink-0 mt-1" />
+                      <Lock className="w-4 h-4 text-muted shrink-0 mt-1" />
                     ) : (
                       <button
                         onClick={() => actions.toggleTaskStatus(task.id)}
-                        className="mt-0.5 text-[#1F6F5C] cursor-pointer"
+                        className="mt-0.5 text-primary cursor-pointer"
                       >
                         {isCompleted ? (
-                          <CheckCircle2 className="w-5 h-5 text-[#3BAA6B]" />
+                          <CheckCircle2 className="w-5 h-5 text-success" />
                         ) : (
-                          <Circle className="w-5 h-5 text-[#5B615D]" />
+                          <Circle className="w-5 h-5 text-muted" />
                         )}
                       </button>
                     )}
@@ -109,30 +109,30 @@ export const RoadmapTab: React.FC = () => {
 
                       <div className="flex items-center justify-between gap-1">
                         <div className="flex items-center gap-1.5 truncate">
-                          <span className="text-xs">{task.anchorIllustration.symbol}</span>
-                          <h4 className={`text-xs font-bold truncate ${isCompleted ? 'line-through text-[#5B615D]' : 'text-[#1A1D1B]'}`}>
+                          <span className="text-sm">{task.anchorIllustration.symbol}</span>
+                          <h4 className={`text-sm font-bold truncate ${isCompleted ? 'line-through text-muted' : 'text-ink'}`}>
                             {task.title}
                           </h4>
                         </div>
                         {task.isLocked ? (
-                          <span className="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-medium shrink-0">
+                          <span className="text-xs bg-gold-soft text-gold-ink px-1.5 py-0.2 rounded font-medium shrink-0">
                             Cap. 2
                           </span>
                         ) : (
-                          <span className="text-[9px] bg-[#E3F2ED] text-[#1F6F5C] px-1.5 py-0.2 rounded font-medium shrink-0">
+                          <span className="text-xs bg-primary-soft text-primary px-1.5 py-0.2 rounded font-medium shrink-0">
                             {task.anchorIllustration.badge}
                           </span>
                         )}
                       </div>
 
-                      <p className="text-[11px] text-[#5B615D] line-clamp-1 mt-0.5">
+                      <p className="text-[13px] text-muted line-clamp-1 mt-0.5">
                         {task.description}
                       </p>
 
-                      <div className="flex items-center justify-between mt-2 text-[10px] text-[#5B615D]">
+                      <div className="flex items-center justify-between mt-2 text-xs text-muted">
                         <span>⏱ {task.durationMinutes} min · {task.chapterTitle.split(':')[0]}</span>
                         {task.audioCoach && (
-                          <span className="text-[#1F6F5C] font-semibold flex items-center gap-1">
+                          <span className="text-primary font-semibold flex items-center gap-1">
                             <Headphones className="w-3 h-3" /> Áudio
                           </span>
                         )}

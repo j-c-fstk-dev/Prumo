@@ -23,8 +23,8 @@ export const WhenPicker: React.FC<WhenPickerProps> = ({ value, onChange, timeThi
             key={w}
             type="button"
             onClick={() => onChange(value === w ? '' : w)}
-            className={`px-2.5 py-1 rounded-full text-[11px] border cursor-pointer transition-colors ${
-              value === w ? 'bg-[#1F6F5C] border-[#1F6F5C] text-white font-semibold' : 'bg-white border-[#E6E8E6] text-[#5B615D]'
+            className={`px-2.5 py-1 rounded-full text-[13px] border cursor-pointer transition-colors ${
+              value === w ? 'bg-primary border-primary text-on-primary font-semibold' : 'bg-surface border-line text-muted'
             }`}
           >
             {w}
@@ -38,15 +38,15 @@ export const WhenPicker: React.FC<WhenPickerProps> = ({ value, onChange, timeThi
         onBlur={() => custom.trim() && onChange(custom)}
         onKeyDown={(e) => e.key === 'Enter' && custom.trim() && onChange(custom)}
         placeholder="Ou escreva: quando eu..."
-        className="w-full px-3 py-1.5 bg-white border border-[#E6E8E6] rounded-lg text-xs focus:outline-none focus:border-[#1F6F5C]"
+        className="w-full px-3 py-1.5 bg-surface border border-line rounded-lg text-sm focus:outline-none focus:border-primary"
       />
       {value && (
-        <p className="text-[11px] text-[#1F6F5C] font-medium">
+        <p className="text-[13px] text-primary font-medium">
           ⏰ Combinado: <strong>{value}</strong>, eu faço isso.
         </p>
       )}
       {timeThieves && !value && (
-        <p className="text-[10px] text-[#5B615D] leading-snug">
+        <p className="text-xs text-muted leading-snug">
           Você contou que o que rouba seu tempo é: "{timeThieves.slice(0, 90)}{timeThieves.length > 90 ? '…' : ''}". Escolha um momento fora disso.
         </p>
       )}

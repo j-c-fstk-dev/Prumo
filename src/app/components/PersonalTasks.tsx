@@ -9,10 +9,10 @@ const PersonalTaskRow: React.FC<{ task: PersonalTask; isFirst: boolean; isLast: 
   const [title, setTitle] = useState(task.title);
 
   return (
-    <div className={`p-2.5 rounded-xl border ${task.done ? 'bg-emerald-50/50 border-emerald-200' : 'bg-white border-[#E6E8E6]'}`}>
+    <div className={`p-2.5 rounded-xl border ${task.done ? 'bg-success-soft/50 border-success/30' : 'bg-surface border-line'}`}>
       <div className="flex items-start gap-2">
         <button onClick={() => actions.togglePersonalTask(task.id)} className="mt-0.5 cursor-pointer" aria-label={task.done ? 'Marcar como pendente' : 'Concluir'}>
-          {task.done ? <CheckCircle2 className="w-5 h-5 text-[#3BAA6B]" /> : <Circle className="w-5 h-5 text-[#5B615D]" />}
+          {task.done ? <CheckCircle2 className="w-5 h-5 text-success" /> : <Circle className="w-5 h-5 text-muted" />}
         </button>
         <div className="flex-1 min-w-0">
           {editing ? (
@@ -20,14 +20,14 @@ const PersonalTaskRow: React.FC<{ task: PersonalTask; isFirst: boolean; isLast: 
               autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-2 py-1 border border-[#1F6F5C] rounded-md text-xs focus:outline-none"
+              className="w-full px-2 py-1 border border-primary rounded-md text-sm focus:outline-none"
             />
           ) : (
-            <span className={`text-xs font-semibold block ${task.done ? 'line-through text-[#5B615D]' : 'text-[#1A1D1B]'}`}>{task.title}</span>
+            <span className={`text-sm font-semibold block ${task.done ? 'line-through text-muted' : 'text-ink'}`}>{task.title}</span>
           )}
-          {!editing && task.when && <span className="text-[10px] text-[#1F6F5C] block mt-0.5">⏰ {task.when}</span>}
+          {!editing && task.when && <span className="text-xs text-primary block mt-0.5">⏰ {task.when}</span>}
         </div>
-        <div className="flex items-center gap-0.5 text-[#5B615D] shrink-0">
+        <div className="flex items-center gap-0.5 text-muted shrink-0">
           <button disabled={isFirst} onClick={() => actions.movePersonalTask(task.id, -1)} className="p-1 disabled:opacity-25 cursor-pointer" aria-label="Subir">
             <ChevronUp className="w-3.5 h-3.5" />
           </button>
@@ -51,7 +51,7 @@ const PersonalTaskRow: React.FC<{ task: PersonalTask; isFirst: boolean; isLast: 
               actions.updatePersonalTask(task.id, { title });
               setEditing(false);
             }}
-            className="px-3 py-1 bg-[#1F6F5C] text-white text-[11px] font-semibold rounded-lg cursor-pointer"
+            className="px-3 py-1 bg-primary text-on-primary text-[13px] font-semibold rounded-lg cursor-pointer"
           >
             Salvar
           </button>
@@ -76,18 +76,18 @@ export const PersonalTasks: React.FC<{ title?: string }> = ({ title = 'Suas tare
   };
 
   return (
-    <div className="p-4 rounded-2xl bg-white border border-[#E6E8E6] shadow-xs space-y-2">
+    <div className="p-4 rounded-2xl bg-surface border border-line shadow-xs space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold text-[#1A1D1B]">{title}</span>
+        <span className="text-sm font-bold text-ink">{title}</span>
         {!adding && (
-          <button onClick={() => setAdding(true)} className="flex items-center gap-1 text-[11px] font-semibold text-[#1F6F5C] cursor-pointer">
+          <button onClick={() => setAdding(true)} className="flex items-center gap-1 text-[13px] font-semibold text-primary cursor-pointer">
             <Plus className="w-3.5 h-3.5" /> Adicionar
           </button>
         )}
       </div>
 
       {personalTasks.length === 0 && !adding && (
-        <p className="text-[11px] text-[#5B615D]">
+        <p className="text-[13px] text-muted">
           Coisas do seu dia que também importam: pagar uma conta, estudar, ligar para alguém.
         </p>
       )}
@@ -97,26 +97,26 @@ export const PersonalTasks: React.FC<{ title?: string }> = ({ title = 'Suas tare
       ))}
 
       {adding && (
-        <div className="p-2.5 rounded-xl bg-[#F7F9F8] border border-[#E6E8E6] space-y-2 animate-fadeIn">
+        <div className="p-2.5 rounded-xl bg-surface-2 border border-line space-y-2 animate-fadeIn">
           <input
             autoFocus
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && newTitle.trim() && save()}
             placeholder="O que você quer fazer?"
-            className="w-full px-3 py-2 bg-white border border-[#E6E8E6] rounded-lg text-xs focus:outline-none focus:border-[#1F6F5C]"
+            className="w-full px-3 py-2 bg-surface border border-line rounded-lg text-sm focus:outline-none focus:border-primary"
           />
-          <span className="text-[11px] font-semibold text-[#1A1D1B] block">Quando vou fazer:</span>
+          <span className="text-[13px] font-semibold text-ink block">Quando vou fazer:</span>
           <WhenPicker value={newWhen} onChange={setNewWhen} timeThieves={reflections.q3_hours} />
           <div className="flex gap-2">
             <button
               disabled={!newTitle.trim()}
               onClick={save}
-              className="px-3 py-1.5 bg-[#1F6F5C] disabled:opacity-40 text-white text-[11px] font-semibold rounded-lg cursor-pointer"
+              className="px-3 py-1.5 bg-primary disabled:opacity-40 text-on-primary text-[13px] font-semibold rounded-lg cursor-pointer"
             >
               Salvar tarefa
             </button>
-            <button onClick={() => setAdding(false)} className="px-3 py-1.5 text-[11px] text-[#5B615D] cursor-pointer">
+            <button onClick={() => setAdding(false)} className="px-3 py-1.5 text-[13px] text-muted cursor-pointer">
               Cancelar
             </button>
           </div>

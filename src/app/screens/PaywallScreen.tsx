@@ -26,70 +26,70 @@ export const PaywallScreen: React.FC = () => {
   const { paywallEnabled, paywallReason, plan, trialDaysLeft, actions } = useApp();
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 select-none bg-white animate-slide-up overflow-y-auto">
+    <div className="flex-1 flex flex-col justify-between p-6 select-none bg-surface animate-slide-up overflow-y-auto">
       <div>
         <button
           onClick={() => {
             soundEffects.playBack();
             actions.go('home');
           }}
-          className="p-1 -ml-1 text-[#5B615D] hover:text-[#1A1D1B] mb-2 cursor-pointer"
+          className="p-1 -ml-1 text-muted hover:text-ink mb-2 cursor-pointer"
           aria-label="Voltar"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        <h2 className="text-xl font-bold font-display text-[#1A1D1B]">Prumo Premium: acelere o caminho</h2>
-        <p className="text-xs text-[#5B615D] mt-1 mb-4">
+        <h2 className="text-xl font-bold font-display text-ink">Prumo Premium: acelere o caminho</h2>
+        <p className="text-sm text-muted mt-1 mb-4">
           O caminho inteiro é grátis. O Premium dá velocidade, profundidade e companhia.
         </p>
 
         {paywallReason && (
-          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 mb-4">{paywallReason}</div>
+          <div className="p-3 rounded-xl bg-gold-soft border border-gold-line text-sm text-gold-ink mb-4">{paywallReason}</div>
         )}
 
         {!paywallEnabled && (
-          <div className="p-3 rounded-xl bg-[#E3F2ED] border border-[#1F6F5C]/30 text-xs text-[#1F6F5C] mb-4 leading-relaxed">
+          <div className="p-3 rounded-xl bg-primary-soft border border-primary/30 text-sm text-primary mb-4 leading-relaxed">
             <strong>Fase de testes:</strong> as assinaturas ainda não estão abertas e tudo está liberado para você.
           </div>
         )}
         {plan === 'founder_trial' && (
-          <div className="p-3 rounded-xl bg-[#E3F2ED] border border-[#1F6F5C]/30 text-xs text-[#1F6F5C] mb-4">
+          <div className="p-3 rounded-xl bg-primary-soft border border-primary/30 text-sm text-primary mb-4">
             Você é fundador: Premium completo por mais <strong>{trialDaysLeft} dias</strong> (teste de {FOUNDER_TRIAL_DAYS} dias).
           </div>
         )}
 
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[#1F6F5C] block mb-2">No Premium</span>
-        <div className="space-y-2 text-xs text-[#1A1D1B] mb-4">
+        <span className="text-[13px] font-bold uppercase tracking-wider text-primary block mb-2">No Premium</span>
+        <div className="space-y-2 text-sm text-ink mb-4">
           {PREMIUM_BENEFITS.map((b) => (
             <div key={b} className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#3BAA6B] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
               <span>{b}</span>
             </div>
           ))}
         </div>
 
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[#5B615D] block mb-2">Grátis para sempre</span>
-        <ul className="space-y-1 text-xs text-[#5B615D] mb-5 list-disc pl-5">
+        <span className="text-[13px] font-bold uppercase tracking-wider text-muted block mb-2">Grátis para sempre</span>
+        <ul className="space-y-1 text-sm text-muted mb-5 list-disc pl-5">
           {FREE_FOREVER.map((b) => (
             <li key={b}>{b}</li>
           ))}
         </ul>
 
         <div className="space-y-2.5">
-          <div className="p-3.5 rounded-xl border-2 border-[#1F6F5C] bg-[#E3F2ED]/50">
+          <div className="p-3.5 rounded-xl border-2 border-primary bg-primary-soft/50">
             <div className="flex items-center justify-between">
-              <strong className="text-xs text-[#1A1D1B]">Anual</strong>
-              <span className="text-xs font-bold text-[#1F6F5C]">Melhor escolha</span>
+              <strong className="text-sm text-ink">Anual</strong>
+              <span className="text-sm font-bold text-primary">Melhor escolha</span>
             </div>
-            <span className="text-[11px] text-[#5B615D] block">
+            <span className="text-[13px] text-muted block">
               {PRICES.yearly} ({PRICES.yearlyPerMonth})
             </span>
-            <span className="text-[10px] text-[#1F6F5C] block mt-0.5">{PRICES.founderDiscount}</span>
+            <span className="text-xs text-primary block mt-0.5">{PRICES.founderDiscount}</span>
           </div>
-          <div className="p-3.5 rounded-xl border border-[#E6E8E6] bg-white">
-            <strong className="text-xs text-[#1A1D1B] block">Mensal</strong>
-            <span className="text-[11px] text-[#5B615D]">{PRICES.monthly}</span>
+          <div className="p-3.5 rounded-xl border border-line bg-surface">
+            <strong className="text-sm text-ink block">Mensal</strong>
+            <span className="text-[13px] text-muted">{PRICES.monthly}</span>
           </div>
         </div>
       </div>
@@ -97,7 +97,7 @@ export const PaywallScreen: React.FC = () => {
       <div className="space-y-2 pt-4">
         <button
           disabled
-          className="w-full py-3.5 bg-[#1F6F5C] disabled:opacity-50 text-white font-semibold text-sm rounded-xl shadow-md cursor-not-allowed"
+          className="w-full py-3.5 bg-primary disabled:opacity-50 text-on-primary font-semibold text-base rounded-xl shadow-md cursor-not-allowed"
         >
           Assinaturas em breve
         </button>
@@ -106,7 +106,7 @@ export const PaywallScreen: React.FC = () => {
             soundEffects.playSoftTap();
             actions.go('home');
           }}
-          className="w-full py-2 text-xs text-[#5B615D] hover:text-[#1A1D1B] text-center cursor-pointer"
+          className="w-full py-2 text-sm text-muted hover:text-ink text-center cursor-pointer"
         >
           Continuar no grátis
         </button>

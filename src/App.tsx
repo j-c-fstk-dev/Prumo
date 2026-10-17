@@ -15,7 +15,7 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-[100dvh] bg-[#F7F9F8] sm:bg-[#F3F5F4] flex items-center justify-center">
+    <main className="min-h-[100dvh] bg-canvas sm:bg-surface-2 flex items-center justify-center">
       <PrumoAppSimulator />
     </main>
   );

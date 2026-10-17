@@ -67,7 +67,11 @@ Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
 
 ### Fase 3: Alma e conteúdo
 - [x] Splash da bússola + constelação de progresso ([etapa 03](etapas/03-bussola-e-constelacao.md))
-- [ ] Paleta e tipografia (frente 3), sons (frente 4), citações (frente 5)
+- [x] Paleta "Pergaminho & Noite", tema claro/escuro e texto maior ([etapa 13](etapas/13-paleta-e-texto.md))
+- [ ] Alvos de toque 48 px + duas velocidades de animação
+- [ ] Sons com ataque suave e só em momentos com significado (frente 4)
+- [ ] Citações nas telas e na rotação diária (frente 5)
+- [ ] Ferramentas complementares por categoria (proposta em discussão)
 - [ ] Mensagens autocompassivas de retorno; convites de recomeço em datas-marco
 - [ ] Áudios reais nos micro-áudios
 

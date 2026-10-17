@@ -29,7 +29,7 @@ export const ChapterComplete: React.FC = () => {
     <div className="absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-5 animate-fadeIn">
       <div className="w-full rounded-3xl overflow-hidden bg-night-sky p-5 space-y-4 animate-scale-in" style={{ color: 'var(--night-text)' }}>
         <div className="text-center space-y-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--gold)' }}>
+          <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: 'var(--gold)' }}>
             {label} concluído
           </span>
           <h3 className="font-display text-xl font-bold">Sua constelação está completa</h3>
@@ -41,7 +41,7 @@ export const ChapterComplete: React.FC = () => {
           seed={done * 13}
         />
 
-        <p className="text-xs text-center leading-relaxed" style={{ color: 'var(--night-muted)' }}>
+        <p className="text-sm text-center leading-relaxed" style={{ color: 'var(--night-muted)' }}>
           Cada estrela foi um passo seu. {next ? 'O próximo capítulo começa com o que você já construiu.' : 'Você completou a jornada inteira.'}
         </p>
 
@@ -51,7 +51,7 @@ export const ChapterComplete: React.FC = () => {
             actions.markChapterCelebrated(done);
             if (!next) actions.goTab('profile');
           }}
-          className="w-full py-3 rounded-xl font-semibold text-sm cursor-pointer"
+          className="w-full py-3 rounded-xl font-semibold text-base cursor-pointer"
           style={{ background: 'var(--gold)', color: 'var(--night-900)' }}
         >
           {next ? `Seguir para o ${next.chapterTitle.split(':')[0]}` : 'Ver minha linha do tempo'}
