@@ -54,6 +54,12 @@ npx wrangler@4 secret put LLM_MODEL      # opcional
 npx wrangler@4 secret put LLM_BASE_URL   # só para "openai" (Z.ai, OpenRouter...)
 ```
 
+**Z.ai (escolha atual):** `LLM_PROVIDER=openai`, `LLM_BASE_URL=https://api.z.ai/api/paas/v4`,
+`LLM_MODEL=glm-5.3-flash` (barato; nome do modelo confirmado só em guias de terceiros, a documentação
+oficial estava inacessível daqui) e `LLM_API_KEY` = sua chave. Se a resposta da IA vier vazia (modelo que
+gasta o limite "pensando"), o coach cai em "respostas prontas" e o erro aparece no log, em vez de fingir
+que a IA respondeu.
+
 Sem esses secrets o app funciona normalmente e o coach fica em modo "respostas prontas", avisando a pessoa.
 
 ### 5. Domínio próprio (opcional)

@@ -61,6 +61,13 @@ describe('coach', () => {
     expect(r.body.mode).toBe('offline');
   });
 
+  it('resposta vazia da IA cai no offline, sem fingir que é ao vivo', async () => {
+    mockLlm('');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const r = await handleCoachChat({ message: 'como começo?' }, LIVE_ENV);
+    expect(r.body.mode).toBe('offline');
+  });
+
   it('recusa mensagem vazia ou longa demais', async () => {
     expect((await handleCoachChat({ message: '   ' }, {})).status).toBe(400);
     expect((await handleCoachChat({ message: 'a'.repeat(LIMITS.message + 1) }, {})).status).toBe(413);

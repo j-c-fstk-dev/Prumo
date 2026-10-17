@@ -164,8 +164,9 @@ export async function handleCoachChat(body: any, env?: LlmEnv): Promise<CoachRes
       temperature: 0.7,
       maxTokens: 1024,
     });
-    const text = reply || 'Estou aqui com você. Como podemos simplificar esse próximo passo em apenas 15 minutos?';
-    return { status: 200, body: { reply: text, isLiveAI: true, mode: 'live' } };
+    // Resposta vazia (ex.: modelo que gasta o limite de tokens "pensando") conta como falha, não como IA ao vivo
+    if (!reply) throw new Error('LLM devolveu resposta vazia');
+    return { status: 200, body: { reply, isLiveAI: true, mode: 'live' } };
   } catch (error) {
     // O erro vai para o log do servidor; a pessoa recebe a resposta offline marcada como tal
     console.error('Erro na chamada do Coach IA:', error);
