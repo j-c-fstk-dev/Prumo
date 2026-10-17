@@ -34,16 +34,6 @@ export const WelcomeScreen: React.FC = () => {
         >
           Começar diagnóstico
         </button>
-        <button
-          onClick={() => {
-            soundEffects.playSoftTap();
-            actions.go('home');
-            actions.goTab('home');
-          }}
-          className="text-xs text-[#5B615D] hover:text-[#1A1D1B] font-medium cursor-pointer"
-        >
-          Já tenho conta · Entrar
-        </button>
       </div>
     </div>
   );

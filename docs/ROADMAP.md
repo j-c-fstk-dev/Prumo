@@ -44,7 +44,7 @@ Registro: [etapa 00](etapas/00-faxina.md)
 
 ### Fase 1: Núcleo funcional
 - [x] Persistência local (IndexedDB) + app dividido em telas ([etapa 04](etapas/04-telas-e-persistencia.md))
-- [ ] Remover dados de exemplo fixos ("Ana", respostas pré-marcadas, texto "insegura")
+- [x] Remover dados de exemplo fixos ([etapa 05](etapas/05-sem-dados-de-exemplo.md))
 - [ ] Pergunta de perda aceitável + pergunta de obstáculo (WOOP)
 - [ ] Motor de diagnóstico: matriz de pontuação + escada de produtos; IA só redige
 - [ ] Diagnóstico como hipótese / teste / sinal de sucesso; 1 recomendação + 2 alternativas

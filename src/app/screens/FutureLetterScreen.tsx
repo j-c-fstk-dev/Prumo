@@ -36,7 +36,7 @@ export const FutureLetterScreen: React.FC = () => {
           </div>
 
           <h3 className="text-base font-serif font-bold text-[#1A1D1B] leading-tight mb-2">
-            Querida {userName},
+            Olá, {userName},
           </h3>
 
           <div className="text-xs text-[#2D3748] font-serif leading-relaxed space-y-2">
@@ -47,7 +47,7 @@ export const FutureLetterScreen: React.FC = () => {
               "{personalAnchor}"
             </p>
             <p>
-              Você estava insegura sobre por onde começar, mas decidiu construir <strong>{diagnosis.product}</strong> para o nicho de <strong>{diagnosis.niche}</strong>.
+              Você não sabia bem por onde começar, mas decidiu construir <strong>{diagnosis.product}</strong> para o nicho de <strong>{diagnosis.niche}</strong>.
             </p>
             <p>
               Hoje já validamos com pessoas reais, fizemos nosso primeiro retorno e aquela sensação de paralisia ficou para trás. Agora entre no Capítulo 1. Um passo de cada vez.

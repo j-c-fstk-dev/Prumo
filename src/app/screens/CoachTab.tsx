@@ -7,7 +7,14 @@ import {
 import { useApp } from '../state/AppStore';
 
 export const CoachTab: React.FC = () => {
-  const { userName, isTyping, coachMessages, actions } = useApp();
+  const { userName, nextStepTask, isTyping, coachMessages, actions } = useApp();
+  // Saudação gerada na hora (não é salva): sempre fala da tarefa atual
+  const greeting = {
+    sender: 'coach' as const,
+    text: `Oi, ${userName}! Sou o Coach Prumo. Na tarefa "${nextStepTask.title}", o que está travando hoje?`,
+    time: '',
+  };
+  const messages = coachMessages.length ? coachMessages : [greeting];
   const [inputMessage, setInputMessage] = useState('');
   const handleSendMessage = (textToSend?: string) => {
     const text = textToSend || inputMessage;
@@ -45,7 +52,7 @@ export const CoachTab: React.FC = () => {
 
       {/* Mensagens */}
       <div className="flex-1 overflow-y-auto py-3 space-y-3 pr-1 text-xs">
-        {coachMessages.map((msg, i) => (
+        {messages.map((msg, i) => (
           <div
             key={i}
             className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}

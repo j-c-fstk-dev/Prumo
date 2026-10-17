@@ -76,7 +76,8 @@ export const RegisterScreen: React.FC = () => {
             soundEffects.playTransition();
             actions.go('carousel');
           }}
-          className="w-full py-3.5 bg-[#1F6F5C] hover:bg-[#2E8B73] text-white font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer"
+          disabled={!userName.trim()}
+          className="w-full py-3.5 bg-[#1F6F5C] hover:bg-[#2E8B73] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer"
         >
           Continuar
         </button>

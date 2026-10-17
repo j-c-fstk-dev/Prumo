@@ -323,7 +323,7 @@ export const DEFAULT_DIAGNOSIS: DiagnosisProfile = {
   channelDescription: 'Conteúdo rápido focado em dores reais e conversas consultivas no 1 a 1 para as primeiras validações.',
   timeline: '60 dias até a 1ª validação',
   personalAnchor: 'Criei e validei meu próprio mini-produto digital do zero, com rotina serena e sem burnout.',
-  futureSelfLetter: 'Oi Ana, sou você daqui a 90 dias. Escrevo para te lembrar do dia em que você segurou a tela e assumiu seu prumo. Naquele momento você estava insegura, mas decidiu dar um passo pequeno por vez. Hoje nosso mini-curso está validado, ajudamos 3 pessoas de verdade e aquela sensação de paralisia ficou para trás. Continue firme, seu prumo é real.',
+  futureSelfLetter: 'Oi, sou você daqui a 90 dias. Escrevo para te lembrar do dia em que você segurou a tela e assumiu seu prumo. Naquele momento você não sabia bem por onde começar, mas decidiu dar um passo pequeno por vez. Hoje nosso mini-curso está validado, ajudamos 3 pessoas de verdade e aquela sensação de paralisia ficou para trás. Continue firme, seu prumo é real.',
   chapterTitle: 'Capítulo 1: Onde você encontra sua promessa',
   justification: 'Você indicou facilidade para ensinar, tempo moderado (1h/dia) e prefere formatos práticos. Por isso sugerimos um mini-curso gravado com modelo pronto: você cria uma vez, valida com 3 pessoas reais e não se torna refém de horários de atendimento.',
   radarScores: {
@@ -402,7 +402,7 @@ export const INITIAL_TASKS: TaskItem[] = [
       title: 'O poder de uma promessa simples',
       duration: '1:10 min',
       narrator: 'Helena · Coach Prumo',
-      transcript: 'Ana, quando tentamos falar com todo mundo, ninguém ouve. Uma frase simples não é limitar seu talento: é estender a mão para quem está perdido exatamente onde você já esteve. Respire fundo e escreva o óbvio.',
+      transcript: 'Quando tentamos falar com todo mundo, ninguém ouve. Uma frase simples não é limitar seu talento: é estender a mão para quem está perdido exatamente onde você já esteve. Respire fundo e escreva o óbvio.',
       audioWaveHeights: [25, 45, 60, 80, 50, 70, 95, 60, 40, 55, 75, 40, 30]
     }
   },

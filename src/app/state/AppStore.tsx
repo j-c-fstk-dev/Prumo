@@ -34,7 +34,7 @@ interface PersistedState {
   macroGoal: MacroGoal;
   answers: Record<string, string[]>;
   reflections: Record<string, string>;
-  /** Só o progresso; o conteúdo das tarefas vem de INITIAL_TASKS (pode ser atualizado sem perder progresso) */
+  /** Só o progresso (sem entrada = pendente); o conteúdo vem de INITIAL_TASKS e pode mudar sem perder progresso */
   taskStatus: Record<string, TaskItem['status']>;
   coachMessages: CoachMessage[];
   onboardingDone: boolean;
@@ -45,34 +45,12 @@ const STORAGE_KEY = 'prumo_state';
 function initialPersisted(): PersistedState {
   return {
     version: 1,
-    userName: 'Ana',
+    userName: '',
     macroGoal: 'renda_extra',
-    answers: {
-      q1_help: ['conselhos', 'planilhas'],
-      q1_preference: ['ensinar'],
-      q2_themes: ['produtividade'],
-      q2_community: ['solo'],
-      q3_hours: ['pouco'],
-      q3_investment: ['zero'],
-      q4_goal: ['primeiro_real'],
-      q4_timeline: ['medio'],
-      q5_exposure: ['moderado'],
-      q5_rejection: ['resiliente'],
-      q6_tools: ['instagram', 'notion'],
-      q7_pride: ['autor_metodo'],
-    },
-    reflections: {
-      q7_pride:
-        'Quero provar para mim mesma que consigo ter um método próprio e gerar minhas primeiras vendas com dignidade e paz de espírito.',
-    },
-    taskStatus: Object.fromEntries(INITIAL_TASKS.map((t) => [t.id, t.status])),
-    coachMessages: [
-      {
-        sender: 'coach',
-        text: 'Tô aqui! Como você está na tarefa "Criar sua versão mínima entregável", o que tá travando hoje?',
-        time: '18:30',
-      },
-    ],
+    answers: {},
+    reflections: {},
+    taskStatus: {},
+    coachMessages: [],
     onboardingDone: false,
   };
 }
@@ -95,7 +73,7 @@ function useAppState() {
   // Navegação (não persiste: ao reabrir, vai para a home se o onboarding já foi feito)
   const [screen, setScreen] = useState<ScreenState>('splash');
   const [tab, setTab] = useState<TabId>('home');
-  const [selectedTaskId, setSelectedTaskId] = useState<string>(INITIAL_TASKS[1].id);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [sectionIndex, setSectionIndex] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [questionDirection, setQuestionDirection] = useState<'forward' | 'backward'>('forward');
@@ -150,11 +128,11 @@ function useAppState() {
   }, [isPlayingAudio]);
 
   const tasks: TaskItem[] = useMemo(
-    () => INITIAL_TASKS.map((t) => ({ ...t, status: data.taskStatus[t.id] ?? t.status })),
+    () => INITIAL_TASKS.map((t) => ({ ...t, status: data.taskStatus[t.id] ?? 'pending' })),
     [data.taskStatus],
   );
-  const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? tasks[0];
   const nextStepTask = tasks.find((t) => t.status !== 'completed' && !t.isLocked) || tasks[0];
+  const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? nextStepTask;
 
   const personalAnchor =
     data.reflections['q7_pride'] ||
@@ -255,7 +233,8 @@ function useAppState() {
       setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'user', text, time: nowTime() }] }));
       setIsTyping(true);
 
-      const task = selectedTask || nextStepTask;
+      // A tarefa aberta por último, se ainda estiver pendente; senão, o próximo passo
+      const task = selectedTask.status !== 'completed' ? selectedTask : nextStepTask;
       let reply: string;
       try {
         const response = await fetch('/api/coach/chat', {
