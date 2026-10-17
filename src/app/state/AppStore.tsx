@@ -3,7 +3,11 @@ import confetti from 'canvas-confetti';
 import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, TaskItem } from '../../data/prumoData';
 import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption } from '../../domain/diagnosis';
 import { buildPlanTasks } from '../../domain/tasks';
-import { ACTIONS_TO_REPAIR, addDays, buildTimeline, computeStreak, dayKey, isFreshStart } from '../../domain/journey';
+import { ACTIONS_TO_REPAIR, addDays, buildTimeline, computeStreak, dayKey, isFreshStart, weekKey } from '../../domain/journey';
+import { can as canUse, currentPlan, trialDaysLeft, type Feature } from '../../domain/entitlements';
+
+/** Paywall desligado no MVP: liga com VITE_PAYWALL_ENABLED=true (docs/etapas/11-paywall.md) */
+const PAYWALL_ENABLED = import.meta.env.VITE_PAYWALL_ENABLED === 'true';
 import { soundEffects } from '../../utils/soundEffects';
 import { clearAll, loadValue, saveValue } from './storage';
 
@@ -79,6 +83,11 @@ interface PersistedState {
   /** Quando cada tarefa do plano foi concluída (linha do tempo) */
   completedAt: Record<string, number>;
   celebratedChapters: number[];
+  /** Fim do onboarding: início do teste de fundador */
+  startedAt?: number;
+  isPremium: boolean;
+  /** Uso dos recursos com limite no grátis */
+  usage: { coachByWeek: Record<string, number>; pivots: number };
   onboardingDone: boolean;
 }
 
@@ -103,6 +112,8 @@ function initialPersisted(): PersistedState {
     checkIns: [],
     completedAt: {},
     celebratedChapters: [],
+    isPremium: false,
+    usage: { coachByWeek: {}, pivots: 0 },
     onboardingDone: false,
   };
 }
@@ -112,7 +123,12 @@ function migrate(raw: unknown): PersistedState | null {
   const data = raw as Partial<PersistedState>;
   if (data.version !== 1) return null;
   const base = initialPersisted();
-  return { ...base, ...data, textOptions: { ...base.textOptions, ...data.textOptions } };
+  return {
+    ...base,
+    ...data,
+    textOptions: { ...base.textOptions, ...data.textOptions },
+    usage: { ...base.usage, ...data.usage },
+  };
 }
 
 /** Soma uma ação ao dia de hoje e, se completar o remendo, remenda o dia de ontem. */
@@ -147,6 +163,8 @@ function useAppState() {
   const [audioElapsedSec, setAudioElapsedSec] = useState(12);
 
   const [isSoundMuted, setIsSoundMuted] = useState(soundEffects.getIsMuted());
+  /** Por que o paywall foi aberto (mostrado na tela de planos) */
+  const [paywallReason, setPaywallReason] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
 
   // Carrega o que estava salvo no aparelho
@@ -237,6 +255,25 @@ function useAppState() {
     completedAt: data.completedAt,
   });
 
+  const now = Date.now();
+  const entitlementCtx = {
+    paywallEnabled: PAYWALL_ENABLED,
+    isPremium: data.isPremium,
+    startedAt: data.startedAt,
+    now,
+    usage: { coachMessagesThisWeek: data.usage.coachByWeek[weekKey(today)] ?? 0, pivots: data.usage.pivots },
+  };
+  const plan = currentPlan(entitlementCtx);
+  const can = (feature: Feature) => canUse(feature, entitlementCtx);
+  /** Se não pode, abre a tela de planos com o motivo e devolve false */
+  const guard = (feature: Feature): boolean => {
+    const e = can(feature);
+    if (e.allowed) return true;
+    setPaywallReason(e.reason ?? null);
+    setScreen('paywall');
+    return false;
+  };
+
   const update = useCallback((patch: Partial<PersistedState>) => setData((d) => ({ ...d, ...patch })), []);
 
   const actions = {
@@ -290,6 +327,8 @@ function useAppState() {
     },
 
     startAnamnese: () => {
+      // Refazer o diagnóstico depois da jornada começar conta como troca de plano
+      if (data.onboardingDone && data.diagnosis && !guard('pivot')) return;
       setSectionIndex(0);
       setQuestionIndex(0);
       setScreen('value_signal');
@@ -321,9 +360,15 @@ function useAppState() {
       }
     },
 
-    completeOnboarding: () => update({ onboardingDone: true }),
+    completeOnboarding: () => setData((d) => ({ ...d, onboardingDone: true, startedAt: d.startedAt ?? Date.now() })),
 
-    saveDiagnosis: (d: Diagnosis) => update({ diagnosis: d, diagnosisAt: Date.now() }),
+    saveDiagnosis: (diag: Diagnosis) =>
+      setData((d) => ({
+        ...d,
+        diagnosis: diag,
+        diagnosisAt: Date.now(),
+        usage: d.onboardingDone && d.diagnosis ? { ...d.usage, pivots: d.usage.pivots + 1 } : d.usage,
+      })),
 
     /** Check-in de 10 segundos: um por dia (refazer substitui) */
     checkIn: (text: string, mood?: CheckIn['mood']) => {
@@ -343,7 +388,10 @@ function useAppState() {
     sealLetter: () =>
       setData((d) => (d.letter ? { ...d, letter: { ...d.letter, sealedAt: Date.now() } } : d)),
     /** O "pivô": troca o plano por uma das alternativas */
-    chooseAlternative: (alt: DiagnosisOption) => update({ diagnosis: applyAlternative(diagnosis, alt, scoredAnswers) }),
+    chooseAlternative: (alt: DiagnosisOption) => {
+      if (!guard('pivot')) return;
+      setData((d) => ({ ...d, diagnosis: applyAlternative(diagnosis, alt, scoredAnswers), usage: { ...d.usage, pivots: d.usage.pivots + 1 } }));
+    },
 
     toggleTaskStatus: (taskId: string) => {
       const next: TaskItem['status'] = (data.taskStatus[taskId] ?? 'pending') === 'completed' ? 'pending' : 'completed';
@@ -423,7 +471,10 @@ function useAppState() {
 
     sendCoachMessage: async (text: string) => {
       if (!text.trim() || isTyping) return;
+      if (!guard('coach_message')) return;
       soundEffects.playSoftTap();
+      const week = weekKey(dayKey(new Date()));
+      setData((d) => ({ ...d, usage: { ...d.usage, coachByWeek: { ...d.usage.coachByWeek, [week]: (d.usage.coachByWeek[week] ?? 0) + 1 } } }));
       const history = data.coachMessages;
       setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'user', text, time: nowTime() }] }));
       setIsTyping(true);
@@ -490,6 +541,11 @@ function useAppState() {
     personalAnchor,
     scoredAnswers,
     streak,
+    plan,
+    can,
+    paywallReason,
+    trialDaysLeft: trialDaysLeft(data.startedAt, now),
+    paywallEnabled: PAYWALL_ENABLED,
     todayCheckIn,
     freshStart,
     timeline,

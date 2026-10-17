@@ -47,6 +47,7 @@ Para testar no celular, acesse `http://<ip-do-seu-computador>:3000` na mesma red
 - `npm run dev`: servidor de desenvolvimento
 - `npm run build`: build de produção em `dist/`
 - `npm run lint`: checagem de tipos (`tsc --noEmit`)
+- `npm test`: testes automáticos das regras de negócio (Vitest)
 
 ## Licença
 

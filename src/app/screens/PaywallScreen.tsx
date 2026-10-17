@@ -1,17 +1,32 @@
 import React from 'react';
-import {
-  CheckCircle2,
-  ArrowLeft,
-} from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { FREE_LIMITS, FOUNDER_TRIAL_DAYS, PRICES } from '../../domain/entitlements';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 
+const PREMIUM_BENEFITS = [
+  'Coach de IA ilimitado para destravar na hora',
+  'Kit de execução completo: modelos de mensagem, roteiro de conversa, calculadora de preço e página de venda',
+  'Trocar de plano quantas vezes precisar',
+  'Micro-áudios guiados e ambiente sonoro em todos os capítulos',
+  'Mais de um projeto ao mesmo tempo e plano em PDF',
+];
+
+const FREE_FOREVER = [
+  'Diagnóstico completo e o roteiro inteiro, com os 3 capítulos',
+  'Tarefas pessoais, check-in, constelação e lembretes',
+  `Coach de IA: ${FREE_LIMITS.coachMessagesPerWeek} mensagens por semana`,
+];
+
+/**
+ * Planos (modelo aprovado em docs/pesquisa/06): o caminho é grátis, a aceleração é paga.
+ * A cobrança real (Google Play Billing) entra na Fase 4/5; até lá não há compra aqui.
+ */
 export const PaywallScreen: React.FC = () => {
-  const { actions } = useApp();
+  const { paywallEnabled, paywallReason, plan, trialDaysLeft, actions } = useApp();
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 select-none bg-white animate-slide-up">
+    <div className="flex-1 flex flex-col justify-between p-6 select-none bg-white animate-slide-up overflow-y-auto">
       <div>
         <button
           onClick={() => {
@@ -19,78 +34,72 @@ export const PaywallScreen: React.FC = () => {
             actions.go('home');
           }}
           className="p-1 -ml-1 text-[#5B615D] hover:text-[#1A1D1B] mb-2 cursor-pointer"
+          aria-label="Voltar"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        <div className="w-12 h-12 rounded-2xl bg-[#E3F2ED] text-[#1F6F5C] flex items-center justify-center text-xl mb-3">
-          🧭
-        </div>
-
-        <h2 className="text-xl font-bold font-display text-[#1A1D1B]">
-          Desbloqueie o roteiro completo
-        </h2>
-        <p className="text-xs text-[#5B615D] mt-1 mb-5">
-          Tudo o que você precisa para ir da validação até a primeira venda.
+        <h2 className="text-xl font-bold font-display text-[#1A1D1B]">Prumo Premium: acelere o caminho</h2>
+        <p className="text-xs text-[#5B615D] mt-1 mb-4">
+          O caminho inteiro é grátis. O Premium dá velocidade, profundidade e companhia.
         </p>
 
-        <div className="space-y-2.5 text-xs text-[#1A1D1B] mb-6">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#3BAA6B] shrink-0" />
-            <span>Todas as fases (Fundação, Marketing e Lançamento)</span>
+        {paywallReason && (
+          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 mb-4">{paywallReason}</div>
+        )}
+
+        {!paywallEnabled && (
+          <div className="p-3 rounded-xl bg-[#E3F2ED] border border-[#1F6F5C]/30 text-xs text-[#1F6F5C] mb-4 leading-relaxed">
+            <strong>Fase de testes:</strong> as assinaturas ainda não estão abertas e tudo está liberado para você.
           </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#3BAA6B] shrink-0" />
-            <span>Coach de IA ilimitado para destravar em tempo real</span>
+        )}
+        {plan === 'founder_trial' && (
+          <div className="p-3 rounded-xl bg-[#E3F2ED] border border-[#1F6F5C]/30 text-xs text-[#1F6F5C] mb-4">
+            Você é fundador: Premium completo por mais <strong>{trialDaysLeft} dias</strong> (teste de {FOUNDER_TRIAL_DAYS} dias).
           </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#3BAA6B] shrink-0" />
-            <span>Relatório semanal de progresso e ajustes de rota</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#3BAA6B] shrink-0" />
-            <span>Exportar tarefas para Notion e PDF</span>
-          </div>
+        )}
+
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#1F6F5C] block mb-2">No Premium</span>
+        <div className="space-y-2 text-xs text-[#1A1D1B] mb-4">
+          {PREMIUM_BENEFITS.map((b) => (
+            <div key={b} className="flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#3BAA6B] shrink-0 mt-0.5" />
+              <span>{b}</span>
+            </div>
+          ))}
         </div>
 
-        {/* Planos */}
-        <div className="space-y-2.5">
-          <div 
-            onClick={() => soundEffects.playSelectOption()}
-            className="p-3.5 rounded-xl border-2 border-[#1F6F5C] bg-[#E3F2ED]/50 flex items-center justify-between cursor-pointer"
-          >
-            <div>
-              <div className="flex items-center gap-1.5">
-                <strong className="text-xs text-[#1A1D1B]">Anual</strong>
-                <span className="text-[10px] bg-[#F2A93B] text-[#1A1D1B] font-bold px-1.5 py-0.2 rounded">Economize 36%</span>
-              </div>
-              <span className="text-[11px] text-[#5B615D]">R$ 299/ano (apenas R$ 24,90/mês)</span>
-            </div>
-            <span className="text-xs font-bold text-[#1F6F5C]">Melhor escolha</span>
-          </div>
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#5B615D] block mb-2">Grátis para sempre</span>
+        <ul className="space-y-1 text-xs text-[#5B615D] mb-5 list-disc pl-5">
+          {FREE_FOREVER.map((b) => (
+            <li key={b}>{b}</li>
+          ))}
+        </ul>
 
-          <div 
-            onClick={() => soundEffects.playSelectOption()}
-            className="p-3.5 rounded-xl border border-[#E6E8E6] bg-white flex items-center justify-between cursor-pointer hover:bg-neutral-50"
-          >
-            <div>
-              <strong className="text-xs text-[#1A1D1B] block">Mensal</strong>
-              <span className="text-[11px] text-[#5B615D]">R$ 39/mês</span>
+        <div className="space-y-2.5">
+          <div className="p-3.5 rounded-xl border-2 border-[#1F6F5C] bg-[#E3F2ED]/50">
+            <div className="flex items-center justify-between">
+              <strong className="text-xs text-[#1A1D1B]">Anual</strong>
+              <span className="text-xs font-bold text-[#1F6F5C]">Melhor escolha</span>
             </div>
+            <span className="text-[11px] text-[#5B615D] block">
+              {PRICES.yearly} ({PRICES.yearlyPerMonth})
+            </span>
+            <span className="text-[10px] text-[#1F6F5C] block mt-0.5">{PRICES.founderDiscount}</span>
+          </div>
+          <div className="p-3.5 rounded-xl border border-[#E6E8E6] bg-white">
+            <strong className="text-xs text-[#1A1D1B] block">Mensal</strong>
+            <span className="text-[11px] text-[#5B615D]">{PRICES.monthly}</span>
           </div>
         </div>
       </div>
 
       <div className="space-y-2 pt-4">
         <button
-          onClick={() => {
-            soundEffects.playCompleteTask();
-            confetti({ particleCount: 50, spread: 80, origin: { y: 0.6 } });
-            actions.go('home');
-          }}
-          className="w-full py-3.5 bg-[#1F6F5C] hover:bg-[#2E8B73] text-white font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer"
+          disabled
+          className="w-full py-3.5 bg-[#1F6F5C] disabled:opacity-50 text-white font-semibold text-sm rounded-xl shadow-md cursor-not-allowed"
         >
-          Assinar Agora (Desbloquear)
+          Assinaturas em breve
         </button>
         <button
           onClick={() => {
@@ -99,7 +108,7 @@ export const PaywallScreen: React.FC = () => {
           }}
           className="w-full py-2 text-xs text-[#5B615D] hover:text-[#1A1D1B] text-center cursor-pointer"
         >
-          Continuar grátis
+          Continuar no grátis
         </button>
       </div>
     </div>

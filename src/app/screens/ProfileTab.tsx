@@ -9,7 +9,13 @@ import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 
 export const ProfileTab: React.FC = () => {
-  const { userName, isSoundMuted, timeline, actions } = useApp();
+  const { userName, isSoundMuted, timeline, plan, trialDaysLeft, actions } = useApp();
+  const planLabel = {
+    open_beta: 'Acesso completo · fase de testes',
+    founder_trial: `Premium de fundador · ${trialDaysLeft} dias restantes`,
+    premium: 'Premium',
+    free: 'Plano grátis',
+  }[plan];
 
   return (
     <div key="tab-profile" className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-tab-fade">
@@ -20,7 +26,7 @@ export const ProfileTab: React.FC = () => {
           </div>
           <div>
             <h3 className="text-base font-bold text-[#1A1D1B]">{userName}</h3>
-            <span className="text-xs text-[#5B615D]">Plano Gratuito</span>
+            <span className="text-xs text-[#5B615D]">{planLabel}</span>
           </div>
         </div>
 
@@ -29,9 +35,9 @@ export const ProfileTab: React.FC = () => {
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#F2A93B] block mb-1">
             Prumo Premium
           </span>
-          <h4 className="text-sm font-bold">Desbloqueie o Roteiro Completo</h4>
+          <h4 className="text-sm font-bold">Acelere o seu caminho</h4>
           <p className="text-xs text-white/80 mt-1 mb-3">
-            Acesso a todas as fases de Marketing, Lançamento e Coach de IA ilimitado.
+            Coach ilimitado, kit de execução completo e áudios guiados. O roteiro continua grátis.
           </p>
           <button
             onClick={() => {
@@ -99,7 +105,7 @@ export const ProfileTab: React.FC = () => {
             }}
             className="p-3 bg-white border border-[#E6E8E6] rounded-xl flex items-center justify-between cursor-pointer hover:bg-neutral-50"
           >
-            <span>Refazer Anamnese (1x no Free)</span>
+            <span>Refazer a anamnese</span>
             <ChevronRight className="w-4 h-4 text-[#5B615D]" />
           </div>
           <div 

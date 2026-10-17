@@ -42,7 +42,9 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [x] Frente 6: concorrentes e freemium ("caminho grátis, aceleração paga")
 - [x] Frente 7: LGPD e políticas da Play Store (checklist jurídico)
 
-### Fase 1: Núcleo funcional
+### Fase 1: Núcleo funcional ✅
+Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
+
 - [x] Persistência local (IndexedDB) + app dividido em telas ([etapa 04](etapas/04-telas-e-persistencia.md))
 - [x] Remover dados de exemplo fixos ([etapa 05](etapas/05-sem-dados-de-exemplo.md))
 - [x] Motor de diagnóstico + hipótese/teste/sinal + 2 alternativas + pivô ([etapa 06](etapas/06-motor-de-diagnostico.md))
@@ -51,13 +53,14 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [x] Tarefas pessoais (criar, editar, apagar, reordenar) + "quando vou fazer" ([etapa 08](etapas/08-tarefas.md))
 - [x] Carta do eu futuro em duas vias, escrita pela pessoa ([etapa 09](etapas/09-carta-em-duas-vias.md))
 - [x] Check-in diário, sequência gentil (descanso + remendo), acolhimento, linha do tempo e fim de capítulo ([etapa 10](etapas/10-ritmo-diario.md))
-- [ ] Estrutura de paywall com feature flags (desligada)
+- [x] Estrutura de paywall com chave, desligada ([etapa 11](etapas/11-paywall.md))
 
 ### Fase 2: Backend no ar
 - [x] Camada de IA genérica (etapa 01)
 - [ ] Deploy gratuito (Cloudflare / Vercel / Render)
 - [ ] Limite de uso por usuário (rate limit) e proteção da chave
 - [ ] Logs de erro do coach visíveis (o fallback não pode esconder falhas)
+- [ ] Levar os testes ponta a ponta (Playwright) para o repositório + CI no GitHub Actions
 - [ ] Botão "denunciar resposta" no coach (política de IA generativa da Play)
 - [ ] Protocolo de crise no coach (CVV 188) + aviso "não é terapia"
 - [ ] Consentimento destacado antes do 1º uso do coach; enviar só o contexto mínimo
