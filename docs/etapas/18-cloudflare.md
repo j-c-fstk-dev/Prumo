@@ -61,7 +61,7 @@ npx wrangler@4 secret put LLM_BASE_URL   # só para "openai" (Z.ai, OpenRouter..
 | `LLM_PROVIDER` | `openai` (= formato compatível com OpenAI) |
 | `LLM_BASE_URL` | `https://api.z.ai/api/paas/v4` |
 | `LLM_MODEL` | `glm-4.5-flash` (gratuito; `glm-5.3-flash` exige saldo: erro 1113) |
-| `LLM_EXTRA_BODY` | `{"thinking":{"type":"disabled"}}` (opcional) |
+| `LLM_EXTRA_BODY` | `{"thinking":{"type":"disabled"}}` (confirmado: 179 → 12 tokens na mesma resposta) |
 | `LLM_API_KEY` | a chave da Z.ai |
 
 O teste mostrou que o `glm-4.5-flash` "pensa" antes de responder (179 tokens para um "Olá"). Para isso
