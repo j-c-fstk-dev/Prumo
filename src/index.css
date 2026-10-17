@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary-600: #1F6F5C;
+    --primary-500: #2E8B73;
+    --primary-100: #E3F2ED;
+    --accent-500: #F2A93B;
+    --neutral-900: #1A1D1B;
+    --neutral-600: #5B615D;
+    --neutral-200: #E6E8E6;
+    --neutral-50: #F7F9F8;
+    --success: #3BAA6B;
+    --warning: #E0A800;
+    --danger: #D64545;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #1A1D1B;
+    background-color: #F7F9F8;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.font-display {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+/* ============================================================== */
+/* TRANSIÇÕES SUAVES & LENTAS (CALM MOTION SYSTEM / FABULOUS INSP) */
+/* ============================================================== */
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes letterUnroll {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.94);
+  }
+  60% {
+    opacity: 0.9;
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(31, 111, 92, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(31, 111, 92, 0);
+  }
+}
+
+/* Classes de Animação com cadência lenta, fluida e serena */
+.animate-fadeIn {
+  animation: fadeIn 550ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 650ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 550ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-letter-unroll {
+  animation: letterUnroll 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-tab-fade {
+  animation: fadeIn 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.pulse-subtle {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+/* Transições utilitárias lentas e calmantes */
+.transition-calm {
+  transition: all 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.transition-slow {
+  transition: all 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
