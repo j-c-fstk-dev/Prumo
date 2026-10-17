@@ -17,8 +17,16 @@ export const HomeTab: React.FC = () => {
   const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, actions } = useApp();
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
-  const fundacaoTasks = tasks.filter(t => t.phaseId === 'fundacao');
-  const fundacaoPercent = Math.round((fundacaoTasks.filter(t => t.status === 'completed').length / fundacaoTasks.length) * 100);
+  // Progresso real de cada capítulo
+  const CHAPTERS = [
+    { id: 1, label: 'Cap. 1: Sua Promessa', dot: 'bg-[#1F6F5C]' },
+    { id: 2, label: 'Cap. 2: Primeiro Contato', dot: 'bg-[#F2A93B]' },
+    { id: 3, label: 'Cap. 3: Primeiro Retorno', dot: 'bg-[#7A5AF8]' },
+  ].map((c) => {
+    const inChapter = tasks.filter((t) => t.chapterId === c.id);
+    const percent = inChapter.length ? Math.round((inChapter.filter((t) => t.status === 'completed').length / inChapter.length) * 100) : 0;
+    return { ...c, percent, current: c.id === nextStepTask.chapterId };
+  });
 
   return (
     <div key="tab-home" className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-tab-fade">
@@ -30,7 +38,7 @@ export const HomeTab: React.FC = () => {
               Olá, {userName} 👋
             </h2>
             <p className="text-xs text-[#5B615D]">
-              Capítulo 1: Onde você encontra sua promessa
+              {nextStepTask.chapterTitle}
             </p>
           </div>
           <div className="w-10 h-10 rounded-full bg-[#E3F2ED] flex items-center justify-center text-[#1F6F5C]">
@@ -171,24 +179,16 @@ export const HomeTab: React.FC = () => {
 
           {/* Capítulos Narrativos */}
           <div className="space-y-1.5 text-[11px]">
-            <div className="flex items-center justify-between text-[#1A1D1B] font-medium">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#1F6F5C]" /> Cap. 1: Sua Promessa
-              </span>
-              <span className="text-[#1F6F5C] font-semibold">{fundacaoPercent}%</span>
-            </div>
-            <div className="flex items-center justify-between text-[#5B615D]">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#F2A93B]" /> Cap. 2: Primeiro Contato
-              </span>
-              <span>0% (Próximo)</span>
-            </div>
-            <div className="flex items-center justify-between text-[#5B615D]">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#7A5AF8]" /> Cap. 3: Primeiro Retorno
-              </span>
-              <span>0% (Futuro)</span>
-            </div>
+            {CHAPTERS.map((c) => (
+              <div key={c.id} className={`flex items-center justify-between ${c.current ? 'text-[#1A1D1B] font-medium' : 'text-[#5B615D]'}`}>
+                <span className="flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full ${c.dot}`} /> {c.label}
+                </span>
+                <span className={c.current ? 'text-[#1F6F5C] font-semibold' : ''}>
+                  {c.percent}%{c.percent === 100 ? ' ✦' : c.current ? ' (agora)' : ''}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
