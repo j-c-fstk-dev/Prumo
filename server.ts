@@ -3,7 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { GoogleGenAI } from '@google/genai';
+import { getLlmConfig, generateReply, type ChatMessage } from './server/llm.ts';
 
 dotenv.config();
 
@@ -39,7 +39,10 @@ async function startServer() {
   const app = express();
   app.use(express.json());
 
-  // API endpoint para o Coach Prumo com IA Real (Gemini 3.8 Flash)
+  const llm = getLlmConfig();
+  console.log(llm ? `Coach IA: ${llm.provider} (${llm.model})` : 'Coach IA: modo offline (sem LLM configurado)');
+
+  // API endpoint do Coach Prumo (provedor de IA configurável, ver server/llm.ts)
   app.post('/api/coach/chat', async (req, res) => {
     try {
       const { message, history, userContext } = req.body;
@@ -48,13 +51,10 @@ async function startServer() {
         return res.status(400).json({ error: 'Mensagem inválida ou ausente.' });
       }
 
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
+      if (!llm) {
         const fallback = generateFallbackReply(message, userContext);
         return res.json({ reply: fallback, isLiveAI: false });
       }
-
-      const ai = new GoogleGenAI({ apiKey });
 
       const systemPrompt = `Você é o Coach Prumo, o mentor inteligente do aplicativo Prumo.
 Seu papel é guiar criadores e empreendedores a tirarem suas ideias do papel com clareza, serenidade e foco no menor esforço viável.
@@ -79,38 +79,31 @@ DIRETRIZES FUNDAMENTAIS DO COACH PRUMO:
 4. Conexão Pessoal: Chame o usuário pelo nome (${userContext?.userName || 'Criador'}) com carinho natural. Quando oportuno, lembre-o com delicadeza da sua promessa pessoal ("${userContext?.personalAnchor || ''}") ou conecte com ${userContext?.diagnosis?.product || 'seu produto'}.
 5. Idioma: Português do Brasil, fluente, acolhedor e natural.`;
 
-      const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+      const messages: ChatMessage[] = [];
 
       // Histórico recente da conversa
-      if (Array.isArray(history) && history.length > 0) {
-        const recentHistory = history.slice(-6);
-        for (const h of recentHistory) {
-          contents.push({
-            role: h.sender === 'user' ? 'user' : 'model',
-            parts: [{ text: h.text }],
-          });
+      if (Array.isArray(history)) {
+        for (const h of history.slice(-6)) {
+          if (typeof h?.text !== 'string') continue;
+          messages.push({ role: h.sender === 'user' ? 'user' : 'assistant', content: h.text });
         }
       }
+      // Os provedores exigem que a conversa comece pelo usuário
+      while (messages.length && messages[0].role === 'assistant') messages.shift();
 
-      // Mensagem atual
-      contents.push({
-        role: 'user',
-        parts: [{ text: message }],
+      messages.push({ role: 'user', content: message });
+
+      const reply = await generateReply(llm, {
+        system: systemPrompt,
+        messages,
+        temperature: 0.7,
+        maxTokens: 1024,
       });
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: contents,
-        config: {
-          systemInstruction: systemPrompt,
-          temperature: 0.7,
-        },
-      });
-
-      const replyText = response.text || 'Estou aqui com você. Como podemos simplificar esse próximo passo em apenas 15 minutos?';
+      const replyText = reply || 'Estou aqui com você. Como podemos simplificar esse próximo passo em apenas 15 minutos?';
       return res.json({ reply: replyText, isLiveAI: true });
     } catch (error: any) {
-      console.error('Erro na chamada do Gemini Coach:', error);
+      console.error('Erro na chamada do Coach IA:', error);
       const fallback = generateFallbackReply(req.body?.message || '', req.body?.userContext);
       return res.json({ reply: fallback, isLiveAI: false });
     }
@@ -118,7 +111,7 @@ DIRETRIZES FUNDAMENTAIS DO COACH PRUMO:
 
   // Health check
   app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok', service: 'Prumo Coach API', model: 'gemini-3.8-flash' });
+    res.json({ status: 'ok', service: 'Prumo Coach API', ai: llm ? `${llm.provider}/${llm.model}` : 'offline' });
   });
 
   if (!isProd) {

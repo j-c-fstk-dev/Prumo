@@ -3,7 +3,7 @@
 > **Em 15 minutos, saiba o que criar, para quem e como dar o primeiro passo.**
 > Um app mobile que une acolhimento emocional com a objetividade do Menor Esforço Viável (MEV).
 
-**Status:** MVP em construção (PWA). Veja o plano em [`docs/`](docs/).
+**Status:** MVP em construção (PWA). Plano em [`docs/ROADMAP.md`](docs/ROADMAP.md), pesquisa em [`docs/pesquisa/`](docs/pesquisa/).
 
 ## O que é
 
@@ -19,7 +19,7 @@ com o "eu futuro" de 90 dias.
 | App (PWA) | React 19, TypeScript, Tailwind CSS v4, Vite |
 | Áudio de interface | Web Audio API (síntese em tempo real, sem arquivos) |
 | Backend | Node.js + Express (`server.ts`) |
-| IA | Google Gemini (`@google/genai`) |
+| IA | Provedor configurável: Gemini, Claude ou API compatível com OpenAI (`server/llm.ts`) |
 | Android | Planejado: empacotamento do PWA (Capacitor ou TWA) |
 
 ## Rodando localmente
@@ -28,11 +28,11 @@ Pré-requisito: Node.js 20+.
 
 ```bash
 npm install
-cp .env.example .env   # opcional: coloque sua GEMINI_API_KEY
+cp .env.example .env   # opcional: configure o provedor de IA
 npm run dev            # http://localhost:3000
 ```
 
-Sem `GEMINI_API_KEY`, o coach responde em modo offline com mensagens prontas.
+Sem provedor de IA configurado, o coach responde em modo offline com mensagens prontas.
 
 Para testar no celular, acesse `http://<ip-do-seu-computador>:3000` na mesma rede Wi-Fi.
 

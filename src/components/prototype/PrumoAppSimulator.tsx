@@ -1706,7 +1706,7 @@ export const PrumoAppSimulator: React.FC = () => {
                     <div className="flex items-center gap-1.5">
                       <h3 className="text-xs font-bold text-[#1A1D1B]">Coach Prumo</h3>
                       <span className="text-[9px] bg-emerald-100 text-[#1F6F5C] px-1.5 py-0.2 rounded font-semibold flex items-center gap-0.5">
-                        <Sparkles className="w-2.5 h-2.5" /> Gemini 3.8
+                        <Sparkles className="w-2.5 h-2.5" /> IA
                       </span>
                     </div>
                     <span className="text-[10px] text-[#3BAA6B] flex items-center gap-1">
