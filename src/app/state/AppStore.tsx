@@ -59,6 +59,9 @@ export interface CoachMessage {
   sender: 'user' | 'coach';
   text: string;
   time: string;
+  /** live = IA respondeu · offline = resposta pronta (IA indisponível) · crisis = protocolo de crise */
+  mode?: 'live' | 'offline' | 'crisis';
+  reported?: boolean;
 }
 
 /** O que fica salvo no aparelho. Mudou o formato? Suba a versão e migre em `migrate`. */
@@ -94,6 +97,8 @@ interface PersistedState {
   usage: { coachByWeek: Record<string, number>; pivots: number };
   /** Modelos do kit já abertos em cada capítulo (limite do grátis: 1 por capítulo) */
   kitUsage: Record<number, KitId[]>;
+  /** Consentimento antes do 1º uso do coach (o que é enviado e para onde: docs/pesquisa/07) */
+  coachConsentAt?: number;
   theme: ThemePref;
   onboardingDone: boolean;
 }
@@ -186,9 +191,11 @@ function useAppState() {
       if (cancelled) return;
       const saved = migrate(raw);
       if (saved) {
+        loadedData.current = saved;
         setData(saved);
         if (saved.onboardingDone) setScreen('home');
       }
+      if (!saved) loadedData.current = data;
       setHydrated(true);
     });
     return () => {
@@ -196,12 +203,14 @@ function useAppState() {
     };
   }, []);
 
-  // Salva a cada mudança (com um pequeno atraso para agrupar digitação)
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Salva imediatamente a cada mudança. Antes havia um atraso de 300 ms para agrupar a digitação,
+  // mas fechar o app nesse intervalo perdia a última ação (achado pelos testes ponta a ponta).
+  // As gravações no IndexedDB acontecem em ordem, então a mais recente sempre prevalece.
+  // O estado que acabou de ser carregado não precisa ser regravado (evita sobrescrever outra aba)
+  const loadedData = useRef<PersistedState | null>(null);
   useEffect(() => {
-    if (!hydrated) return;
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => saveValue(STORAGE_KEY, data), 300);
+    if (!hydrated || data === loadedData.current) return;
+    saveValue(STORAGE_KEY, data);
   }, [data, hydrated]);
 
   // Aplica o tema na página (o CSS troca as cores pelos tokens)
@@ -505,6 +514,26 @@ function useAppState() {
       return true;
     },
 
+    giveCoachConsent: () => {
+      soundEffects.playSelectOption();
+      setData((d) => ({ ...d, coachConsentAt: Date.now() }));
+    },
+    /** Denúncia de resposta da IA: vai para o log do servidor (só a resposta e o motivo) */
+    reportCoachMessage: async (index: number, reason: 'ofensiva' | 'perigosa' | 'errada' | 'outro') => {
+      const msg = data.coachMessages[index];
+      if (!msg || msg.sender !== 'coach') return;
+      setData((d) => ({ ...d, coachMessages: d.coachMessages.map((m, i) => (i === index ? { ...m, reported: true } : m)) }));
+      try {
+        await fetch('/api/coach/report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reply: msg.text, reason }),
+        });
+      } catch (err) {
+        console.error('Falha ao enviar denúncia:', err);
+      }
+    },
+
     toggleSound: () => setIsSoundMuted(soundEffects.toggleMute()),
     toggleTapSounds: () => setTapSounds(soundEffects.toggleTapSounds()),
     /** Automático → Claro → Noite → Automático */
@@ -526,6 +555,7 @@ function useAppState() {
       // A tarefa aberta por último, se ainda estiver pendente; senão, o próximo passo
       const task = selectedTask.status !== 'completed' ? selectedTask : nextStepTask;
       let reply: string;
+      let mode: CoachMessage['mode'] = 'offline';
       try {
         const response = await fetch('/api/coach/chat', {
           method: 'POST',
@@ -561,6 +591,7 @@ function useAppState() {
         });
         if (!response.ok) throw new Error(`HTTP error ${response.status}`);
         const json = await response.json();
+        mode = json.mode ?? (json.isLiveAI ? 'live' : 'offline');
         reply =
           json.reply ||
           `Estou com você, ${data.userName}. Como podemos simplificar esse próximo passo em uma micro-tarefa de 15 minutos?`;
@@ -569,7 +600,7 @@ function useAppState() {
         reply = `Boa pergunta, ${data.userName}! Para destravar em "${task.title}", o segredo é focar no Menor Esforço Viável (MEV). Monte um roteiro de 3 tópicos e valide com 1 ou 2 pessoas conhecidas. 15 minutos de foco agora é tudo o que você precisa para dar esse passo.`;
       }
       soundEffects.playTransition();
-      setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'coach', text: reply, time: nowTime() }] }));
+      setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'coach', text: reply, time: nowTime(), mode }] }));
       setIsTyping(false);
     },
 

@@ -57,13 +57,13 @@ Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
 
 ### Fase 2: Backend no ar
 - [x] Camada de IA genérica (etapa 01)
-- [ ] Deploy gratuito (Cloudflare / Vercel / Render)
+- [ ] Deploy na Cloudflare (Worker + arquivos estáticos)
 - [ ] Limite de uso por usuário (rate limit) e proteção da chave
-- [ ] Logs de erro do coach visíveis (o fallback não pode esconder falhas)
-- [ ] Levar os testes ponta a ponta (Playwright) para o repositório + CI no GitHub Actions
-- [ ] Botão "denunciar resposta" no coach (política de IA generativa da Play)
-- [ ] Protocolo de crise no coach (CVV 188) + aviso "não é terapia"
-- [ ] Consentimento destacado antes do 1º uso do coach; enviar só o contexto mínimo
+- [x] Status honesto do coach + erros no log do servidor ([etapa 17](etapas/17-seguranca-do-coach-e-ci.md))
+- [x] Testes ponta a ponta no repositório + CI no GitHub Actions ([etapa 17](etapas/17-seguranca-do-coach-e-ci.md))
+- [x] Botão "denunciar resposta" no coach ([etapa 17](etapas/17-seguranca-do-coach-e-ci.md))
+- [x] Protocolo de crise no servidor (CVV 188, SAMU 192) + aviso "não é terapia" ([etapa 17](etapas/17-seguranca-do-coach-e-ci.md))
+- [x] Consentimento antes do 1º uso do coach; contexto mínimo e limites de tamanho ([etapa 17](etapas/17-seguranca-do-coach-e-ci.md))
 
 ### Fase 3: Alma e conteúdo
 - [x] Splash da bússola + constelação de progresso ([etapa 03](etapas/03-bussola-e-constelacao.md))

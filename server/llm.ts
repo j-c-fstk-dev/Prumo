@@ -41,8 +41,13 @@ const DEFAULT_MODELS: Record<ProviderName, string> = {
 
 const PLACEHOLDER_KEYS = new Set(['', 'MY_GEMINI_API_KEY', 'MY_LLM_API_KEY']);
 
-export function getLlmConfig(): LlmConfig | null {
-  const env = process.env;
+export type LlmEnv = Partial<Record<'LLM_PROVIDER' | 'LLM_API_KEY' | 'LLM_MODEL' | 'LLM_BASE_URL' | 'GEMINI_API_KEY', string>>;
+
+/**
+ * Lê a configuração das variáveis de ambiente. No Node vem de process.env; no Cloudflare Worker,
+ * do objeto `env` recebido pela requisição.
+ */
+export function getLlmConfig(env: LlmEnv = (globalThis as { process?: { env: LlmEnv } }).process?.env ?? {}): LlmConfig | null {
   let provider = env.LLM_PROVIDER?.trim().toLowerCase() as ProviderName | undefined;
   let apiKey = env.LLM_API_KEY?.trim() ?? '';
 
