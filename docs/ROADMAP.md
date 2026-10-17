@@ -36,7 +36,7 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [x] Frente 2: hábitos e engajamento
 - [x] Frente 3: cores e tipografia (paleta "Pergaminho & Noite"; texto do app pequeno demais)
 - [x] Frente 4: sons e movimento
-- [ ] Frente 5: citações com fonte
+- [x] Frente 5: citações com fonte (`src/data/citacoes.ts`)
 - [ ] Frente 6: concorrentes e freemium
 - [ ] Frente 7: LGPD e políticas da Play Store
 

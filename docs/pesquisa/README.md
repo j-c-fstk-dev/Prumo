@@ -23,7 +23,7 @@ foi conferido fica marcado como **[a verificar]**.
 | 2 | [Hábitos e engajamento diário](02-habitos-e-engajamento.md) | ✅ v1 |
 | 3 | [Cores e tipografia](03-cores-e-tipografia.md) | ✅ v1 |
 | 4 | [Sons e movimento](04-sons-e-movimento.md) | ✅ v1 |
-| 5 | Citações com fonte verificada | ⏳ |
+| 5 | [Citações com fonte verificada](05-citacoes.md) | ✅ v1 |
 | 6 | Concorrentes e modelo freemium | ⏳ |
 | 7 | LGPD e políticas da Play Store | ⏳ |
 | — | "Mapa humano" (astrologia/numerologia opcional) | 💭 backlog |
