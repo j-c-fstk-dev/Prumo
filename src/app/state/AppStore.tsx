@@ -523,7 +523,13 @@ function useAppState() {
                 obstacle: diagnosis.obstacle,
                 planB: diagnosis.planB,
               },
-              currentTask: { title: task.title, whatToDo: task.whatToDo, chapterTitle: task.chapterTitle },
+              currentTask: {
+                title: task.title,
+                whatToDo: task.whatToDo,
+                chapterTitle: task.chapterTitle,
+                // Camada 3: só os códigos; o servidor monta a lista a partir do mesmo catálogo curado
+                toolCategories: task.toolCategories ?? [],
+              },
             },
           }),
         });

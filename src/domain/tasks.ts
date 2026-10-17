@@ -5,6 +5,7 @@
 
 import { INITIAL_TASKS, TaskItem } from '../data/prumoData';
 import type { ProductId } from './diagnosis';
+import type { ToolCategoryId } from '../data/ferramentas';
 
 type TaskOverride = Partial<Pick<TaskItem, 'title' | 'description' | 'whatToDo' | 'howToKnowItIsGood' | 'durationMinutes'>>;
 
@@ -35,7 +36,7 @@ const MINIMUM_VERSION: Record<ProductId, TaskOverride> = {
     title: 'Montar o esboço do seu guia + modelo',
     description: 'O menor material que alguém consegue usar sozinho para resolver 1 problema.',
     whatToDo:
-      'Escreva o sumário em até 7 tópicos e monte 1 página de exemplo (checklist, planilha ou modelo no Notion ou no Canva).',
+      'Escreva o sumário em até 7 tópicos e monte 1 página de exemplo (checklist, planilha ou modelo num editor de documentos ou de design).',
     howToKnowItIsGood: [
       'Dá para ser usado e aplicado em menos de 1 dia',
       'Resolve 1 problema de ponta a ponta',
@@ -55,6 +56,24 @@ const MINIMUM_VERSION: Record<ProductId, TaskOverride> = {
   },
 };
 
+/** Ferramentas por tarefa (camada 1: o motor sugere categorias, nunca marcas) */
+const BASE_TOOLS: Record<string, ToolCategoryId[]> = {
+  t1: ['ia_texto'],
+  t3: ['mensagens', 'formulario'],
+  t4: ['pagamento'],
+  t5: ['design', 'ia_texto'],
+  t6: ['mensagens', 'pagamento'],
+  t7: ['formulario', 'mensagens'],
+};
+
+/** t2 depende do formato do produto */
+const MINIMUM_VERSION_TOOLS: Record<ProductId, ToolCategoryId[]> = {
+  servico: ['documentos', 'ia_texto'],
+  sessao: ['agenda', 'videochamada', 'documentos'],
+  guia: ['documentos', 'design', 'ia_texto'],
+  minicurso: ['gravacao', 'ia_texto', 'design'],
+};
+
 /** t4: preço de teste (referência inicial, não regra) */
 const TEST_PRICE: Record<ProductId, string> = {
   servico: 'R$ 50 a R$ 150 por entrega de teste',
@@ -72,18 +91,18 @@ export interface PlanInput {
 export function buildPlanTasks(plan: PlanInput | null): TaskItem[] {
   return INITIAL_TASKS.map((base) => {
     // No modelo aprovado o caminho inteiro é grátis (docs/pesquisa/06): nenhum capítulo trancado
-    const task: TaskItem = { ...base, isLocked: false };
+    const task: TaskItem = { ...base, isLocked: false, toolCategories: BASE_TOOLS[base.id] ?? [] };
     if (!plan) return task;
 
     switch (task.id) {
       case 't2':
-        return { ...task, ...MINIMUM_VERSION[plan.productId] };
+        return { ...task, ...MINIMUM_VERSION[plan.productId], toolCategories: MINIMUM_VERSION_TOOLS[plan.productId] };
       case 't4':
         return {
           ...task,
           whatToDo:
             `Defina o preço de teste (referência inicial: ${TEST_PRICE[plan.productId]}). ` +
-            'Crie uma conta gratuita em uma plataforma de pagamento (ex.: Kiwify, Hotmart ou Asaas) ou combine Pix direto, e tenha o link pronto antes das conversas.',
+            'Escolha como vai receber (o Pix do seu banco já basta no teste) e tenha isso pronto antes das conversas.',
         };
       case 't5':
         if (plan.channel.includes('Instagram')) return task;
@@ -94,6 +113,7 @@ export function buildPlanTasks(plan: PlanInput | null): TaskItem[] {
           whatToDo:
             'Encontre 2 grupos ou comunidades do seu tema (WhatsApp, Facebook, Reddit ou fóruns) e responda 3 dúvidas de forma útil, sem vender nada.',
           howToKnowItIsGood: ['Pelo menos 1 pessoa agradeceu ou puxou conversa com você'],
+          toolCategories: ['mensagens', 'ia_texto'],
         };
       case 't6':
         return {

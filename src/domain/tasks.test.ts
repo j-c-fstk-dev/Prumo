@@ -37,3 +37,43 @@ describe('buildPlanTasks', () => {
     expect(t6.whatToDo).toContain('Ofereça para 5 pessoas.');
   });
 });
+
+describe('ferramentas por tarefa', () => {
+  const ALL = ['servico', 'sessao', 'guia', 'minicurso'] as const;
+
+  it('toda categoria sugerida existe no catálogo e tem exemplo', async () => {
+    const { TOOL_CATEGORIES } = await import('../data/ferramentas');
+    for (const p of ALL) {
+      for (const t of buildPlanTasks(plan(p))) {
+        for (const c of t.toolCategories ?? []) {
+          expect(TOOL_CATEGORIES[c], `${t.id}/${c}`).toBeDefined();
+          expect(TOOL_CATEGORIES[c].examples.length).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
+  it('a versão mínima sugere ferramentas do formato', () => {
+    const tools = (p: (typeof ALL)[number]) => buildPlanTasks(plan(p)).find((t) => t.id === 't2')!.toolCategories;
+    expect(tools('sessao')).toContain('agenda');
+    expect(tools('minicurso')).toContain('gravacao');
+    expect(tools('guia')).toContain('documentos');
+  });
+
+  it('o catálogo não afirma preço nem plano (isso muda e fica por conta do site)', async () => {
+    const { TOOL_CATEGORIES } = await import('../data/ferramentas');
+    // Só os textos que nós escrevemos (nomes de marca como "Mercado Pago" ficam de fora)
+    const text = Object.values(TOOL_CATEGORIES)
+      .map((c) => `${c.label} ${c.description} ${c.tip}`)
+      .join(' ')
+      .toLowerCase();
+    expect(text).not.toMatch(/r\$|gr[aá]tis|gratuit|free|\bpago\b|plano pro|premium|\/m[eê]s|por m[eê]s/);
+  });
+
+  it('links de exemplo usam https', async () => {
+    const { TOOL_CATEGORIES } = await import('../data/ferramentas');
+    for (const c of Object.values(TOOL_CATEGORIES)) {
+      for (const e of c.examples) if (e.url) expect(e.url).toMatch(/^https:\/\//);
+    }
+  });
+});

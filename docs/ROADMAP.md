@@ -71,7 +71,7 @@ Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
 - [ ] Alvos de toque 48 px + duas velocidades de animação
 - [ ] Sons com ataque suave e só em momentos com significado (frente 4)
 - [ ] Citações nas telas e na rotação diária (frente 5)
-- [ ] Ferramentas complementares por categoria (proposta em discussão)
+- [x] Ferramentas complementares em 3 camadas ([etapa 14](etapas/14-ferramentas.md)); **revisão trimestral** da caixa curada
 - [ ] Mensagens autocompassivas de retorno; convites de recomeço em datas-marco
 - [ ] Áudios reais nos micro-áudios
 

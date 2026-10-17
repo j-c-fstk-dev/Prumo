@@ -13,6 +13,7 @@ import {
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { WhenPicker } from '../components/WhenPicker';
+import { ToolSuggestions } from '../components/ToolSuggestions';
 
 export const TaskDetailScreen: React.FC = () => {
   const { selectedTask, reflections, activeAudioTaskId, isPlayingAudio, audioElapsedSec, actions } = useApp();
@@ -197,10 +198,15 @@ export const TaskDetailScreen: React.FC = () => {
           </ul>
         </div>
 
+        {/* Ferramentas por categoria + exemplos curados, sem preços (docs/etapas/14) */}
+
+        <ToolSuggestions categories={selectedTask.toolCategories} />
+
+
         {/* Recursos de apoio */}
         {selectedTask.resources && selectedTask.resources.length > 0 && (
           <div className="p-3.5 rounded-xl bg-surface border border-line">
-            <strong className="text-sm text-ink block mb-2">📎 Recursos de apoio:</strong>
+            <strong className="text-sm text-ink block mb-2">📎 Recursos de apoio <span className="font-normal text-muted">(em breve no kit de execução)</span></strong>
             <div className="space-y-1.5">
               {selectedTask.resources.map((res, idx) => (
                 <div key={idx} className="flex items-center justify-between text-sm text-primary bg-surface-2 p-2 rounded-lg">

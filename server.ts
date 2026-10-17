@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { getLlmConfig, generateReply, type ChatMessage } from './server/llm.ts';
+import { TOOL_CATEGORIES, type ToolCategoryId } from './src/data/ferramentas.ts';
 
 dotenv.config();
 
@@ -11,6 +12,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const isProd = process.env.NODE_ENV === 'production';
 const PORT = parseInt(process.env.PORT || '3000', 10);
+
+/**
+ * Caixa de ferramentas da tarefa atual. O app manda só códigos de categoria; o texto vem do
+ * catálogo curado do próprio servidor, então nada digitado pelo cliente entra no prompt por aqui.
+ */
+function formatTools(raw: unknown): string {
+  if (!Array.isArray(raw)) return 'nenhuma';
+  const lines = raw
+    .filter((id): id is ToolCategoryId => typeof id === 'string' && id in TOOL_CATEGORIES)
+    .slice(0, 6)
+    .map((id) => {
+      const c = TOOL_CATEGORIES[id];
+      return `- ${c.label} (exemplos: ${c.examples.map((e) => e.name).join(', ')}). Dica: ${c.tip}`;
+    });
+  return lines.join('\n') || 'nenhuma';
+}
 
 function generateFallbackReply(message: string, userContext: any): string {
   const name = userContext?.userName || 'Criador';
@@ -74,13 +91,17 @@ DADOS REAIS DO USUÁRIO ATUAL:
 - Tarefa Atual no Roteiro: ${userContext?.currentTask?.title || 'Definir proposta de valor'}
 - O que fazer na tarefa atual: ${userContext?.currentTask?.whatToDo || ''}
 
+CAIXA DE FERRAMENTAS DA TAREFA ATUAL (lista curada pelo app):
+${formatTools(userContext?.currentTask?.toolCategories)}
+
 DIRETRIZES FUNDAMENTAIS DO COACH PRUMO:
 1. Tom de voz: Mentoria acolhedora, serena, humana e prática (inspirada na profundidade emocional do Fabulous e no pragmatismo do método Prumo). Nunca use linguagem agressiva de marketing agressivo ou fórmulas mágicas.
 2. Concisão e Calma: Responda em no máximo 2 a 3 parágrafos curtos ou bullet points fáceis de ler na tela do celular. Pessoas com sobrecarga mental precisam de clareza imediata e tranquilidade.
 3. Menor Esforço Viável (MEV): Sempre proponha uma micro-ação que possa ser feita em 15 minutos hoje mesmo para destravar a pessoa.
 4. Conexão Pessoal: Chame o usuário pelo nome (${userContext?.userName || 'Criador'}) com carinho natural. Quando oportuno, lembre-o com delicadeza da sua promessa pessoal ("${userContext?.personalAnchor || ''}") ou conecte com ${userContext?.diagnosis?.product || 'seu produto'}.
 5. Idioma: Português do Brasil, fluente, acolhedor e natural.
-6. Obstáculo: se a pessoa disser que travou, lembre com gentileza do plano B que ela mesma combinou antes de sugerir algo novo.`;
+6. Obstáculo: se a pessoa disser que travou, lembre com gentileza do plano B que ela mesma combinou antes de sugerir algo novo.
+7. Ferramentas: recomende primeiro o TIPO de ferramenta e, se ajudar, no máximo 2 exemplos da caixa de ferramentas acima. NUNCA afirme preços, planos gratuitos, limites ou condições de uso: isso muda o tempo todo e você pode estar desatualizado; diga para conferir no site da ferramenta. Se a pessoa perguntar por outra ferramenta, fale de forma geral e deixe claro que ela deve confirmar as condições atuais. Para IA, oriente a usar como rascunho e revisar com a própria voz, sem colar dados pessoais de clientes.`;
 
       const messages: ChatMessage[] = [];
 

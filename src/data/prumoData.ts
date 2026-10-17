@@ -338,7 +338,7 @@ export interface DiagnosisProfile {
 export const DEFAULT_DIAGNOSIS: DiagnosisProfile = {
   niche: 'Produtividade e Rotina para Freelancers',
   nicheDescription: 'Ajudar pessoas que trabalham por conta própria a organizarem seu tempo e entregas sem esgotamento.',
-  product: 'Mini-curso prático + Template Notion',
+  product: 'Mini-curso prático + modelo pronto',
   productDescription: 'Um material digital gravado em vídeo curto (10-15 min) acompanhado de checklist prático que você cria uma única vez.',
   audience: 'Freelancers e Profissionais CLT em transição',
   audienceDescription: 'Pessoas com rotina corrida que sofrem com dispersão e precisam de um método simples de organização.',
@@ -376,6 +376,8 @@ export interface TaskItem {
   isLocked?: boolean;
   /** Intenção de implementação: "quando eu ___, faço esta tarefa" (docs/pesquisa/02) */
   when?: string;
+  /** Categorias da caixa de ferramentas que ajudam nesta tarefa (src/data/ferramentas.ts) */
+  toolCategories?: import('./ferramentas').ToolCategoryId[];
   anchorIllustration: {
     title: string;
     symbol: string;
@@ -441,7 +443,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     description: 'O menor entregável possível para testar o interesse de alguém real.',
     durationMinutes: 20,
     status: 'pending',
-    whatToDo: 'Pegue o tema que você mais domina e monte o menor formato possível: um checklist em PDF, um documento estruturado no Notion ou um vídeo direto de 10 minutos.',
+    whatToDo: 'Pegue o tema que você mais domina e monte o menor formato possível: um checklist em PDF, um documento bem estruturado ou um vídeo direto de 10 minutos.',
     howToKnowItIsGood: [
       'Dá para ser consumido e aplicado em menos de 1 dia',
       'Resolve 1 problema de ponta a ponta',
@@ -513,7 +515,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     description: 'Definir o valor de entrada e link de cobrança seguro.',
     durationMinutes: 15,
     status: 'pending',
-    whatToDo: 'Defina o preço inicial de validação (ex: R$ 27 a R$ 47). Crie uma conta gratuita em uma plataforma (ex: Kiwify, Hotmart ou Asaas) e gere o link de checkout.',
+    whatToDo: 'Defina o preço inicial de validação (ex: R$ 27 a R$ 47) e escolha como vai receber. O Pix do seu banco já basta no teste.',
     howToKnowItIsGood: [
       'O link de pagamento abre no celular e aceita Pix em segundos',
       'O preço não dá medo de cobrar nem parece golpe'
