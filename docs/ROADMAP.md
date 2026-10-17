@@ -57,7 +57,7 @@ Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
 
 ### Fase 2: Backend no ar
 - [x] Camada de IA genérica (etapa 01)
-- [ ] Deploy na Cloudflare (Worker + arquivos estáticos)
+- [x] Deploy na Cloudflare: Worker + arquivos estáticos + publicação automática ([etapa 18](etapas/18-cloudflare.md)); falta você configurar token e secrets
 - [ ] Limite de uso por usuário (rate limit) e proteção da chave
 - [x] Status honesto do coach + erros no log do servidor ([etapa 17](etapas/17-seguranca-do-coach-e-ci.md))
 - [x] Testes ponta a ponta no repositório + CI no GitHub Actions ([etapa 17](etapas/17-seguranca-do-coach-e-ci.md))

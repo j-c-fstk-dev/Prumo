@@ -6,6 +6,8 @@ import { defineConfig } from '@playwright/test';
  * Neste repositório, PW_CHROMIUM_PATH pode apontar para um Chromium já instalado.
  */
 const PORT = 3100;
+/** Para testar outro endereço (ex.: o Worker local ou o site publicado): E2E_BASE_URL=https://... */
+const EXTERNAL = process.env.E2E_BASE_URL;
 
 export default defineConfig({
   testDir: './e2e',
@@ -15,18 +17,20 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: EXTERNAL ?? `http://localhost:${PORT}`,
     viewport: { width: 390, height: 844 },
     contextOptions: { reducedMotion: 'reduce' },
     trace: 'retain-on-failure',
     launchOptions: process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {},
   },
-  webServer: {
-    command: `npx tsx server.ts`,
-    url: `http://localhost:${PORT}/api/health`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
-    // Sem provedor de IA: o coach responde em modo offline (respostas ao vivo são simuladas no teste)
-    env: { PORT: String(PORT), DISABLE_HMR: 'true', LLM_PROVIDER: '', GEMINI_API_KEY: '' },
-  },
+  webServer: EXTERNAL
+    ? undefined
+    : {
+        command: `npx tsx server.ts`,
+        url: `http://localhost:${PORT}/api/health`,
+        reuseExistingServer: !process.env.CI,
+        timeout: 60_000,
+        // Sem provedor de IA: o coach responde em modo offline (respostas ao vivo são simuladas no teste)
+        env: { PORT: String(PORT), DISABLE_HMR: 'true', LLM_PROVIDER: '', GEMINI_API_KEY: '' },
+      },
 });
