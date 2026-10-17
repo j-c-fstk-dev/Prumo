@@ -1,0 +1,335 @@
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import confetti from 'canvas-confetti';
+import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, INITIAL_TASKS, TaskItem } from '../../data/prumoData';
+import { soundEffects } from '../../utils/soundEffects';
+import { clearAll, loadValue, saveValue } from './storage';
+
+export type ScreenState =
+  | 'splash'
+  | 'register'
+  | 'carousel'
+  | 'value_signal'
+  | 'anamnese'
+  | 'calculating'
+  | 'result'
+  | 'commitment'
+  | 'future_letter'
+  | 'home'
+  | 'task_detail'
+  | 'paywall';
+
+export type TabId = 'home' | 'roadmap' | 'coach' | 'profile';
+export type MacroGoal = 'renda_extra' | 'substituir' | 'proposito';
+
+export interface CoachMessage {
+  sender: 'user' | 'coach';
+  text: string;
+  time: string;
+}
+
+/** O que fica salvo no aparelho. Mudou o formato? Suba a versão e migre em `migrate`. */
+interface PersistedState {
+  version: 1;
+  userName: string;
+  macroGoal: MacroGoal;
+  answers: Record<string, string[]>;
+  reflections: Record<string, string>;
+  /** Só o progresso; o conteúdo das tarefas vem de INITIAL_TASKS (pode ser atualizado sem perder progresso) */
+  taskStatus: Record<string, TaskItem['status']>;
+  coachMessages: CoachMessage[];
+  onboardingDone: boolean;
+}
+
+const STORAGE_KEY = 'prumo_state';
+
+function initialPersisted(): PersistedState {
+  return {
+    version: 1,
+    userName: 'Ana',
+    macroGoal: 'renda_extra',
+    answers: {
+      q1_help: ['conselhos', 'planilhas'],
+      q1_preference: ['ensinar'],
+      q2_themes: ['produtividade'],
+      q2_community: ['solo'],
+      q3_hours: ['pouco'],
+      q3_investment: ['zero'],
+      q4_goal: ['primeiro_real'],
+      q4_timeline: ['medio'],
+      q5_exposure: ['moderado'],
+      q5_rejection: ['resiliente'],
+      q6_tools: ['instagram', 'notion'],
+      q7_pride: ['autor_metodo'],
+    },
+    reflections: {
+      q7_pride:
+        'Quero provar para mim mesma que consigo ter um método próprio e gerar minhas primeiras vendas com dignidade e paz de espírito.',
+    },
+    taskStatus: Object.fromEntries(INITIAL_TASKS.map((t) => [t.id, t.status])),
+    coachMessages: [
+      {
+        sender: 'coach',
+        text: 'Tô aqui! Como você está na tarefa "Criar sua versão mínima entregável", o que tá travando hoje?',
+        time: '18:30',
+      },
+    ],
+    onboardingDone: false,
+  };
+}
+
+function migrate(raw: unknown): PersistedState | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const data = raw as Partial<PersistedState>;
+  if (data.version !== 1) return null;
+  return { ...initialPersisted(), ...data };
+}
+
+function nowTime(): string {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function useAppState() {
+  const [hydrated, setHydrated] = useState(false);
+  const [data, setData] = useState<PersistedState>(initialPersisted);
+
+  // Navegação (não persiste: ao reabrir, vai para a home se o onboarding já foi feito)
+  const [screen, setScreen] = useState<ScreenState>('splash');
+  const [tab, setTab] = useState<TabId>('home');
+  const [selectedTaskId, setSelectedTaskId] = useState<string>(INITIAL_TASKS[1].id);
+  const [sectionIndex, setSectionIndex] = useState(0);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [questionDirection, setQuestionDirection] = useState<'forward' | 'backward'>('forward');
+
+  // Player de micro-áudio (simulado), compartilhado entre home e detalhe da tarefa
+  const [activeAudioTaskId, setActiveAudioTaskId] = useState<string | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [audioElapsedSec, setAudioElapsedSec] = useState(12);
+
+  const [isSoundMuted, setIsSoundMuted] = useState(soundEffects.getIsMuted());
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Carrega o que estava salvo no aparelho
+  useEffect(() => {
+    let cancelled = false;
+    loadValue<unknown>(STORAGE_KEY).then((raw) => {
+      if (cancelled) return;
+      const saved = migrate(raw);
+      if (saved) {
+        setData(saved);
+        if (saved.onboardingDone) setScreen('home');
+      }
+      setHydrated(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Salva a cada mudança (com um pequeno atraso para agrupar digitação)
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!hydrated) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => saveValue(STORAGE_KEY, data), 300);
+  }, [data, hydrated]);
+
+  // Relógio do player simulado
+  useEffect(() => {
+    if (!isPlayingAudio) return;
+    const interval = setInterval(() => {
+      setAudioElapsedSec((prev) => {
+        if (prev >= 70) {
+          setIsPlayingAudio(false);
+          soundEffects.playAudioCoachToggle(false);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isPlayingAudio]);
+
+  const tasks: TaskItem[] = useMemo(
+    () => INITIAL_TASKS.map((t) => ({ ...t, status: data.taskStatus[t.id] ?? t.status })),
+    [data.taskStatus],
+  );
+  const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? tasks[0];
+  const nextStepTask = tasks.find((t) => t.status !== 'completed' && !t.isLocked) || tasks[0];
+
+  const personalAnchor =
+    data.reflections['q7_pride'] ||
+    (data.answers['q7_pride']?.length
+      ? ANAMNESE_SECTIONS[6]?.questions[0]?.options.find((o) => o.id === data.answers['q7_pride'][0])?.label ||
+        DEFAULT_DIAGNOSIS.personalAnchor
+      : DEFAULT_DIAGNOSIS.personalAnchor);
+
+  const update = useCallback((patch: Partial<PersistedState>) => setData((d) => ({ ...d, ...patch })), []);
+
+  const actions = {
+    go: (s: ScreenState) => setScreen(s),
+    goTab: (t: TabId) => {
+      setTab(t);
+      setScreen('home');
+    },
+    openTask: (id: string) => {
+      setSelectedTaskId(id);
+      setScreen('task_detail');
+    },
+
+    setUserName: (userName: string) => update({ userName }),
+    setMacroGoal: (macroGoal: MacroGoal) => update({ macroGoal }),
+    setReflection: (questionId: string, text: string) =>
+      setData((d) => ({ ...d, reflections: { ...d.reflections, [questionId]: text } })),
+
+    selectOption: (questionId: string, optionId: string, isMultiple?: boolean, max?: number) => {
+      soundEffects.playSelectOption();
+      setData((d) => {
+        const current = d.answers[questionId] || [];
+        let next: string[];
+        if (!isMultiple) next = [optionId];
+        else if (current.includes(optionId)) next = current.filter((id) => id !== optionId);
+        else if (max && current.length >= max) return d;
+        else next = [...current, optionId];
+        return { ...d, answers: { ...d.answers, [questionId]: next } };
+      });
+    },
+
+    startAnamnese: () => {
+      setSectionIndex(0);
+      setQuestionIndex(0);
+      setScreen('value_signal');
+    },
+    nextQuestion: () => {
+      soundEffects.playTransition();
+      setQuestionDirection('forward');
+      const section = ANAMNESE_SECTIONS[sectionIndex];
+      if (questionIndex < section.questions.length - 1) {
+        setQuestionIndex((i) => i + 1);
+      } else if (sectionIndex < ANAMNESE_SECTIONS.length - 1) {
+        setSectionIndex((i) => i + 1);
+        setQuestionIndex(0);
+        setScreen('value_signal');
+      } else {
+        setScreen('calculating');
+      }
+    },
+    prevQuestion: () => {
+      soundEffects.playBack();
+      setQuestionDirection('backward');
+      if (questionIndex > 0) {
+        setQuestionIndex((i) => i - 1);
+      } else if (sectionIndex > 0) {
+        setSectionIndex((i) => i - 1);
+        setQuestionIndex(ANAMNESE_SECTIONS[sectionIndex - 1].questions.length - 1);
+      } else {
+        setScreen('carousel');
+      }
+    },
+
+    completeOnboarding: () => update({ onboardingDone: true }),
+
+    toggleTaskStatus: (taskId: string) => {
+      const next = (data.taskStatus[taskId] ?? 'pending') === 'completed' ? 'pending' : 'completed';
+      if (next === 'completed') {
+        soundEffects.playCompleteTask();
+        confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
+      } else {
+        soundEffects.playSoftTap();
+      }
+      setData((d) => ({ ...d, taskStatus: { ...d.taskStatus, [taskId]: next } }));
+    },
+
+    toggleAudio: (taskId: string) => {
+      const nextPlaying = !(isPlayingAudio && activeAudioTaskId === taskId);
+      soundEffects.playAudioCoachToggle(nextPlaying);
+      setActiveAudioTaskId(taskId);
+      setIsPlayingAudio(nextPlaying);
+    },
+
+    toggleSound: () => setIsSoundMuted(soundEffects.toggleMute()),
+
+    sendCoachMessage: async (text: string) => {
+      if (!text.trim() || isTyping) return;
+      soundEffects.playSoftTap();
+      const history = data.coachMessages;
+      setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'user', text, time: nowTime() }] }));
+      setIsTyping(true);
+
+      const task = selectedTask || nextStepTask;
+      let reply: string;
+      try {
+        const response = await fetch('/api/coach/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // Contexto mínimo: as reflexões brutas não saem do aparelho (docs/pesquisa/07)
+          body: JSON.stringify({
+            message: text,
+            history,
+            userContext: {
+              userName: data.userName,
+              macroGoal: data.macroGoal,
+              personalAnchor,
+              diagnosis: DEFAULT_DIAGNOSIS,
+              currentTask: { title: task.title, whatToDo: task.whatToDo, chapterTitle: task.chapterTitle },
+            },
+          }),
+        });
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        const json = await response.json();
+        reply =
+          json.reply ||
+          `Estou com você, ${data.userName}. Como podemos simplificar esse próximo passo em uma micro-tarefa de 15 minutos?`;
+      } catch (err) {
+        console.error('Falha ao consultar Coach:', err);
+        reply = `Boa pergunta, ${data.userName}! Para destravar em "${task.title}", o segredo é focar no Menor Esforço Viável (MEV). Monte um roteiro de 3 tópicos e valide com 1 ou 2 pessoas conhecidas. 15 minutos de foco agora é tudo o que você precisa para dar esse passo.`;
+      }
+      soundEffects.playTransition();
+      setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'coach', text: reply, time: nowTime() }] }));
+      setIsTyping(false);
+    },
+
+    /** Apaga tudo do aparelho e volta ao início */
+    resetAll: async () => {
+      await clearAll();
+      setData(initialPersisted());
+      setScreen('splash');
+      setTab('home');
+    },
+  };
+
+  return {
+    hydrated,
+    ...data,
+    tasks,
+    selectedTask,
+    nextStepTask,
+    personalAnchor,
+    diagnosis: DEFAULT_DIAGNOSIS,
+    screen,
+    tab,
+    sectionIndex,
+    questionIndex,
+    questionDirection,
+    activeAudioTaskId,
+    isPlayingAudio,
+    audioElapsedSec,
+    isSoundMuted,
+    isTyping,
+    actions,
+  };
+}
+
+export type AppStore = ReturnType<typeof useAppState>;
+
+const AppContext = createContext<AppStore | null>(null);
+
+export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const store = useAppState();
+  return <AppContext.Provider value={store}>{children}</AppContext.Provider>;
+};
+
+export function useApp(): AppStore {
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error('useApp precisa estar dentro de <AppProvider>');
+  return ctx;
+}

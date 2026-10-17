@@ -43,7 +43,7 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [x] Frente 7: LGPD e políticas da Play Store (checklist jurídico)
 
 ### Fase 1: Núcleo funcional
-- [ ] Persistência local (IndexedDB), sem perder nada ao recarregar
+- [x] Persistência local (IndexedDB) + app dividido em telas ([etapa 04](etapas/04-telas-e-persistencia.md))
 - [ ] Remover dados de exemplo fixos ("Ana", respostas pré-marcadas, texto "insegura")
 - [ ] Pergunta de perda aceitável + pergunta de obstáculo (WOOP)
 - [ ] Motor de diagnóstico: matriz de pontuação + escada de produtos; IA só redige
