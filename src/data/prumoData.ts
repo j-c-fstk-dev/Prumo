@@ -428,7 +428,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'O poder de uma promessa simples',
       duration: '1:10 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'Quando tentamos falar com todo mundo, ninguém ouve. Uma frase simples não é limitar seu talento: é estender a mão para quem está perdido exatamente onde você já esteve. Respire fundo e escreva o óbvio.',
       audioWaveHeights: [25, 45, 60, 80, 50, 70, 95, 60, 40, 55, 75, 40, 30]
     }
@@ -465,7 +465,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'Por que perfeito é o inimigo do feito',
       duration: '1:18 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'Você não precisa de estúdio, iluminação ou 40 aulas. Uma semente bem plantada gera mais vida do que um palácio imaginário. 20 minutos focados em resolver uma dor real. Você já sabe o que colocar aí.',
       audioWaveHeights: [30, 50, 70, 60, 85, 90, 65, 45, 55, 70, 50, 35, 20]
     }
@@ -500,7 +500,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'A coragem de ouvir o outro',
       duration: '1:25 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'Dar a cara a tapa assusta todo mundo. Mas lembre-se: você não está pedindo aprovação pessoal, está oferecendo um atalho que você construiu com carinho. Três mensagens calmas. O que vier de resposta é ouro.',
       audioWaveHeights: [20, 40, 55, 75, 80, 60, 85, 90, 70, 50, 65, 40, 25]
     }
@@ -534,7 +534,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'Cobrar é um ato de respeito mútuo',
       duration: '1:05 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'Cobrar um valor simbólico não é ambição desmedida: é o filtro que faz as pessoas se comprometerem com o próprio resultado. R$ 27 ou R$ 47 é leve para quem paga e sagrado para o seu primeiro marco.',
       audioWaveHeights: [25, 45, 65, 70, 85, 60, 50, 75, 80, 55, 40, 30, 20]
     }
@@ -569,7 +569,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'Falar de dor sem apelação',
       duration: '1:15 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'Você não precisa viralizar com dancinhas. Quando você descreve com precisão a frustração que alguém sente às 23h da noite, essa pessoa sabe que você é o guia certo.',
       audioWaveHeights: [30, 60, 75, 90, 80, 65, 70, 85, 60, 50, 40, 30, 25]
     }
@@ -603,7 +603,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'Conversar em vez de empurrar',
       duration: '1:12 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'O melhor marketing do mundo ainda é a conversa sincera entre dois seres humanos. Chame com curiosidade e humildade: você está aqui para resolver, não para bajular.',
       audioWaveHeights: [25, 45, 65, 80, 70, 85, 90, 65, 55, 40, 30, 20, 15]
     }
@@ -638,7 +638,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'O primeiro sim muda quem você é',
       duration: '1:30 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'A primeira notificação de venda não é sobre o dinheiro em si: é a confirmação de que sua mente é capaz de gerar valor no mundo real. Guarde esse momento.',
       audioWaveHeights: [30, 50, 75, 95, 80, 85, 100, 75, 60, 45, 35, 25, 20]
     }

@@ -73,9 +73,9 @@ Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
 - [x] Citações e cartões "Você sabia?" nas telas e na rotação diária ([etapa 15](etapas/15-movimento-sons-citacoes.md))
 - [x] Ferramentas complementares em 3 camadas ([etapa 14](etapas/14-ferramentas.md)); **revisão trimestral** da caixa curada
 - [x] Mensagens autocompassivas de retorno; convites de recomeço em datas-marco (feito na [etapa 10](etapas/10-ritmo-diario.md))
-- [ ] Áudios reais nos micro-áudios (hoje o player é simulado)
-- [ ] Kit de execução (modelos de mensagem, roteiro de conversa, calculadora de preço, página de venda)
-- [ ] Ambiente sonoro de natureza opcional nas tarefas de foco (pesquisa 04)
+- [x] Micro-áudios com voz sintética do aparelho ([etapa 16](etapas/16-kit-e-voz.md)); voz humana fica para depois
+- [x] Kit de execução: 5 modelos personalizados ([etapa 16](etapas/16-kit-e-voz.md))
+- [ ] Ambiente sonoro de natureza opcional nas tarefas de foco (pesquisa 04): usar **gravações reais** com licença livre (CC0); a evidência é sobre sons naturais, não sintetizados
 
 ### Fase 4: Jurídico e empacotamento
 - [ ] Termos de uso + Política de privacidade (LGPD), com revisão jurídica — ver [checklist](pesquisa/07-lgpd-e-play-store.md#checklist-jurídico-do-mvp)
@@ -84,6 +84,7 @@ Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
 - [ ] PWA instalável (manifest, service worker, ícones)
 - [ ] Capacitor + GitHub Actions gerando o AAB assinado
 - [ ] Notificações locais (1 por dia, horário escolhido)
+- [ ] Voz sintética no Android: plugin nativo de text-to-speech (o WebView pode não ter Web Speech)
 
 ### Fase 5: Lançamento
 - [ ] Landing page

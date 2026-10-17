@@ -22,6 +22,8 @@ export interface DiagnosisOption {
 export interface Diagnosis extends DiagnosisProfile {
   nicheId: string;
   productId: ProductId;
+  /** A dor do público, em palavras simples (usada no kit de execução) */
+  pain: string;
   hypothesis: string;
   test: string;
   successSignal: string;
@@ -350,6 +352,7 @@ export function calculateDiagnosis(a: Answers, personalAnchor: string, reflectio
     timeline: timelineFor(a),
     justification,
     personalAnchor,
+    pain: niche.pain,
     hypothesis: `${niche.audience} pagam por "${lower(product.name(niche.topic))}" para resolver ${niche.pain}.`,
     test: product.test,
     successSignal: '2 de 5 pessoas dizem sim (ou pagam) em até 14 dias.',
@@ -392,6 +395,7 @@ export function applyAlternative(base: Diagnosis, alt: DiagnosisOption, a: Answe
     productDescription: product.description,
     audience: niche.audience,
     audienceDescription: niche.audienceDescription,
+    pain: niche.pain,
     hypothesis: `${niche.audience} pagam por "${lower(product.name(niche.topic))}" para resolver ${niche.pain}.`,
     test: product.test,
     justification:

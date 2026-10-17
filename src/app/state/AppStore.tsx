@@ -5,10 +5,12 @@ import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOpt
 import { buildPlanTasks } from '../../domain/tasks';
 import { ACTIONS_TO_REPAIR, addDays, buildTimeline, computeStreak, dayKey, isFreshStart, weekKey } from '../../domain/journey';
 import { can as canUse, currentPlan, trialDaysLeft, type Feature } from '../../domain/entitlements';
+import type { KitId } from '../../domain/kit';
 
 /** Paywall desligado no MVP: liga com VITE_PAYWALL_ENABLED=true (docs/etapas/11-paywall.md) */
 const PAYWALL_ENABLED = import.meta.env.VITE_PAYWALL_ENABLED === 'true';
 import { soundEffects } from '../../utils/soundEffects';
+import { speak, stopSpeaking } from '../../utils/voice';
 import { clearAll, loadValue, saveValue } from './storage';
 
 export type ScreenState =
@@ -90,6 +92,8 @@ interface PersistedState {
   isPremium: boolean;
   /** Uso dos recursos com limite no grátis */
   usage: { coachByWeek: Record<string, number>; pivots: number };
+  /** Modelos do kit já abertos em cada capítulo (limite do grátis: 1 por capítulo) */
+  kitUsage: Record<number, KitId[]>;
   theme: ThemePref;
   onboardingDone: boolean;
 }
@@ -117,6 +121,7 @@ function initialPersisted(): PersistedState {
     celebratedChapters: [],
     isPremium: false,
     usage: { coachByWeek: {}, pivots: 0 },
+    kitUsage: {},
     theme: 'auto',
     onboardingDone: false,
   };
@@ -161,10 +166,12 @@ function useAppState() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [questionDirection, setQuestionDirection] = useState<'forward' | 'backward'>('forward');
 
-  // Player de micro-áudio (simulado), compartilhado entre home e detalhe da tarefa
+  // Player de micro-áudio com voz sintética do aparelho, compartilhado entre home e detalhe da tarefa
   const [activeAudioTaskId, setActiveAudioTaskId] = useState<string | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [audioElapsedSec, setAudioElapsedSec] = useState(12);
+  const [audioElapsedSec, setAudioElapsedSec] = useState(0);
+  /** O aparelho não tem voz em português: a pessoa lê a transcrição */
+  const [voiceUnavailable, setVoiceUnavailable] = useState(false);
 
   const [isSoundMuted, setIsSoundMuted] = useState(soundEffects.getIsMuted());
   const [tapSounds, setTapSounds] = useState(soundEffects.getTapSounds());
@@ -206,21 +213,15 @@ function useAppState() {
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#15122A' : '#FBF8F2');
   }, [data.theme]);
 
-  // Relógio do player simulado
+  // Relógio do player: conta enquanto a voz fala (o fim vem do próprio leitor de voz)
   useEffect(() => {
     if (!isPlayingAudio) return;
-    const interval = setInterval(() => {
-      setAudioElapsedSec((prev) => {
-        if (prev >= 70) {
-          setIsPlayingAudio(false);
-          soundEffects.playAudioCoachToggle(false);
-          return 0;
-        }
-        return prev + 1;
-      });
-    }, 1000);
+    const interval = setInterval(() => setAudioElapsedSec((prev) => prev + 1), 1000);
     return () => clearInterval(interval);
   }, [isPlayingAudio]);
+
+  // Para a voz se a tela do app for fechada
+  useEffect(() => () => stopSpeaking(), []);
 
   // Roteiro montado a partir do diagnóstico + progresso + ajustes da pessoa
   const tasks: TaskItem[] = useMemo(
@@ -278,10 +279,11 @@ function useAppState() {
     usage: { coachMessagesThisWeek: data.usage.coachByWeek[weekKey(today)] ?? 0, pivots: data.usage.pivots },
   };
   const plan = currentPlan(entitlementCtx);
-  const can = (feature: Feature) => canUse(feature, entitlementCtx);
+  const can = (feature: Feature, extra: Partial<typeof entitlementCtx> & { chapterId?: number; executionKitUsedInChapter?: number } = {}) =>
+    canUse(feature, { ...entitlementCtx, ...extra });
   /** Se não pode, abre a tela de planos com o motivo e devolve false */
-  const guard = (feature: Feature): boolean => {
-    const e = can(feature);
+  const guard = (feature: Feature, extra: Parameters<typeof can>[1] = {}): boolean => {
+    const e = can(feature, extra);
     if (e.allowed) return true;
     setPaywallReason(e.reason ?? null);
     setScreen('paywall');
@@ -478,7 +480,29 @@ function useAppState() {
       const nextPlaying = !(isPlayingAudio && activeAudioTaskId === taskId);
       soundEffects.playAudioCoachToggle(nextPlaying);
       setActiveAudioTaskId(taskId);
-      setIsPlayingAudio(nextPlaying);
+      setAudioElapsedSec(0);
+      if (!nextPlaying) {
+        stopSpeaking();
+        setIsPlayingAudio(false);
+        return;
+      }
+      const transcript = tasks.find((t) => t.id === taskId)?.audioCoach?.transcript ?? '';
+      const ok = speak(transcript, (finishedOk) => {
+        setIsPlayingAudio(false);
+        if (!finishedOk) setVoiceUnavailable(true);
+      });
+      setVoiceUnavailable(!ok);
+      setIsPlayingAudio(ok);
+    },
+
+    /** Abre um modelo do kit; conta no limite do capítulo só na primeira vez. Devolve se pode abrir. */
+    openKit: (kitId: KitId, chapterId: number): boolean => {
+      const used = data.kitUsage[chapterId] ?? [];
+      if (used.includes(kitId)) return true;
+      if (!guard('execution_kit', { chapterId, executionKitUsedInChapter: used.length })) return false;
+      soundEffects.playSelectOption();
+      setData((d) => ({ ...d, kitUsage: { ...d.kitUsage, [chapterId]: [...(d.kitUsage[chapterId] ?? []), kitId] } }));
+      return true;
     },
 
     toggleSound: () => setIsSoundMuted(soundEffects.toggleMute()),
@@ -584,6 +608,7 @@ function useAppState() {
     activeAudioTaskId,
     isPlayingAudio,
     audioElapsedSec,
+    voiceUnavailable,
     isSoundMuted,
     tapSounds,
     isTyping,

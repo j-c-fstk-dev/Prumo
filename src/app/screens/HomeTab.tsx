@@ -9,13 +9,14 @@ import {
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
+import { estimateSeconds, formatDuration } from '../../utils/voice';
 import { Constellation } from '../../components/brand/Constellation';
 import { PersonalTasks } from '../components/PersonalTasks';
 import { DailyRhythm } from '../components/DailyRhythm';
 import { DailyInspiration } from '../components/QuoteCard';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, actions } = useApp();
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
@@ -118,8 +119,10 @@ export const HomeTab: React.FC = () => {
                   </span>
                   <span className="text-xs text-muted">
                     {isPlayingAudio && activeAudioTaskId === nextStepTask.id 
-                      ? `0:${audioElapsedSec.toString().padStart(2, '0')} / ${nextStepTask.audioCoach.duration}` 
-                      : `Presença em áudio · ${nextStepTask.audioCoach.duration}`}
+                      ? `${formatDuration(audioElapsedSec)} / ${formatDuration(estimateSeconds(nextStepTask.audioCoach.transcript))}` 
+                      : voiceUnavailable && activeAudioTaskId === nextStepTask.id
+                        ? 'Sem voz neste aparelho: abra a tarefa para ler'
+                        : `Presença em áudio · ${formatDuration(estimateSeconds(nextStepTask.audioCoach.transcript))}`}
                   </span>
                 </div>
               </div>

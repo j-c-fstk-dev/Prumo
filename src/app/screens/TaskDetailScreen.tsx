@@ -12,8 +12,10 @@ import {
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
+import { estimateSeconds, formatDuration } from '../../utils/voice';
 import { WhenPicker } from '../components/WhenPicker';
 import { ToolSuggestions } from '../components/ToolSuggestions';
+import { ExecutionKit } from '../components/ExecutionKit';
 import { QuoteByTheme } from '../components/QuoteCard';
 import type { TemaCitacao } from '../../data/citacoes';
 
@@ -21,10 +23,11 @@ import type { TemaCitacao } from '../../data/citacoes';
 const QUOTE_BY_TASK: Record<string, TemaCitacao> = { t2: 'perfeccionismo', t6: 'medo' };
 
 export const TaskDetailScreen: React.FC = () => {
-  const { selectedTask, reflections, activeAudioTaskId, isPlayingAudio, audioElapsedSec, actions } = useApp();
+  const { selectedTask, reflections, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, actions } = useApp();
   const [renaming, setRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(selectedTask.title);
   const [showTranscript, setShowTranscript] = useState(false);
+  const transcriptOpen = showTranscript || (voiceUnavailable && activeAudioTaskId === selectedTask.id);
 
   return (
     <div className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-slide-up">
@@ -115,7 +118,7 @@ export const TaskDetailScreen: React.FC = () => {
                     {selectedTask.audioCoach.title}
                   </strong>
                   <span className="text-xs text-muted">
-                    {selectedTask.audioCoach.narrator} · {selectedTask.audioCoach.duration}
+                    {selectedTask.audioCoach.narrator} · {formatDuration(estimateSeconds(selectedTask.audioCoach.transcript))}
                   </span>
                 </div>
               </div>
@@ -132,6 +135,16 @@ export const TaskDetailScreen: React.FC = () => {
               </div>
             </div>
 
+            {voiceUnavailable && activeAudioTaskId === selectedTask.id && (
+
+              <p className="text-[13px] text-gold-ink bg-gold-soft rounded-lg p-2">
+
+                Este aparelho não tem voz em português disponível. As palavras de encorajamento estão logo abaixo.
+
+              </p>
+
+            )}
+
             {/* Transcrição Inspiradora Expansível */}
             <div className="pt-2 border-t border-line">
               <button
@@ -141,10 +154,10 @@ export const TaskDetailScreen: React.FC = () => {
                 }}
                 className="text-[13px] text-primary font-medium hover:underline flex items-center justify-between w-full cursor-pointer"
               >
-                <span>{showTranscript ? 'Ocultar transcrição' : 'Ler palavras de encorajamento'}</span>
-                {showTranscript ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                <span>{transcriptOpen ? 'Ocultar transcrição' : 'Ler palavras de encorajamento'}</span>
+                {transcriptOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
-              {showTranscript && (
+              {transcriptOpen && (
                 <p className="text-sm font-serif italic text-ink mt-1.5 bg-surface-2 p-2.5 rounded-lg leading-relaxed border-l-2 border-primary">
                   "{selectedTask.audioCoach.transcript}"
                 </p>
@@ -211,22 +224,8 @@ export const TaskDetailScreen: React.FC = () => {
         <ToolSuggestions categories={selectedTask.toolCategories} />
 
 
-        {/* Recursos de apoio */}
-        {selectedTask.resources && selectedTask.resources.length > 0 && (
-          <div className="p-3.5 rounded-xl bg-surface border border-line">
-            <strong className="text-sm text-ink block mb-2">📎 Recursos de apoio <span className="font-normal text-muted">(em breve no kit de execução)</span></strong>
-            <div className="space-y-1.5">
-              {selectedTask.resources.map((res, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm text-primary bg-surface-2 p-2 rounded-lg">
-                  <span>• {res.title}</span>
-                  <span className="text-xs text-muted bg-surface px-1.5 py-0.5 rounded border border-line">
-                    {res.type}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Kit de execução: modelos prontos com o plano da pessoa */}
+        <ExecutionKit taskId={selectedTask.id} chapterId={selectedTask.chapterId} />
       </div>
 
       {/* Botões de Ação */}

@@ -44,6 +44,11 @@ describe('can', () => {
     expect(can('pivot', ctx({ usage: { coachMessagesThisWeek: 0, pivots: 1 } })).allowed).toBe(false);
   });
 
+  it('grátis: 1 modelo do kit por capítulo', () => {
+    expect(can('execution_kit', ctx({ chapterId: 1, executionKitUsedInChapter: 0 }))).toEqual({ allowed: true, remaining: 1 });
+    expect(can('execution_kit', ctx({ chapterId: 1, executionKitUsedInChapter: 1 })).allowed).toBe(false);
+  });
+
   it('grátis: áudios guiados só no capítulo 1', () => {
     expect(can('guided_audio', ctx({ chapterId: 1 })).allowed).toBe(true);
     expect(can('guided_audio', ctx({ chapterId: 2 })).allowed).toBe(false);
