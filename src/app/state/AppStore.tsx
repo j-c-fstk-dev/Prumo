@@ -3,6 +3,7 @@ import confetti from 'canvas-confetti';
 import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, TaskItem } from '../../data/prumoData';
 import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption } from '../../domain/diagnosis';
 import { buildPlanTasks } from '../../domain/tasks';
+import { ACTIONS_TO_REPAIR, addDays, buildTimeline, computeStreak, dayKey, isFreshStart } from '../../domain/journey';
 import { soundEffects } from '../../utils/soundEffects';
 import { clearAll, loadValue, saveValue } from './storage';
 
@@ -40,6 +41,12 @@ export interface FutureLetter {
   sealedAt?: number;
 }
 
+export interface CheckIn {
+  day: string;
+  text: string;
+  mood?: 'bem' | 'ok' | 'dificil';
+}
+
 export interface CoachMessage {
   sender: 'user' | 'coach';
   text: string;
@@ -64,6 +71,14 @@ interface PersistedState {
   /** Diagnóstico calculado ao fim da anamnese (null até lá) */
   diagnosis: Diagnosis | null;
   letter: FutureLetter | null;
+  diagnosisAt?: number;
+  /** Ritmo diário (domain/journey.ts) */
+  actionsByDay: Record<string, number>;
+  repairedDays: string[];
+  checkIns: CheckIn[];
+  /** Quando cada tarefa do plano foi concluída (linha do tempo) */
+  completedAt: Record<string, number>;
+  celebratedChapters: number[];
   onboardingDone: boolean;
 }
 
@@ -83,6 +98,11 @@ function initialPersisted(): PersistedState {
     coachMessages: [],
     diagnosis: null,
     letter: null,
+    actionsByDay: {},
+    repairedDays: [],
+    checkIns: [],
+    completedAt: {},
+    celebratedChapters: [],
     onboardingDone: false,
   };
 }
@@ -93,6 +113,16 @@ function migrate(raw: unknown): PersistedState | null {
   if (data.version !== 1) return null;
   const base = initialPersisted();
   return { ...base, ...data, textOptions: { ...base.textOptions, ...data.textOptions } };
+}
+
+/** Soma uma ação ao dia de hoje e, se completar o remendo, remenda o dia de ontem. */
+function withAction(d: PersistedState): PersistedState {
+  const today = dayKey(new Date());
+  const before = computeStreak({ actionsByDay: d.actionsByDay, repairedDays: d.repairedDays, today });
+  const actionsByDay = { ...d.actionsByDay, [today]: (d.actionsByDay[today] ?? 0) + 1 };
+  const repairedDays =
+    before.canRepairYesterday && actionsByDay[today] >= ACTIONS_TO_REPAIR ? [...d.repairedDays, addDays(today, -1)] : d.repairedDays;
+  return { ...d, actionsByDay, repairedDays };
 }
 
 function nowTime(): string {
@@ -196,6 +226,17 @@ function useAppState() {
     [data.diagnosis, scoredAnswers, personalAnchor, data.reflections],
   );
 
+  const today = dayKey(new Date());
+  const streak = computeStreak({ actionsByDay: data.actionsByDay, repairedDays: data.repairedDays, today });
+  const todayCheckIn = data.checkIns.find((c) => c.day === today);
+  const freshStart = isFreshStart(today);
+  const timeline = buildTimeline({
+    diagnosisAt: data.diagnosisAt,
+    letterSealedAt: data.letter?.sealedAt,
+    tasks,
+    completedAt: data.completedAt,
+  });
+
   const update = useCallback((patch: Partial<PersistedState>) => setData((d) => ({ ...d, ...patch })), []);
 
   const actions = {
@@ -282,7 +323,20 @@ function useAppState() {
 
     completeOnboarding: () => update({ onboardingDone: true }),
 
-    saveDiagnosis: (d: Diagnosis) => update({ diagnosis: d }),
+    saveDiagnosis: (d: Diagnosis) => update({ diagnosis: d, diagnosisAt: Date.now() }),
+
+    /** Check-in de 10 segundos: um por dia (refazer substitui) */
+    checkIn: (text: string, mood?: CheckIn['mood']) => {
+      soundEffects.playCompleteTask();
+      const day = dayKey(new Date());
+      setData((d) => {
+        const already = d.checkIns.some((c) => c.day === day);
+        const next = { ...d, checkIns: [...d.checkIns.filter((c) => c.day !== day), { day, text: text.trim(), mood }] };
+        return already ? next : withAction(next);
+      });
+    },
+    markChapterCelebrated: (chapterId: number) =>
+      setData((d) => ({ ...d, celebratedChapters: Array.from(new Set([...d.celebratedChapters, chapterId])) })),
 
     setLetter: (patch: Partial<FutureLetter>) =>
       setData((d) => ({ ...d, letter: { toFuture: '', fromFuture: '', ...d.letter, ...patch } })),
@@ -292,14 +346,20 @@ function useAppState() {
     chooseAlternative: (alt: DiagnosisOption) => update({ diagnosis: applyAlternative(diagnosis, alt, scoredAnswers) }),
 
     toggleTaskStatus: (taskId: string) => {
-      const next = (data.taskStatus[taskId] ?? 'pending') === 'completed' ? 'pending' : 'completed';
+      const next: TaskItem['status'] = (data.taskStatus[taskId] ?? 'pending') === 'completed' ? 'pending' : 'completed';
       if (next === 'completed') {
         soundEffects.playCompleteTask();
         confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
       } else {
         soundEffects.playSoftTap();
       }
-      setData((d) => ({ ...d, taskStatus: { ...d.taskStatus, [taskId]: next } }));
+      setData((d) => {
+        const completedAt = { ...d.completedAt };
+        if (next === 'completed') completedAt[taskId] = Date.now();
+        else delete completedAt[taskId];
+        const updated = { ...d, taskStatus: { ...d.taskStatus, [taskId]: next }, completedAt };
+        return next === 'completed' ? withAction(updated) : updated;
+      });
     },
 
     /** "Quando vou fazer" de uma tarefa do plano (vazio remove) */
@@ -333,7 +393,10 @@ function useAppState() {
       const task = data.personalTasks.find((t) => t.id === id);
       if (task && !task.done) soundEffects.playCompleteTask();
       else soundEffects.playSoftTap();
-      setData((d) => ({ ...d, personalTasks: d.personalTasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)) }));
+      setData((d) => {
+        const updated = { ...d, personalTasks: d.personalTasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)) };
+        return task && !task.done ? withAction(updated) : updated;
+      });
     },
     deletePersonalTask: (id: string) => {
       soundEffects.playBack();
@@ -426,6 +489,10 @@ function useAppState() {
     nextStepTask,
     personalAnchor,
     scoredAnswers,
+    streak,
+    todayCheckIn,
+    freshStart,
+    timeline,
     diagnosis,
     screen,
     tab,

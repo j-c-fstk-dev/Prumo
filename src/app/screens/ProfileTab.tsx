@@ -9,7 +9,7 @@ import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 
 export const ProfileTab: React.FC = () => {
-  const { userName, isSoundMuted, actions } = useApp();
+  const { userName, isSoundMuted, timeline, actions } = useApp();
 
   return (
     <div key="tab-profile" className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-tab-fade">
@@ -43,6 +43,41 @@ export const ProfileTab: React.FC = () => {
             Conhecer Planos
           </button>
         </div>
+
+        {/* Linha do tempo de conquistas (registrar o progresso ajuda a chegar lá: Harkin et al. 2016) */}
+
+        <div className="p-4 rounded-2xl bg-white border border-[#E6E8E6] space-y-2">
+
+          <span className="text-xs font-bold text-[#1A1D1B] block">Sua linha do tempo</span>
+
+          {timeline.length === 0 ? (
+
+            <p className="text-[11px] text-[#5B615D]">Suas conquistas aparecem aqui conforme você avança.</p>
+
+          ) : (
+
+            <ol className="space-y-1.5">
+
+              {timeline.map((e) => (
+
+                <li key={`${e.kind}-${e.at}`} className="flex items-start gap-2 text-xs">
+
+                  <span style={{ color: 'var(--gold-deco)' }}>{e.kind === 'capitulo' ? '✦' : '•'}</span>
+
+                  <span className="flex-1 text-[#1A1D1B]">{e.title}</span>
+
+                  <span className="text-[10px] text-[#5B615D] shrink-0">{new Date(e.at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+
+                </li>
+
+              ))}
+
+            </ol>
+
+          )}
+
+        </div>
+
 
         {/* Opções de Conta */}
         <div className="space-y-2 text-xs">

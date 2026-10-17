@@ -19,6 +19,7 @@ import { ProfileTab } from '../../app/screens/ProfileTab';
 import { TaskDetailScreen } from '../../app/screens/TaskDetailScreen';
 import { PaywallScreen } from '../../app/screens/PaywallScreen';
 import { BottomNav } from '../../app/screens/BottomNav';
+import { ChapterComplete } from '../../app/components/ChapterComplete';
 
 const SCREENS: Record<Exclude<ScreenState, 'home'>, React.FC> = {
   splash: WelcomeScreen,
@@ -45,6 +46,7 @@ const CurrentScreen: React.FC = () => {
       <>
         <Tab key={`tab-${tab}`} />
         <BottomNav />
+        <ChapterComplete />
       </>
     );
   }

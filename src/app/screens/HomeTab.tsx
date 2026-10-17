@@ -11,6 +11,7 @@ import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { Constellation } from '../../components/brand/Constellation';
 import { PersonalTasks } from '../components/PersonalTasks';
+import { DailyRhythm } from '../components/DailyRhythm';
 
 export const HomeTab: React.FC = () => {
   const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, actions } = useApp();
@@ -36,6 +37,11 @@ export const HomeTab: React.FC = () => {
             <Compass className="w-5 h-5" />
           </div>
         </div>
+
+        {/* Ritmo diário: check-in, sequência gentil, remendo e boas-vindas de volta */}
+
+        <DailyRhythm />
+
 
         {/* ÂNCORA EMOCIONAL FIXA DO EU FUTURO */}
         <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/90 shadow-2xs flex items-start gap-2.5">
