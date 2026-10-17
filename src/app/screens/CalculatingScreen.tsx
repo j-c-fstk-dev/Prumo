@@ -9,10 +9,10 @@ import { calculateDiagnosis } from '../../domain/diagnosis';
 import { useApp } from '../state/AppStore';
 
 export const CalculatingScreen: React.FC = () => {
-  const { answers, personalAnchor, actions } = useApp();
+  const { scoredAnswers, reflections, personalAnchor, actions } = useApp();
   const [calcStep, setCalcStep] = useState(0);
   // Calcula uma vez ao entrar; as etapas abaixo citam as respostas reais
-  const [result] = useState(() => calculateDiagnosis(answers, personalAnchor));
+  const [result] = useState(() => calculateDiagnosis(scoredAnswers, personalAnchor, reflections));
   const steps = result.calcSteps;
   useEffect(() => actions.saveDiagnosis(result), []);
 

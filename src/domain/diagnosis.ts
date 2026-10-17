@@ -28,6 +28,9 @@ export interface Diagnosis extends DiagnosisProfile {
   /** Etapas mostradas na tela de cálculo, citando as respostas reais (pesquisa 04) */
   calcSteps: string[];
   warnings: string[];
+  /** Obstáculo previsto e o plano B "se… então…" (WOOP, pesquisa 02) */
+  obstacle: string;
+  planB: string;
   alternatives: DiagnosisOption[];
 }
 
@@ -201,6 +204,25 @@ export function scoreNiche(n: Niche, a: Answers): number {
   return skill + interest + role;
 }
 
+const PLAN_B: Record<string, { obstacle: string; planB: string }> = {
+  tempo: {
+    obstacle: 'faltar tempo ou energia',
+    planB: 'faço só 5 minutos da tarefa do dia. Pouco feito vale mais que nada.',
+  },
+  medo: {
+    obstacle: 'bater o medo de julgamento',
+    planB: 'mando a mensagem para 1 pessoa de confiança primeiro, e não para todo mundo.',
+  },
+  perfeccionismo: {
+    obstacle: 'eu quiser deixar tudo perfeito',
+    planB: 'mostro a versão de hoje mesmo assim. Feito e testado ensina mais que perfeito e guardado.',
+  },
+  dispersao: {
+    obstacle: 'surgir uma ideia nova e brilhante',
+    planB: 'anoto a ideia numa lista para depois e volto para a tarefa atual.',
+  },
+};
+
 export function scoreProduct(p: ProductId, a: Answers): number {
   const fast = one(a, 'q4_timeline') === 'rapido';
   const slow = one(a, 'q4_timeline') === 'longo' || one(a, 'q4_timeline') === 'medio';
@@ -212,6 +234,8 @@ export function scoreProduct(p: ProductId, a: Answers): number {
   const role = one(a, 'q1_preference');
   const teaches = role === 'ensinar' || has(a, 'q1_help', 'ensinar');
   const firstMoney = one(a, 'q4_goal') === 'primeiro_real';
+  // Perda aceitável (Sarasvathy): sem dinheiro a perder, evitamos o formato que pede equipamento
+  const noMoney = one(a, 'q3_investment') === 'zero';
 
   switch (p) {
     case 'servico':
@@ -221,7 +245,7 @@ export function scoreProduct(p: ProductId, a: Answers): number {
     case 'guia':
       return (solo ? 2 : 0) + (noCamera ? 2 : 0) + (role === 'criar' || role === 'organizar' ? 1 : 0) + (lowTime ? 1 : 0) + (slow ? 1 : 0) + (has(a, 'q6_tools', 'notion', 'canva') ? 1 : 0);
     case 'minicurso':
-      return (teaches ? 2 : 0) + (onCamera ? 2 : one(a, 'q5_exposure') === 'moderado' ? 1 : -2) + (lowTime ? -1 : 1) + (slow ? 1 : 0) + (fast ? -1 : 0);
+      return (teaches ? 2 : 0) + (onCamera ? 2 : one(a, 'q5_exposure') === 'moderado' ? 1 : -2) + (lowTime ? -1 : 1) + (slow ? 1 : 0) + (fast ? -1 : 0) + (noMoney ? -1 : 0);
   }
 }
 
@@ -255,7 +279,18 @@ function isComplete(a: Answers): boolean {
   return ['q1_help', 'q1_preference', 'q2_themes', 'q3_hours', 'q4_timeline', 'q5_exposure'].every((q) => a[q]?.length);
 }
 
-export function calculateDiagnosis(a: Answers, personalAnchor: string): Diagnosis {
+const MAX_QUOTE = 140;
+function quote(text: string | undefined): string {
+  const t = (text ?? '').trim().replace(/\s+/g, ' ');
+  if (!t) return '';
+  return t.length > MAX_QUOTE ? `${t.slice(0, MAX_QUOTE - 1).trimEnd()}…` : t;
+}
+
+/**
+ * @param a respostas (já somadas às opções que a pessoa confirmou a partir do texto livre)
+ * @param reflections textos livres, usados só para personalizar a redação, nunca para pontuar
+ */
+export function calculateDiagnosis(a: Answers, personalAnchor: string, reflections: Record<string, string> = {}): Diagnosis {
   const rankedNiches = NICHES.map((n, i) => ({ n, score: scoreNiche(n, a), i }))
     .sort((x, y) => y.score - x.score || x.i - y.i);
   const rankedProducts = (Object.keys(PRODUCTS) as ProductId[])
@@ -288,7 +323,10 @@ export function calculateDiagnosis(a: Answers, personalAnchor: string): Diagnosi
     `. Unir o que você já faz bem com o que te interessa aumenta a chance de você continuar quando ficar difícil. ` +
     `Com ${hours || 'o tempo que você tem'} e ${exposure ? `a preferência "${exposure}"` : 'seu jeito de aparecer'}, ` +
     `o formato de menor atrito é: ${lower(product.name(niche.topic))}. ` +
+    (quote(reflections.q1_help) ? `Nas suas palavras, você gosta de descomplicar: "${quote(reflections.q1_help)}". ` : '') +
     `Isto é uma hipótese: o teste do Capítulo 2 vai confirmar ou ajustar o rumo.`;
+
+  const plan = PLAN_B[one(a, 'q5_obstacle') ?? ''] ?? PLAN_B.tempo;
 
   const alternatives: DiagnosisOption[] = [
     { n: rankedNiches[1].n, p: PRODUCTS[rankedProducts[0].p] },
@@ -322,6 +360,8 @@ export function calculateDiagnosis(a: Answers, personalAnchor: string): Diagnosi
       'Estruturando o roteiro em 3 capítulos',
     ],
     warnings,
+    obstacle: plan.obstacle,
+    planB: plan.planB,
     alternatives,
     radarScores: {
       skills: radar(40 + rankedNiches[0].score * 10),

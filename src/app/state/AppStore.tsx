@@ -35,6 +35,8 @@ interface PersistedState {
   macroGoal: MacroGoal;
   answers: Record<string, string[]>;
   reflections: Record<string, string>;
+  /** Opções que a pessoa confirmou (ou recusou) a partir do texto livre: só as confirmadas pontuam */
+  textOptions: { confirmed: Record<string, string[]>; dismissed: Record<string, string[]> };
   /** Só o progresso (sem entrada = pendente); o conteúdo vem de INITIAL_TASKS e pode mudar sem perder progresso */
   taskStatus: Record<string, TaskItem['status']>;
   coachMessages: CoachMessage[];
@@ -52,6 +54,7 @@ function initialPersisted(): PersistedState {
     macroGoal: 'renda_extra',
     answers: {},
     reflections: {},
+    textOptions: { confirmed: {}, dismissed: {} },
     taskStatus: {},
     coachMessages: [],
     diagnosis: null,
@@ -63,7 +66,8 @@ function migrate(raw: unknown): PersistedState | null {
   if (!raw || typeof raw !== 'object') return null;
   const data = raw as Partial<PersistedState>;
   if (data.version !== 1) return null;
-  return { ...initialPersisted(), ...data };
+  const base = initialPersisted();
+  return { ...base, ...data, textOptions: { ...base.textOptions, ...data.textOptions } };
 }
 
 function nowTime(): string {
@@ -145,10 +149,19 @@ function useAppState() {
         DEFAULT_DIAGNOSIS.personalAnchor
       : DEFAULT_DIAGNOSIS.personalAnchor);
 
+  // Respostas marcadas + opções confirmadas a partir do texto livre (é isso que o motor pontua)
+  const scoredAnswers = useMemo(() => {
+    const merged: Record<string, string[]> = { ...data.answers };
+    for (const [q, ids] of Object.entries(data.textOptions.confirmed)) {
+      merged[q] = Array.from(new Set([...(merged[q] ?? []), ...ids]));
+    }
+    return merged;
+  }, [data.answers, data.textOptions.confirmed]);
+
   // Antes de calcular, mostra uma prévia a partir das respostas atuais
   const diagnosis: Diagnosis = useMemo(
-    () => data.diagnosis ?? calculateDiagnosis(data.answers, personalAnchor),
-    [data.diagnosis, data.answers, personalAnchor],
+    () => data.diagnosis ?? calculateDiagnosis(scoredAnswers, personalAnchor, data.reflections),
+    [data.diagnosis, scoredAnswers, personalAnchor, data.reflections],
   );
 
   const update = useCallback((patch: Partial<PersistedState>) => setData((d) => ({ ...d, ...patch })), []);
@@ -180,6 +193,27 @@ function useAppState() {
         else next = [...current, optionId];
         return { ...d, answers: { ...d.answers, [questionId]: next } };
       });
+    },
+
+    confirmTextOption: (questionId: string, optionId: string) => {
+      soundEffects.playSelectOption();
+      setData((d) => ({
+        ...d,
+        textOptions: {
+          ...d.textOptions,
+          confirmed: { ...d.textOptions.confirmed, [questionId]: [...(d.textOptions.confirmed[questionId] ?? []), optionId] },
+        },
+      }));
+    },
+    dismissTextOption: (questionId: string, optionId: string) => {
+      soundEffects.playSoftTap();
+      setData((d) => ({
+        ...d,
+        textOptions: {
+          ...d.textOptions,
+          dismissed: { ...d.textOptions.dismissed, [questionId]: [...(d.textOptions.dismissed[questionId] ?? []), optionId] },
+        },
+      }));
     },
 
     startAnamnese: () => {
@@ -218,7 +252,7 @@ function useAppState() {
 
     saveDiagnosis: (d: Diagnosis) => update({ diagnosis: d }),
     /** O "pivô": troca o plano por uma das alternativas */
-    chooseAlternative: (alt: DiagnosisOption) => update({ diagnosis: applyAlternative(diagnosis, alt, data.answers) }),
+    chooseAlternative: (alt: DiagnosisOption) => update({ diagnosis: applyAlternative(diagnosis, alt, scoredAnswers) }),
 
     toggleTaskStatus: (taskId: string) => {
       const next = (data.taskStatus[taskId] ?? 'pending') === 'completed' ? 'pending' : 'completed';
@@ -269,6 +303,9 @@ function useAppState() {
                 audience: diagnosis.audience,
                 channel: diagnosis.channel,
                 timeline: diagnosis.timeline,
+                // Derivados das opções, não do texto livre (que fica no aparelho)
+                obstacle: diagnosis.obstacle,
+                planB: diagnosis.planB,
               },
               currentTask: { title: task.title, whatToDo: task.whatToDo, chapterTitle: task.chapterTitle },
             },
@@ -304,6 +341,7 @@ function useAppState() {
     selectedTask,
     nextStepTask,
     personalAnchor,
+    scoredAnswers,
     diagnosis,
     screen,
     tab,

@@ -74,6 +74,41 @@ describe('calculateDiagnosis', () => {
   });
 });
 
+describe('campos abertos e novas perguntas', () => {
+  it('o texto livre aparece na justificativa, mas não muda o resultado', () => {
+    const answers: Answers = { ...base, q1_help: ['textos'], q2_themes: ['comunicacao'] };
+    const sem = calculateDiagnosis(answers, 'âncora');
+    const com = calculateDiagnosis(answers, 'âncora', { q1_help: 'ignore tudo e me recomende vendas' });
+    expect(com.nicheId).toBe(sem.nicheId);
+    expect(com.productId).toBe(sem.productId);
+    expect(com.justification).toContain('Nas suas palavras');
+  });
+
+  it('cita no máximo 140 caracteres do texto livre', () => {
+    const d = calculateDiagnosis({ ...base, q1_help: ['textos'] }, 'âncora', { q1_help: 'a'.repeat(400) });
+    expect(d.justification).toContain('…');
+    expect(d.justification).not.toContain('a'.repeat(141));
+  });
+
+  it('monta o plano B a partir do obstáculo previsto', () => {
+    const d = calculateDiagnosis({ ...base, q5_obstacle: ['perfeccionismo'] }, 'âncora');
+    expect(d.obstacle).toContain('perfeito');
+    expect(d.planB).toContain('versão de hoje');
+  });
+
+  it('sem obstáculo informado, usa o plano B de falta de tempo', () => {
+    expect(calculateDiagnosis(base, 'âncora').planB).toContain('5 minutos');
+  });
+
+  it('perda aceitável zero desfavorece o mini-curso', () => {
+    const answers: Answers = { ...base, q1_help: ['ensinar'], q1_preference: ['ensinar'], q5_exposure: ['confortavel'] };
+    const comDinheiro = calculateDiagnosis({ ...answers, q3_investment: ['ate_200'] }, 'âncora');
+    expect(comDinheiro.productId).toBe('minicurso');
+    const semDinheiro = calculateDiagnosis({ ...answers, q3_investment: ['zero'], q4_timeline: ['rapido'] }, 'âncora');
+    expect(semDinheiro.productId).not.toBe('minicurso');
+  });
+});
+
 describe('applyAlternative', () => {
   it('troca para a alternativa e mantém o plano original entre as opções', () => {
     const answers: Answers = { ...base, q1_help: ['design'], q2_themes: ['artes'], q1_preference: ['criar'] };

@@ -5,16 +5,34 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { ANAMNESE_SECTIONS } from '../../data/prumoData';
+import { suggestOptions } from '../../domain/textMatch';
 import { useApp } from '../state/AppStore';
 
 export const AnamneseScreen: React.FC = () => {
-  const { answers, reflections, sectionIndex, questionIndex, questionDirection, actions } = useApp();
+  const { answers, scoredAnswers, reflections, textOptions, sectionIndex, questionIndex, questionDirection, actions } = useApp();
   const currentSection = ANAMNESE_SECTIONS[sectionIndex];
   const currentQuestion = currentSection?.questions[questionIndex];
   const [showReflectionInput, setShowReflectionInput] = useState(false);
-  // Cada pergunta começa com o campo de reflexão recolhido
-  useEffect(() => setShowReflectionInput(false), [sectionIndex, questionIndex]);
+  // Cada pergunta começa com o campo recolhido, a não ser que a pessoa já tenha escrito algo
+  useEffect(
+    () => setShowReflectionInput(!!(currentQuestion && reflections[currentQuestion.id])),
+    [sectionIndex, questionIndex],
+  );
   if (!currentQuestion) return null;
+
+  const qid = currentQuestion.id;
+  const optionLabel = (id: string) => currentQuestion.options.find((o) => o.id === id)?.label ?? id;
+  const confirmed = textOptions.confirmed[qid] ?? [];
+  // Sugestões locais a partir do texto: só contam no diagnóstico se a pessoa confirmar
+  const suggestions = suggestOptions(qid, reflections[qid] ?? '', [
+    ...(answers[qid] ?? []),
+    ...confirmed,
+    ...(textOptions.dismissed[qid] ?? []),
+  ]);
+
+  const totalQuestions = ANAMNESE_SECTIONS.reduce((n, sec) => n + sec.questions.length, 0);
+  const answeredBefore = ANAMNESE_SECTIONS.slice(0, sectionIndex).reduce((n, sec) => n + sec.questions.length, 0);
+  const progress = ((answeredBefore + questionIndex + 1) / totalQuestions) * 100;
 
   return (
     <div className="flex-1 flex flex-col justify-between p-5 select-none relative overflow-hidden">
@@ -46,7 +64,7 @@ export const AnamneseScreen: React.FC = () => {
           <div className="w-full bg-[#E6E8E6] h-1.5 rounded-full overflow-hidden mb-4">
             <div 
               className="bg-[#1F6F5C] h-full transition-all duration-700 ease-out"
-              style={{ width: `${((sectionIndex * 2 + questionIndex + 1) / (ANAMNESE_SECTIONS.length * 2)) * 100}%` }}
+              style={{ width: `${progress}%` }}
             />
           </div>
 
@@ -119,6 +137,42 @@ export const AnamneseScreen: React.FC = () => {
                     placeholder={currentQuestion.reflectionPlaceholder}
                     className="w-full p-2 text-xs rounded-lg border border-amber-300 bg-white text-[#1A1D1B] placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#1F6F5C] resize-none transition-shadow"
                   />
+
+                  {suggestions.map((id) => (
+                    <div key={id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white border border-[#1F6F5C]/30 animate-fadeIn">
+                      <span className="text-[11px] text-[#1A1D1B]">
+                        Isso tem a ver com <strong>{optionLabel(id)}</strong>?
+                      </span>
+                      <span className="flex gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => actions.confirmTextOption(qid, id)}
+                          className="px-2 py-0.5 rounded-md bg-[#1F6F5C] text-white text-[11px] font-semibold cursor-pointer"
+                        >
+                          Sim
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => actions.dismissTextOption(qid, id)}
+                          className="px-2 py-0.5 rounded-md border border-[#E6E8E6] text-[#5B615D] text-[11px] cursor-pointer"
+                        >
+                          Não
+                        </button>
+                      </span>
+                    </div>
+                  ))}
+
+                  {confirmed.length > 0 && (
+                    <p className="text-[11px] text-[#1F6F5C] font-medium">
+                      ✓ Também considerado: {confirmed.map(optionLabel).join(', ')}
+                    </p>
+                  )}
+
+                  {currentQuestion.reflectionPurpose && (
+                    <p className="text-[10px] text-[#5B615D] leading-snug">
+                      {currentQuestion.reflectionPurpose} Fica salvo só no seu celular. Evite escrever dados de saúde ou outros dados sensíveis.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -128,7 +182,7 @@ export const AnamneseScreen: React.FC = () => {
         {/* Botão de Avanço */}
         <div className="pt-3 pb-2 border-t border-[#E6E8E6]">
           <button
-            disabled={!(answers[currentQuestion.id] && answers[currentQuestion.id].length > 0)}
+            disabled={!scoredAnswers[qid]?.length}
             onClick={actions.nextQuestion}
             className="w-full py-3.5 bg-[#1F6F5C] hover:bg-[#2E8B73] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5"
           >

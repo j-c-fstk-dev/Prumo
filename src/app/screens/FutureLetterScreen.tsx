@@ -50,6 +50,9 @@ export const FutureLetterScreen: React.FC = () => {
               Você não sabia bem por onde começar, mas decidiu construir <strong>{diagnosis.product}</strong> para o nicho de <strong>{diagnosis.niche}</strong>.
             </p>
             <p>
+              Nos dias difíceis, você lembrou do nosso combinado: "se {diagnosis.obstacle}, {diagnosis.planB}"
+            </p>
+            <p>
               Hoje já validamos com pessoas reais, fizemos nosso primeiro retorno e aquela sensação de paralisia ficou para trás. Agora entre no Capítulo 1. Um passo de cada vez.
             </p>
           </div>

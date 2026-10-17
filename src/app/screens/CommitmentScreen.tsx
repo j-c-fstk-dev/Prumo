@@ -8,7 +8,7 @@ import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 
 export const CommitmentScreen: React.FC = () => {
-  const { personalAnchor, actions } = useApp();
+  const { personalAnchor, diagnosis, actions } = useApp();
   // Ritual de compromisso (segurar para selar)
   const [holdProgress, setHoldProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
@@ -80,6 +80,16 @@ export const CommitmentScreen: React.FC = () => {
           </span>
           <p className="text-xs text-[#1A1D1B] font-serif italic">
             "{personalAnchor}"
+          </p>
+        </div>
+
+        {/* Plano B combinado antes de começar (WOOP: obstáculo previsto + "se… então…") */}
+        <div className="p-3.5 rounded-xl bg-white/90 border border-[#1F6F5C]/25 text-left shadow-2xs mb-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#1F6F5C] block mb-1">
+            Seu plano B
+          </span>
+          <p className="text-xs text-[#1A1D1B] leading-relaxed">
+            Se {diagnosis.obstacle}, então {diagnosis.planB}
           </p>
         </div>
       </div>

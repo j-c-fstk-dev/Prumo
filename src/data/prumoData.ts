@@ -10,6 +10,8 @@ export interface AnamneseQuestion {
   sliderConfig?: { min: number; max: number; minLabel: string; maxLabel: string };
   reflectionPrompt?: string;
   reflectionPlaceholder?: string;
+  /** Mostrado sob o campo aberto: para que usamos o que a pessoa escreve (transparência) */
+  reflectionPurpose?: string;
 }
 
 export interface AnamneseSection {
@@ -53,8 +55,9 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'tecnologia', label: 'Resolver problemas no computador/celular', icon: '💻' },
           { id: 'saude', label: 'Treino, alimentação e hábitos', icon: '🏃' }
         ],
-        reflectionPrompt: 'Em suas próprias palavras: qual problema você tem prazer genuíno em descomplicar para alguém?',
-        reflectionPlaceholder: 'Ex: Adoro ajudar amigos a organizarem rotinas caóticas de trabalho...'
+        reflectionPrompt: 'Com suas palavras: que problema você gosta de descomplicar para alguém? Vale algo que não está na lista.',
+        reflectionPlaceholder: 'Ex: Adoro ajudar amigos a organizarem rotinas caóticas de trabalho...',
+        reflectionPurpose: 'Usamos isso para sugerir seu nicho (você confirma) e escrever sua hipótese.'
       },
       {
         id: 'q1_preference',
@@ -97,7 +100,10 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'desenvolvimento', label: 'Psicologia e autoconhecimento', icon: '🧠' },
           { id: 'comunicacao', label: 'Marketing, mídias e storytelling', icon: '📢' },
           { id: 'artes', label: 'Artes, criação e design', icon: '🖌️' }
-        ]
+        ],
+        reflectionPrompt: 'Algum outro tema que você consome por prazer?',
+        reflectionPlaceholder: 'Ex: culinária, jardinagem, games, maternidade...',
+        reflectionPurpose: 'Usamos isso para sugerir seu nicho (você confirma).'
       },
       {
         id: 'q2_community',
@@ -110,9 +116,7 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'solo', label: 'Bastidores / Criar produtos assíncronos', icon: '👤' },
           { id: 'comunidade', label: 'Direto com pessoas em comunidade ou mentorias', icon: '👥' },
           { id: 'misto', label: 'Um modelo equilibrado com pouco contato 1 a 1', icon: '⚖️' }
-        ],
-        reflectionPrompt: 'Com suas palavras: o que mais drena ou recarrega sua bateria social no trabalho?',
-        reflectionPlaceholder: 'Ex: Ficar o dia todo em chamadas me esgota, prefiro criar no meu ritmo...'
+        ]
       }
     ]
   },
@@ -137,22 +141,23 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'pouco', label: '3 a 5 horas/semana (cerca de 1h por noite)', icon: '🌙' },
           { id: 'medio', label: '6 a 12 horas/semana (noites + sábado)', icon: '⚡' },
           { id: 'muito', label: '15+ horas/semana (meio período ou tempo total)', icon: '🚀' }
-        ]
+        ],
+        reflectionPrompt: 'Com suas palavras: o que mais rouba seu tempo na semana?',
+        reflectionPlaceholder: 'Ex: Horas extras no trabalho e cansaço mental depois do expediente...',
+        reflectionPurpose: 'Usamos isso para sugerir horários para suas tarefas e no coach.'
       },
       {
         id: 'q3_investment',
         sectionId: 3,
         sectionName: 'Disponibilidade',
-        question: 'Quanto pode investir no primeiro mês?',
-        subtext: 'Sem pressão: é totalmente possível começar com R$ 0.',
+        question: 'Se o primeiro teste não der certo, quanto você aceita ter investido sem se arrepender?',
+        subtext: 'Decida pelo que você pode perder, não pelo que espera ganhar. Dá para começar com R$ 0.',
         type: 'single',
         options: [
-          { id: 'zero', label: 'R$ 0 (usar apenas ferramentas gratuitas)', icon: '🆓' },
-          { id: 'ate_200', label: 'Até R$ 200 (domínio, ferramentas básicas)', icon: '🌱' },
-          { id: 'mais_500', label: 'R$ 500 ou mais (tráfego e plataformas pagas)', icon: '💼' }
-        ],
-        reflectionPrompt: 'Com suas palavras: quais são os maiores ladrões de tempo da sua semana atual?',
-        reflectionPlaceholder: 'Ex: Horas extras no trabalho e cansaço mental após o expediente...'
+          { id: 'zero', label: 'R$ 0: quero testar só com ferramentas gratuitas', icon: '🆓' },
+          { id: 'ate_200', label: 'Até R$ 200, sem me arrepender', icon: '🌱' },
+          { id: 'mais_500', label: 'R$ 500 ou mais, se for preciso', icon: '💼' }
+        ]
       }
     ]
   },
@@ -228,6 +233,23 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'sensivel', label: 'Fico desanimado com facilidade; preciso de passos guiados', icon: '🛡️' },
           { id: 'resiliente', label: 'Entendo que faz parte do processo de aprendizado', icon: '🌱' }
         ]
+      },
+      {
+        id: 'q5_obstacle',
+        sectionId: 5,
+        sectionName: 'Perfil',
+        question: 'O que mais provavelmente vai te atrapalhar no caminho?',
+        subtext: 'Prever o obstáculo e já ter um plano B aumenta a chance de seguir em frente.',
+        type: 'single',
+        options: [
+          { id: 'tempo', label: 'Falta de tempo ou cansaço no fim do dia', icon: '🔋' },
+          { id: 'medo', label: 'Medo de julgamento ou de oferecer meu trabalho', icon: '🫣' },
+          { id: 'perfeccionismo', label: 'Querer deixar tudo perfeito antes de mostrar', icon: '🔍' },
+          { id: 'dispersao', label: 'Me distrair com novas ideias e não terminar', icon: '🦋' }
+        ],
+        reflectionPrompt: 'Com suas palavras: o que costuma te fazer parar?',
+        reflectionPlaceholder: 'Ex: Começo animado, mas na segunda semana a rotina me engole...',
+        reflectionPurpose: 'Usamos isso para montar seu plano B e no coach.'
       }
     ]
   },
@@ -281,8 +303,9 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'rotina_livre', label: 'Construí uma rotina criativa sem esgotamento nem ansiedade', icon: '🕊️' },
           { id: 'impacto_real', label: 'Gerei um alívio verdadeiro e tangível para 3+ pessoas reais', icon: '🤝' }
         ],
-        reflectionPrompt: 'Em suas próprias palavras: o que essa conquista mudaria na sua autoestima e na sua vida?',
-        reflectionPlaceholder: 'Ex: Provavelmente eu sentiria que finalmente tomei as rédeas do meu futuro sem depender da sorte...'
+        reflectionPrompt: 'Com suas palavras, complete: "Daqui a 90 dias, eu..."',
+        reflectionPlaceholder: 'Ex: ...recebi meus primeiros pagamentos e confio no meu próprio jeito de trabalhar.',
+        reflectionPurpose: 'Usamos isso como sua âncora e na carta do seu eu futuro.'
       }
     ]
   }

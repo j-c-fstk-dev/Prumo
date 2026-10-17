@@ -46,7 +46,7 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [x] Persistência local (IndexedDB) + app dividido em telas ([etapa 04](etapas/04-telas-e-persistencia.md))
 - [x] Remover dados de exemplo fixos ([etapa 05](etapas/05-sem-dados-de-exemplo.md))
 - [x] Motor de diagnóstico + hipótese/teste/sinal + 2 alternativas + pivô ([etapa 06](etapas/06-motor-de-diagnostico.md))
-- [ ] Pergunta de perda aceitável + pergunta de obstáculo (WOOP)
+- [x] Campos abertos com confirmação + perda aceitável + obstáculo/plano B ([etapa 07](etapas/07-campos-abertos.md))
 - [ ] Tarefas do roteiro adaptadas ao formato do produto (serviço / sessão / guia / curso)
 - [ ] Tarefas pessoais + editar/reordenar tarefas do plano + campo "Quando vou fazer"
 - [ ] Carta do eu futuro: rascunho editável + resposta escrita pelo usuário
