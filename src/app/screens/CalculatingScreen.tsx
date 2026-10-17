@@ -5,11 +5,16 @@ import {
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { CompassMark } from '../../components/brand/CompassMark';
+import { calculateDiagnosis } from '../../domain/diagnosis';
 import { useApp } from '../state/AppStore';
 
 export const CalculatingScreen: React.FC = () => {
-  const { actions } = useApp();
+  const { answers, personalAnchor, actions } = useApp();
   const [calcStep, setCalcStep] = useState(0);
+  // Calcula uma vez ao entrar; as etapas abaixo citam as respostas reais
+  const [result] = useState(() => calculateDiagnosis(answers, personalAnchor));
+  const steps = result.calcSteps;
+  useEffect(() => actions.saveDiagnosis(result), []);
 
   // Etapas do cálculo com storytelling (docs/pesquisa/04: "labor illusion")
   useEffect(() => {
@@ -42,12 +47,7 @@ export const CalculatingScreen: React.FC = () => {
 
       {/* Checklist dinâmico com storytelling */}
       <div className="w-full max-w-xs space-y-3 text-left">
-        {[
-          { label: 'Cruzando suas habilidades principais', done: calcStep >= 1 },
-          { label: 'Analisando sua disponibilidade real', done: calcStep >= 2 },
-          { label: 'Encontrando seu nicho de menor atrito', done: calcStep >= 3 },
-          { label: 'Estruturando roteiro em 3 fases', done: calcStep >= 4 }
-        ].map((item, idx) => (
+        {steps.map((label, idx) => ({ label, done: calcStep >= idx + 1 })).map((item, idx) => (
           <div key={idx} className="flex items-center gap-3 text-xs">
             {item.done ? (
               <CheckCircle2 className="w-4 h-4 text-[#3BAA6B] shrink-0" />

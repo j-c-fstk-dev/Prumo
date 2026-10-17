@@ -12,6 +12,7 @@ import { useApp } from '../state/AppStore';
 export const ResultScreen: React.FC = () => {
   const { userName, diagnosis, actions } = useApp();
   const [showJustification, setShowJustification] = useState(false);
+  const [showAlternatives, setShowAlternatives] = useState(false);
 
   return (
     <div className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-slide-up">
@@ -58,6 +59,26 @@ export const ResultScreen: React.FC = () => {
           </div>
         </div>
 
+        {/* Hipótese a testar: o diagnóstico não é veredito (docs/pesquisa/01) */}
+        <div className="p-3.5 rounded-xl bg-white border border-[#E6E8E6] mb-3 space-y-1.5">
+          <span className="text-[11px] font-bold text-[#1F6F5C] uppercase tracking-wider block">
+            🧪 Sua hipótese para testar
+          </span>
+          <p className="text-xs text-[#1A1D1B] leading-relaxed">{diagnosis.hypothesis}</p>
+          <p className="text-xs text-[#5B615D] leading-relaxed">
+            <strong className="text-[#1A1D1B]">Teste:</strong> {diagnosis.test}
+          </p>
+          <p className="text-xs text-[#5B615D] leading-relaxed">
+            <strong className="text-[#1A1D1B]">Sinal de que funcionou:</strong> {diagnosis.successSignal}
+          </p>
+        </div>
+
+        {diagnosis.warnings.map((w) => (
+          <div key={w} className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 mb-3 leading-relaxed">
+            {w}
+          </div>
+        ))}
+
         {/* Justificativa Expansível */}
         <div className="p-3.5 rounded-xl bg-[#F7F9F8] border border-[#E6E8E6] mb-4">
           <button
@@ -74,6 +95,40 @@ export const ResultScreen: React.FC = () => {
             </p>
           )}
         </div>
+
+        {/* Alternativas recolhidas: 1 recomendação em destaque evita sobrecarga de escolha */}
+        {diagnosis.alternatives.length > 0 && (
+          <div className="p-3.5 rounded-xl bg-[#F7F9F8] border border-[#E6E8E6] mb-4">
+            <button
+              onClick={() => setShowAlternatives(!showAlternatives)}
+              className="w-full flex items-center justify-between text-xs font-semibold text-[#1F6F5C]"
+            >
+              <span>Ver {diagnosis.alternatives.length} alternativas</span>
+              {showAlternatives ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {showAlternatives && (
+              <div className="mt-2 pt-2 border-t border-[#E6E8E6] space-y-2">
+                {diagnosis.alternatives.map((alt) => (
+                  <div key={`${alt.nicheId}-${alt.productId}`} className="p-2.5 rounded-lg bg-white border border-[#E6E8E6]">
+                    <strong className="text-xs text-[#1A1D1B] block">{alt.niche}</strong>
+                    <span className="text-[11px] text-[#5B615D] block mt-0.5">{alt.product}</span>
+                    <button
+                      onClick={() => {
+                        soundEffects.playSelectOption();
+                        actions.chooseAlternative(alt);
+                        setShowAlternatives(false);
+                      }}
+                      className="mt-1.5 text-[11px] font-semibold text-[#1F6F5C] hover:underline cursor-pointer"
+                    >
+                      Explorar esta alternativa
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Botões de Ação */}

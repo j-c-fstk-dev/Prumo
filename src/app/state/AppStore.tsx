@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, INITIAL_TASKS, TaskItem } from '../../data/prumoData';
+import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption } from '../../domain/diagnosis';
 import { soundEffects } from '../../utils/soundEffects';
 import { clearAll, loadValue, saveValue } from './storage';
 
@@ -37,6 +38,8 @@ interface PersistedState {
   /** Só o progresso (sem entrada = pendente); o conteúdo vem de INITIAL_TASKS e pode mudar sem perder progresso */
   taskStatus: Record<string, TaskItem['status']>;
   coachMessages: CoachMessage[];
+  /** Diagnóstico calculado ao fim da anamnese (null até lá) */
+  diagnosis: Diagnosis | null;
   onboardingDone: boolean;
 }
 
@@ -51,6 +54,7 @@ function initialPersisted(): PersistedState {
     reflections: {},
     taskStatus: {},
     coachMessages: [],
+    diagnosis: null,
     onboardingDone: false,
   };
 }
@@ -141,6 +145,12 @@ function useAppState() {
         DEFAULT_DIAGNOSIS.personalAnchor
       : DEFAULT_DIAGNOSIS.personalAnchor);
 
+  // Antes de calcular, mostra uma prévia a partir das respostas atuais
+  const diagnosis: Diagnosis = useMemo(
+    () => data.diagnosis ?? calculateDiagnosis(data.answers, personalAnchor),
+    [data.diagnosis, data.answers, personalAnchor],
+  );
+
   const update = useCallback((patch: Partial<PersistedState>) => setData((d) => ({ ...d, ...patch })), []);
 
   const actions = {
@@ -206,6 +216,10 @@ function useAppState() {
 
     completeOnboarding: () => update({ onboardingDone: true }),
 
+    saveDiagnosis: (d: Diagnosis) => update({ diagnosis: d }),
+    /** O "pivô": troca o plano por uma das alternativas */
+    chooseAlternative: (alt: DiagnosisOption) => update({ diagnosis: applyAlternative(diagnosis, alt, data.answers) }),
+
     toggleTaskStatus: (taskId: string) => {
       const next = (data.taskStatus[taskId] ?? 'pending') === 'completed' ? 'pending' : 'completed';
       if (next === 'completed') {
@@ -248,7 +262,14 @@ function useAppState() {
               userName: data.userName,
               macroGoal: data.macroGoal,
               personalAnchor,
-              diagnosis: DEFAULT_DIAGNOSIS,
+              diagnosis: {
+                niche: diagnosis.niche,
+                nicheDescription: diagnosis.nicheDescription,
+                product: diagnosis.product,
+                audience: diagnosis.audience,
+                channel: diagnosis.channel,
+                timeline: diagnosis.timeline,
+              },
               currentTask: { title: task.title, whatToDo: task.whatToDo, chapterTitle: task.chapterTitle },
             },
           }),
@@ -283,7 +304,7 @@ function useAppState() {
     selectedTask,
     nextStepTask,
     personalAnchor,
-    diagnosis: DEFAULT_DIAGNOSIS,
+    diagnosis,
     screen,
     tab,
     sectionIndex,
