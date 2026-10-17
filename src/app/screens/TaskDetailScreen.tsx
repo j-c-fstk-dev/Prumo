@@ -8,12 +8,16 @@ import {
   ChevronUp,
   Play,
   Pause,
+  Pencil,
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
+import { WhenPicker } from '../components/WhenPicker';
 
 export const TaskDetailScreen: React.FC = () => {
-  const { selectedTask, activeAudioTaskId, isPlayingAudio, audioElapsedSec, actions } = useApp();
+  const { selectedTask, reflections, activeAudioTaskId, isPlayingAudio, audioElapsedSec, actions } = useApp();
+  const [renaming, setRenaming] = useState(false);
+  const [newTitle, setNewTitle] = useState(selectedTask.title);
   const [showTranscript, setShowTranscript] = useState(false);
 
   return (
@@ -53,9 +57,32 @@ export const TaskDetailScreen: React.FC = () => {
         </div>
 
         <div>
-          <h2 className="text-lg font-bold font-display text-[#1A1D1B]">
-            {selectedTask.title}
-          </h2>
+          {renaming ? (
+            <div className="flex gap-2">
+              <input
+                autoFocus
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                className="flex-1 px-2 py-1 border border-[#1F6F5C] rounded-md text-sm focus:outline-none"
+              />
+              <button
+                onClick={() => {
+                  actions.renamePlanTask(selectedTask.id, newTitle);
+                  setRenaming(false);
+                }}
+                className="px-3 py-1 bg-[#1F6F5C] text-white text-xs font-semibold rounded-lg cursor-pointer"
+              >
+                Salvar
+              </button>
+            </div>
+          ) : (
+            <h2 className="text-lg font-bold font-display text-[#1A1D1B]">
+              {selectedTask.title}{' '}
+              <button onClick={() => setRenaming(true)} className="align-middle text-[#5B615D] cursor-pointer" aria-label="Editar título">
+                <Pencil className="w-3.5 h-3.5 inline" />
+              </button>
+            </h2>
+          )}
           <div className="flex items-center gap-2 mt-0.5 text-xs text-[#5B615D]">
             <Clock className="w-3.5 h-3.5" />
             <span>Duração recomendada: {selectedTask.durationMinutes} min</span>
@@ -119,6 +146,34 @@ export const TaskDetailScreen: React.FC = () => {
             </div>
           </div>
         )}
+
+
+        {/* Intenção de implementação: o recurso com mais evidência (docs/pesquisa/02) */}
+
+
+        <div className="p-3.5 rounded-xl bg-white border border-[#1F6F5C]/30">
+
+
+          <strong className="text-xs text-[#1A1D1B] block mb-2">Quando vou fazer:</strong>
+
+
+          <WhenPicker
+
+
+            value={selectedTask.when}
+
+
+            onChange={(when) => actions.setPlanTaskWhen(selectedTask.id, when)}
+
+
+            timeThieves={reflections.q3_hours}
+
+
+          />
+
+
+        </div>
+
 
 
         {/* O Que Fazer */}

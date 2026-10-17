@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
+import { PersonalTasks } from '../components/PersonalTasks';
 
 export const RoadmapTab: React.FC = () => {
   const { tasks, personalAnchor, actions } = useApp();
@@ -141,6 +142,10 @@ export const RoadmapTab: React.FC = () => {
                 </div>
               );
             })}
+        </div>
+
+        <div className="mt-4">
+          <PersonalTasks title="Minhas tarefas (fora do plano)" />
         </div>
       </div>
     </div>

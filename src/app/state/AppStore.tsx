@@ -1,7 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, INITIAL_TASKS, TaskItem } from '../../data/prumoData';
+import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, TaskItem } from '../../data/prumoData';
 import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption } from '../../domain/diagnosis';
+import { buildPlanTasks } from '../../domain/tasks';
 import { soundEffects } from '../../utils/soundEffects';
 import { clearAll, loadValue, saveValue } from './storage';
 
@@ -22,6 +23,16 @@ export type ScreenState =
 export type TabId = 'home' | 'roadmap' | 'coach' | 'profile';
 export type MacroGoal = 'renda_extra' | 'substituir' | 'proposito';
 
+/** Tarefa criada pela própria pessoa (fora do plano) */
+export interface PersonalTask {
+  id: string;
+  title: string;
+  /** "quando eu ___" (intenção de implementação) */
+  when?: string;
+  done: boolean;
+  createdAt: number;
+}
+
 export interface CoachMessage {
   sender: 'user' | 'coach';
   text: string;
@@ -37,8 +48,11 @@ interface PersistedState {
   reflections: Record<string, string>;
   /** Opções que a pessoa confirmou (ou recusou) a partir do texto livre: só as confirmadas pontuam */
   textOptions: { confirmed: Record<string, string[]>; dismissed: Record<string, string[]> };
-  /** Só o progresso (sem entrada = pendente); o conteúdo vem de INITIAL_TASKS e pode mudar sem perder progresso */
+  /** Só o progresso (sem entrada = pendente); o conteúdo vem do roteiro (domain/tasks.ts) e pode mudar sem perder progresso */
   taskStatus: Record<string, TaskItem['status']>;
+  /** Ajustes da pessoa nas tarefas do plano (título e "quando vou fazer") */
+  planEdits: Record<string, { title?: string; when?: string }>;
+  personalTasks: PersonalTask[];
   coachMessages: CoachMessage[];
   /** Diagnóstico calculado ao fim da anamnese (null até lá) */
   diagnosis: Diagnosis | null;
@@ -56,6 +70,8 @@ function initialPersisted(): PersistedState {
     reflections: {},
     textOptions: { confirmed: {}, dismissed: {} },
     taskStatus: {},
+    planEdits: {},
+    personalTasks: [],
     coachMessages: [],
     diagnosis: null,
     onboardingDone: false,
@@ -135,9 +151,16 @@ function useAppState() {
     return () => clearInterval(interval);
   }, [isPlayingAudio]);
 
+  // Roteiro montado a partir do diagnóstico + progresso + ajustes da pessoa
   const tasks: TaskItem[] = useMemo(
-    () => INITIAL_TASKS.map((t) => ({ ...t, status: data.taskStatus[t.id] ?? 'pending' })),
-    [data.taskStatus],
+    () =>
+      buildPlanTasks(data.diagnosis).map((t) => ({
+        ...t,
+        ...data.planEdits[t.id],
+        title: data.planEdits[t.id]?.title || t.title,
+        status: data.taskStatus[t.id] ?? 'pending',
+      })),
+    [data.diagnosis, data.taskStatus, data.planEdits],
   );
   const nextStepTask = tasks.find((t) => t.status !== 'completed' && !t.isLocked) || tasks[0];
   const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? nextStepTask;
@@ -264,6 +287,53 @@ function useAppState() {
       }
       setData((d) => ({ ...d, taskStatus: { ...d.taskStatus, [taskId]: next } }));
     },
+
+    /** "Quando vou fazer" de uma tarefa do plano (vazio remove) */
+    setPlanTaskWhen: (taskId: string, when: string) =>
+      setData((d) => ({ ...d, planEdits: { ...d.planEdits, [taskId]: { ...d.planEdits[taskId], when: when.trim() || undefined } } })),
+    renamePlanTask: (taskId: string, title: string) =>
+      setData((d) => ({ ...d, planEdits: { ...d.planEdits, [taskId]: { ...d.planEdits[taskId], title: title.trim() || undefined } } })),
+
+    addPersonalTask: (title: string, when?: string) => {
+      if (!title.trim()) return;
+      soundEffects.playSelectOption();
+      const task: PersonalTask = {
+        id: `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+        title: title.trim(),
+        when: when?.trim() || undefined,
+        done: false,
+        createdAt: Date.now(),
+      };
+      setData((d) => ({ ...d, personalTasks: [...d.personalTasks, task] }));
+    },
+    updatePersonalTask: (id: string, patch: Partial<Pick<PersonalTask, 'title' | 'when'>>) =>
+      setData((d) => ({
+        ...d,
+        personalTasks: d.personalTasks.map((t) =>
+          t.id === id
+            ? { ...t, ...patch, title: patch.title?.trim() || t.title, when: patch.when !== undefined ? patch.when.trim() || undefined : t.when }
+            : t,
+        ),
+      })),
+    togglePersonalTask: (id: string) => {
+      const task = data.personalTasks.find((t) => t.id === id);
+      if (task && !task.done) soundEffects.playCompleteTask();
+      else soundEffects.playSoftTap();
+      setData((d) => ({ ...d, personalTasks: d.personalTasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)) }));
+    },
+    deletePersonalTask: (id: string) => {
+      soundEffects.playBack();
+      setData((d) => ({ ...d, personalTasks: d.personalTasks.filter((t) => t.id !== id) }));
+    },
+    movePersonalTask: (id: string, direction: -1 | 1) =>
+      setData((d) => {
+        const list = [...d.personalTasks];
+        const i = list.findIndex((t) => t.id === id);
+        const j = i + direction;
+        if (i < 0 || j < 0 || j >= list.length) return d;
+        [list[i], list[j]] = [list[j], list[i]];
+        return { ...d, personalTasks: list };
+      }),
 
     toggleAudio: (taskId: string) => {
       const nextPlaying = !(isPlayingAudio && activeAudioTaskId === taskId);

@@ -47,8 +47,8 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [x] Remover dados de exemplo fixos ([etapa 05](etapas/05-sem-dados-de-exemplo.md))
 - [x] Motor de diagnóstico + hipótese/teste/sinal + 2 alternativas + pivô ([etapa 06](etapas/06-motor-de-diagnostico.md))
 - [x] Campos abertos com confirmação + perda aceitável + obstáculo/plano B ([etapa 07](etapas/07-campos-abertos.md))
-- [ ] Tarefas do roteiro adaptadas ao formato do produto (serviço / sessão / guia / curso)
-- [ ] Tarefas pessoais + editar/reordenar tarefas do plano + campo "Quando vou fazer"
+- [x] Tarefas do roteiro adaptadas ao formato e ao canal ([etapa 08](etapas/08-tarefas.md))
+- [x] Tarefas pessoais (criar, editar, apagar, reordenar) + "quando vou fazer" ([etapa 08](etapas/08-tarefas.md))
 - [ ] Carta do eu futuro: rascunho editável + resposta escrita pelo usuário
 - [ ] Sequência gentil (descanso + remendo), check-in diário, linha do tempo de conquistas
 - [ ] Estrutura de paywall com feature flags (desligada)

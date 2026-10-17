@@ -374,6 +374,8 @@ export interface TaskItem {
   resources: { title: string; type: string }[];
   userNotes?: string;
   isLocked?: boolean;
+  /** Intenção de implementação: "quando eu ___, faço esta tarefa" (docs/pesquisa/02) */
+  when?: string;
   anchorIllustration: {
     title: string;
     symbol: string;
@@ -476,7 +478,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     description: 'Converse com 3 pessoas do perfil para receber feedback honesto.',
     durationMinutes: 30,
     status: 'pending',
-    whatToDo: 'Envie sua versão mínima para 3 pessoas que já expressaram dificuldade no tema. Faça duas perguntas: "O que ficou confuso?" e "Isso te poupou tempo?".',
+    whatToDo: 'Mostre sua versão mínima (o desenho do serviço, o roteiro da sessão, o esboço do guia ou a aula 1) para 3 pessoas que já expressaram dificuldade no tema. Faça duas perguntas: "O que ficou confuso?" e "Isso resolveria seu problema?".',
     howToKnowItIsGood: [
       'Pelo menos 2 pessoas confirmaram que aplicaram o conselho',
       'Você anotou as palavras exatas que elas usaram para descrever o alívio'

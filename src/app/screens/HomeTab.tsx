@@ -10,6 +10,7 @@ import {
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { Constellation } from '../../components/brand/Constellation';
+import { PersonalTasks } from '../components/PersonalTasks';
 
 export const HomeTab: React.FC = () => {
   const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, actions } = useApp();
@@ -78,6 +79,9 @@ export const HomeTab: React.FC = () => {
           <p className="text-xs text-[#5B615D] mt-1 leading-relaxed">
             {nextStepTask.description}
           </p>
+          {nextStepTask.when && (
+            <p className="text-[11px] text-[#1F6F5C] font-semibold mt-1.5">⏰ Combinado: {nextStepTask.when}</p>
+          )}
 
           {/* Micro-áudio Coaching Pills */}
           {nextStepTask.audioCoach && (
@@ -138,6 +142,11 @@ export const HomeTab: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Tarefas pessoais: o app também serve para o dia a dia fora do plano */}
+
+        <PersonalTasks title="Suas tarefas de hoje" />
+
 
         {/* Card de Progresso da História em Capítulos */}
         <div className="p-4 rounded-2xl bg-white border border-[#E6E8E6] shadow-xs">
