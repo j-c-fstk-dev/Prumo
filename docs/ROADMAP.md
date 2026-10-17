@@ -49,7 +49,7 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [x] Campos abertos com confirmação + perda aceitável + obstáculo/plano B ([etapa 07](etapas/07-campos-abertos.md))
 - [x] Tarefas do roteiro adaptadas ao formato e ao canal ([etapa 08](etapas/08-tarefas.md))
 - [x] Tarefas pessoais (criar, editar, apagar, reordenar) + "quando vou fazer" ([etapa 08](etapas/08-tarefas.md))
-- [ ] Carta do eu futuro: rascunho editável + resposta escrita pelo usuário
+- [x] Carta do eu futuro em duas vias, escrita pela pessoa ([etapa 09](etapas/09-carta-em-duas-vias.md))
 - [ ] Sequência gentil (descanso + remendo), check-in diário, linha do tempo de conquistas
 - [ ] Estrutura de paywall com feature flags (desligada)
 

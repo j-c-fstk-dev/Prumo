@@ -33,6 +33,13 @@ export interface PersonalTask {
   createdAt: number;
 }
 
+/** Carta em duas vias: ida (hoje → 90 dias) e resposta escrita pela pessoa como seu eu futuro */
+export interface FutureLetter {
+  toFuture: string;
+  fromFuture: string;
+  sealedAt?: number;
+}
+
 export interface CoachMessage {
   sender: 'user' | 'coach';
   text: string;
@@ -56,6 +63,7 @@ interface PersistedState {
   coachMessages: CoachMessage[];
   /** Diagnóstico calculado ao fim da anamnese (null até lá) */
   diagnosis: Diagnosis | null;
+  letter: FutureLetter | null;
   onboardingDone: boolean;
 }
 
@@ -74,6 +82,7 @@ function initialPersisted(): PersistedState {
     personalTasks: [],
     coachMessages: [],
     diagnosis: null,
+    letter: null,
     onboardingDone: false,
   };
 }
@@ -274,6 +283,11 @@ function useAppState() {
     completeOnboarding: () => update({ onboardingDone: true }),
 
     saveDiagnosis: (d: Diagnosis) => update({ diagnosis: d }),
+
+    setLetter: (patch: Partial<FutureLetter>) =>
+      setData((d) => ({ ...d, letter: { toFuture: '', fromFuture: '', ...d.letter, ...patch } })),
+    sealLetter: () =>
+      setData((d) => (d.letter ? { ...d, letter: { ...d.letter, sealedAt: Date.now() } } : d)),
     /** O "pivô": troca o plano por uma das alternativas */
     chooseAlternative: (alt: DiagnosisOption) => update({ diagnosis: applyAlternative(diagnosis, alt, scoredAnswers) }),
 
