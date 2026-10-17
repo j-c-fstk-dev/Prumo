@@ -108,3 +108,24 @@ describe('denúncia de resposta', () => {
     expect(handleReport({}).status).toBe(400);
   });
 });
+
+describe('LLM_EXTRA_BODY', () => {
+  it('manda os campos extras sem trocar modelo nem mensagens', async () => {
+    const fetchMock = mockLlm();
+    const env = { ...LIVE_ENV, LLM_MODEL: 'glm-4.5-flash', LLM_EXTRA_BODY: '{"thinking":{"type":"disabled"},"model":"outro","messages":[]}' };
+    await handleCoachChat({ message: 'oi' }, env);
+    const sent = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, { body: string }])[1].body);
+    expect(sent.thinking).toEqual({ type: 'disabled' });
+    expect(sent.model).toBe('glm-4.5-flash');
+    expect(sent.messages.at(-1).content).toBe('oi');
+  });
+
+  it('JSON inválido é ignorado com aviso', async () => {
+    const fetchMock = mockLlm('ok');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const r = await handleCoachChat({ message: 'oi' }, { ...LIVE_ENV, LLM_EXTRA_BODY: '{quebrado' });
+    expect(r.body.mode).toBe('live');
+    expect(warn).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalled();
+  });
+});

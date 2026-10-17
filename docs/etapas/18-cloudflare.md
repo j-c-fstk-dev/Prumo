@@ -54,22 +54,32 @@ npx wrangler@4 secret put LLM_MODEL      # opcional
 npx wrangler@4 secret put LLM_BASE_URL   # só para "openai" (Z.ai, OpenRouter...)
 ```
 
-**Z.ai (escolha atual):** `LLM_PROVIDER=openai`, `LLM_BASE_URL=https://api.z.ai/api/paas/v4`,
-`LLM_MODEL=glm-5.3-flash` (barato; nome do modelo confirmado só em guias de terceiros, a documentação
-oficial estava inacessível daqui) e `LLM_API_KEY` = sua chave. Se a resposta da IA vier vazia (modelo que
-gasta o limite "pensando"), o coach cai em "respostas prontas" e o erro aparece no log, em vez de fingir
-que a IA respondeu.
+**Z.ai (escolha atual, testada com a chave do dono em 2026-10-18):**
+
+| Secret | Valor |
+|---|---|
+| `LLM_PROVIDER` | `openai` (= formato compatível com OpenAI) |
+| `LLM_BASE_URL` | `https://api.z.ai/api/paas/v4` |
+| `LLM_MODEL` | `glm-4.5-flash` (gratuito; `glm-5.3-flash` exige saldo: erro 1113) |
+| `LLM_EXTRA_BODY` | `{"thinking":{"type":"disabled"}}` (opcional) |
+| `LLM_API_KEY` | a chave da Z.ai |
+
+O teste mostrou que o `glm-4.5-flash` "pensa" antes de responder (179 tokens para um "Olá"). Para isso
+existe a variável genérica `LLM_EXTRA_BODY`: um JSON com campos extras que vão no corpo da requisição ao
+provedor, sem nunca trocar modelo, mensagens ou prompt. Se a resposta vier vazia, o coach cai em
+"respostas prontas" e o erro vai para o log, em vez de fingir que a IA respondeu.
+
+**Antes do lançamento público:** conferir na política de privacidade da Z.ai se o uso do modelo gratuito
+permite treinar com os dados (LGPD). Para testes, tudo bem.
 
 Sem esses secrets o app funciona normalmente e o coach fica em modo "respostas prontas", avisando a pessoa.
 
-### 5. Domínio próprio (opcional)
-Depois de escolher o subdomínio (ex.: `app.seudominio.com.br`), basta adicionar ao `wrangler.jsonc`:
-
-```jsonc
-"routes": [{ "pattern": "app.seudominio.com.br", "custom_domain": true }]
-```
-
-A Cloudflare cria o DNS e o certificado sozinha. Os túneis que você já tem não são necessários para isso.
+### 5. Domínio próprio
+Já configurado no `wrangler.jsonc`: **prumo.jardimdofazer.com.br** (`custom_domain: true`). No deploy, a
+Cloudflare cria o DNS e o certificado sozinha; o endereço `*.workers.dev` continua funcionando.
+- O token precisa ter acesso à zona `jardimdofazer.com.br` (Zone Resources).
+- Se já existir um registro DNS `prumo` nessa zona (ex.: de um túnel), o deploy falha: apague-o antes.
+- Os túneis não são necessários.
 
 ## Próximo passo (2.4)
 Limite de uso por pessoa no servidor (para proteger a chave e o custo da IA) e medição do custo real por

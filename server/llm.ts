@@ -6,6 +6,8 @@
  *   LLM_API_KEY   chave do provedor
  *   LLM_MODEL     id do modelo (opcional; cada provedor tem um padrão)
  *   LLM_BASE_URL  só para "openai": URL base da API compatível
+ *   LLM_EXTRA_BODY  opcional: JSON com campos extras para o corpo da requisição do provedor
+ *                   (ex.: Z.ai sem raciocínio: {"thinking":{"type":"disabled"}}). Não sobrescreve os campos do app.
  *
  * Compatibilidade: sem LLM_PROVIDER, mas com GEMINI_API_KEY definida, usa Gemini.
  */
@@ -31,6 +33,7 @@ interface LlmConfig {
   apiKey: string;
   model: string;
   baseUrl?: string;
+  extraBody?: Record<string, unknown>;
 }
 
 const DEFAULT_MODELS: Record<ProviderName, string> = {
@@ -41,7 +44,7 @@ const DEFAULT_MODELS: Record<ProviderName, string> = {
 
 const PLACEHOLDER_KEYS = new Set(['', 'MY_GEMINI_API_KEY', 'MY_LLM_API_KEY']);
 
-export type LlmEnv = Partial<Record<'LLM_PROVIDER' | 'LLM_API_KEY' | 'LLM_MODEL' | 'LLM_BASE_URL' | 'GEMINI_API_KEY', string>>;
+export type LlmEnv = Partial<Record<'LLM_PROVIDER' | 'LLM_API_KEY' | 'LLM_MODEL' | 'LLM_BASE_URL' | 'LLM_EXTRA_BODY' | 'GEMINI_API_KEY', string>>;
 
 /**
  * Lê a configuração das variáveis de ambiente. No Node vem de process.env; no Cloudflare Worker,
@@ -69,14 +72,28 @@ export function getLlmConfig(env: LlmEnv = (globalThis as { process?: { env: Llm
     apiKey,
     model: env.LLM_MODEL?.trim() || DEFAULT_MODELS[provider],
     baseUrl: env.LLM_BASE_URL?.trim().replace(/\/+$/, ''),
+    extraBody: parseExtraBody(env.LLM_EXTRA_BODY),
   };
 }
 
-async function postJson(url: string, headers: Record<string, string>, body: unknown): Promise<any> {
+function parseExtraBody(raw?: string): Record<string, unknown> | undefined {
+  if (!raw?.trim()) return undefined;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+  } catch {
+    // cai no aviso abaixo
+  }
+  console.warn('LLM_EXTRA_BODY não é um objeto JSON válido; ignorado.');
+  return undefined;
+}
+
+async function postJson(cfg: LlmConfig, url: string, headers: Record<string, string>, body: Record<string, unknown>): Promise<any> {
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
-    body: JSON.stringify(body),
+    // Campos do app vêm por último: o extra nunca troca modelo, mensagens ou prompt
+    body: JSON.stringify({ ...cfg.extraBody, ...body }),
     signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) {
@@ -88,7 +105,7 @@ async function postJson(url: string, headers: Record<string, string>, body: unkn
 
 async function generateGemini(cfg: LlmConfig, opts: GenerateOptions): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(cfg.model)}:generateContent`;
-  const data = await postJson(url, { 'x-goog-api-key': cfg.apiKey }, {
+  const data = await postJson(cfg, url, { 'x-goog-api-key': cfg.apiKey }, {
     systemInstruction: { parts: [{ text: opts.system }] },
     contents: opts.messages.map((m) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
@@ -101,7 +118,7 @@ async function generateGemini(cfg: LlmConfig, opts: GenerateOptions): Promise<st
 }
 
 async function generateAnthropic(cfg: LlmConfig, opts: GenerateOptions): Promise<string> {
-  const data = await postJson('https://api.anthropic.com/v1/messages', {
+  const data = await postJson(cfg, 'https://api.anthropic.com/v1/messages', {
     'x-api-key': cfg.apiKey,
     'anthropic-version': '2023-06-01',
   }, {
@@ -116,7 +133,7 @@ async function generateAnthropic(cfg: LlmConfig, opts: GenerateOptions): Promise
 }
 
 async function generateOpenAiCompatible(cfg: LlmConfig, opts: GenerateOptions): Promise<string> {
-  const data = await postJson(`${cfg.baseUrl}/chat/completions`, {
+  const data = await postJson(cfg, `${cfg.baseUrl}/chat/completions`, {
     Authorization: `Bearer ${cfg.apiKey}`,
   }, {
     model: cfg.model,
