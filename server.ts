@@ -54,14 +54,7 @@ async function startServer() {
         return res.json({ reply: fallback, isLiveAI: false });
       }
 
-      const ai = new GoogleGenAI({
-        apiKey: apiKey,
-        httpOptions: {
-          headers: {
-            'User-Agent': 'aistudio-build',
-          },
-        },
-      });
+      const ai = new GoogleGenAI({ apiKey });
 
       const systemPrompt = `Você é o Coach Prumo, o mentor inteligente do aplicativo Prumo.
 Seu papel é guiar criadores e empreendedores a tirarem suas ideias do papel com clareza, serenidade e foco no menor esforço viável.

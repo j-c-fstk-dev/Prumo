@@ -58,7 +58,7 @@ type ScreenState =
   | 'profile' 
   | 'paywall';
 
-export const PrumoAppSimulator: React.FC<{ onSwitchToCode?: () => void }> = ({ onSwitchToCode }) => {
+export const PrumoAppSimulator: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
   const [activeTab, setActiveTab] = useState<'home' | 'roadmap' | 'coach' | 'profile'>('home');
 
@@ -392,12 +392,12 @@ export const PrumoAppSimulator: React.FC<{ onSwitchToCode?: () => void }> = ({ o
   const fundacaoPercent = Math.round((fundacaoTasks.filter(t => t.status === 'completed').length / fundacaoTasks.length) * 100);
 
   return (
-    <div className="flex flex-col items-center justify-center p-2 sm:p-6">
-      {/* Top Controller Bar */}
-      <div className="w-full max-w-[420px] mb-3 flex items-center justify-between text-xs text-[#5B615D] px-2">
+    <div className="w-full sm:w-auto flex flex-col items-center justify-center sm:p-6">
+      {/* Barra de controle do preview (só no desktop) */}
+      <div className="hidden sm:flex w-full max-w-[420px] mb-3 items-center justify-between text-xs text-[#5B615D] px-2">
         <div className="flex items-center gap-1.5 font-medium">
           <span className="w-2 h-2 rounded-full bg-[#1F6F5C] animate-pulse" />
-          <span>Simulador Nativo Prumo Android</span>
+          <span>Preview Prumo</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -439,15 +439,15 @@ export const PrumoAppSimulator: React.FC<{ onSwitchToCode?: () => void }> = ({ o
         </div>
       </div>
 
-      {/* Moldura do Celular Android (Pixel / Material 3) */}
-      <div className="w-full max-w-[400px] h-[780px] bg-[#12140F] rounded-[48px] p-3 shadow-2xl border-4 border-[#2B3029] relative flex flex-col overflow-hidden">
+      {/* Moldura do celular: só no desktop; no celular o app ocupa a tela inteira */}
+      <div className="w-full h-[100dvh] sm:max-w-[400px] sm:h-[780px] sm:bg-[#12140F] sm:rounded-[48px] sm:p-3 sm:shadow-2xl sm:border-4 sm:border-[#2B3029] relative flex flex-col overflow-hidden">
         {/* Notch / Câmera Frontal */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-5 bg-[#12140F] rounded-full z-50 flex items-center justify-center">
+        <div className="hidden absolute top-4 left-1/2 -translate-x-1/2 w-28 h-5 bg-[#12140F] rounded-full z-50 sm:flex items-center justify-center">
           <div className="w-3.5 h-3.5 rounded-full bg-neutral-900 border border-neutral-800" />
         </div>
 
         {/* Barra de Status do Android */}
-        <div className="h-6 w-full pt-1 px-6 flex items-center justify-between text-[11px] text-[#5B615D] z-40 shrink-0 font-medium select-none">
+        <div className="hidden h-6 w-full pt-1 px-6 sm:flex items-center justify-between text-[11px] text-[#5B615D] z-40 shrink-0 font-medium select-none">
           <span>09:41</span>
           <div className="flex items-center gap-2">
             <button 
@@ -465,7 +465,7 @@ export const PrumoAppSimulator: React.FC<{ onSwitchToCode?: () => void }> = ({ o
         </div>
 
         {/* Área de Conteúdo da Tela (Dentro do Frame) */}
-        <div className="flex-1 bg-[#F7F9F8] rounded-[36px] overflow-hidden flex flex-col relative text-[#1A1D1B]">
+        <div className="flex-1 bg-[#F7F9F8] sm:rounded-[36px] overflow-hidden flex flex-col relative text-[#1A1D1B]">
 
           {/* ============================================================== */}
           {/* TELA A1: SPLASH & BOAS-VINDAS */}
@@ -1855,14 +1855,11 @@ export const PrumoAppSimulator: React.FC<{ onSwitchToCode?: () => void }> = ({ o
                     <ChevronRight className="w-4 h-4 text-[#5B615D]" />
                   </div>
                   <div 
-                    onClick={() => {
-                      soundEffects.playSoftTap();
-                      if (onSwitchToCode) onSwitchToCode();
-                    }}
-                    className="p-3 bg-[#E3F2ED] border border-[#1F6F5C]/30 text-[#1F6F5C] rounded-xl flex items-center justify-between cursor-pointer"
+                    onClick={handleToggleSound}
+                    className="p-3 bg-white border border-[#E6E8E6] rounded-xl flex items-center justify-between cursor-pointer hover:bg-neutral-50"
                   >
-                    <span>Ver Código Kotlin do App</span>
-                    <ChevronRight className="w-4 h-4" />
+                    <span>Sons do app: {isSoundMuted ? 'Desligados' : 'Ligados'}</span>
+                    {isSoundMuted ? <VolumeX className="w-4 h-4 text-[#5B615D]" /> : <Volume2 className="w-4 h-4 text-[#1F6F5C]" />}
                   </div>
                 </div>
               </div>
@@ -2009,7 +2006,7 @@ export const PrumoAppSimulator: React.FC<{ onSwitchToCode?: () => void }> = ({ o
         </div>
 
         {/* Barra de Navegação Gestual do Android (Gesture Pill) */}
-        <div className="h-4 w-full flex items-center justify-center shrink-0">
+        <div className="hidden h-4 w-full sm:flex items-center justify-center shrink-0">
           <div className="w-28 h-1 bg-neutral-600 rounded-full" />
         </div>
       </div>
