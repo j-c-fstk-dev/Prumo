@@ -15,13 +15,16 @@ em [`docs/etapas/`](etapas/). As decisões de produto se apoiam em [`docs/pesqui
 | 2026-10-17 | Conta Play Console como **organização** (MEI + D-U-N-S): dispensa o teste com 12 testadores |
 | 2026-10-17 | **Paywall pronto, mas desligado**; liga após período de teste dos primeiros usuários |
 | 2026-10-17 | Provedor de IA **genérico** (Gemini, Claude ou API compatível com OpenAI, como Z.ai) |
+| 2026-10-17 | Licença **AGPL-3.0-or-later** ([etapa 02](etapas/02-licenca.md)) |
+| 2026-10-17 | Identidade **bússola + constelação** ([etapa 03](etapas/03-bussola-e-constelacao.md)) |
 | 2026-10-17 | "Mapa humano" (astrologia/numerologia) → pós-MVP, opcional, antes da anamnese |
 
 ## Pendências do responsável
 
 - [ ] Solicitar D-U-N-S e abrir conta de organização na Play Console (US$ 25, pagamento único)
-- [ ] Escolher a licença (ver opções na etapa 01)
 - [ ] Escolher o provedor de IA (pode ficar para a Fase 2)
+- [ ] Deixar o repositório público (necessário para a AGPL fazer sentido)
+- [ ] Registrar a marca "Prumo" no INPI
 
 ## Fases
 
@@ -32,7 +35,7 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [x] Frente 1: método de decisão
 - [x] Frente 2: hábitos e engajamento
 - [x] Frente 3: cores e tipografia (paleta "Pergaminho & Noite"; texto do app pequeno demais)
-- [ ] Frente 4: sons
+- [x] Frente 4: sons e movimento
 - [ ] Frente 5: citações com fonte
 - [ ] Frente 6: concorrentes e freemium
 - [ ] Frente 7: LGPD e políticas da Play Store
@@ -55,6 +58,7 @@ Registro: [etapa 00](etapas/00-faxina.md)
 - [ ] Logs de erro do coach visíveis (o fallback não pode esconder falhas)
 
 ### Fase 3: Alma e conteúdo
+- [x] Splash da bússola + constelação de progresso ([etapa 03](etapas/03-bussola-e-constelacao.md))
 - [ ] Paleta e tipografia (frente 3), sons (frente 4), citações (frente 5)
 - [ ] Mensagens autocompassivas de retorno; convites de recomeço em datas-marco
 - [ ] Áudios reais nos micro-áudios

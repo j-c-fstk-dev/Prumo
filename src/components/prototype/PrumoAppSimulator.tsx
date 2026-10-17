@@ -40,6 +40,9 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../../utils/soundEffects';
+import { CompassMark } from '../brand/CompassMark';
+import { CompassSplash } from '../brand/CompassSplash';
+import { Constellation } from '../brand/Constellation';
 
 type ScreenState = 
   | 'splash' 
@@ -60,6 +63,7 @@ type ScreenState =
 
 export const PrumoAppSimulator: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
+  const [showBrandSplash, setShowBrandSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<'home' | 'roadmap' | 'coach' | 'profile'>('home');
 
   // User state
@@ -466,6 +470,7 @@ export const PrumoAppSimulator: React.FC = () => {
 
         {/* Área de Conteúdo da Tela (Dentro do Frame) */}
         <div className="flex-1 bg-[#F7F9F8] sm:rounded-[36px] overflow-hidden flex flex-col relative text-[#1A1D1B]">
+          {showBrandSplash && <CompassSplash onDone={() => setShowBrandSplash(false)} />}
 
           {/* ============================================================== */}
           {/* TELA A1: SPLASH & BOAS-VINDAS */}
@@ -474,8 +479,8 @@ export const PrumoAppSimulator: React.FC = () => {
             <div className="flex-1 flex flex-col justify-between p-6 text-center select-none animate-fadeIn">
               <div className="flex-1 flex flex-col items-center justify-center space-y-6">
                 {/* Logo da Bússola */}
-                <div className="w-20 h-20 rounded-full bg-[#E3F2ED] flex items-center justify-center text-[#1F6F5C] shadow-sm">
-                  <Compass className="w-10 h-10 animate-spin" style={{ animationDuration: '20s' }} />
+                <div className="w-24 h-24 rounded-full bg-[#E3F2ED] flex items-center justify-center text-[#1F6F5C] shadow-sm">
+                  <CompassMark size={76} />
                 </div>
 
                 <div className="space-y-2">
@@ -869,8 +874,8 @@ export const PrumoAppSimulator: React.FC = () => {
           {/* ============================================================== */}
           {currentScreen === 'calculating' && (
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center select-none animate-fadeIn">
-              <div className="w-20 h-20 rounded-full bg-[#E3F2ED] flex items-center justify-center text-[#1F6F5C] mb-6">
-                <Compass className="w-10 h-10 animate-spin text-[#1F6F5C]" style={{ animationDuration: '4s' }} />
+              <div className="w-28 h-28 rounded-full bg-[#E3F2ED] flex items-center justify-center text-[#1F6F5C] mb-6">
+                <CompassMark size={92} mode={calcStep >= 4 ? 'settle' : 'seek'} settleMs={900} />
               </div>
 
               <h2 className="text-2xl font-bold font-display text-[#1A1D1B] mb-2">
@@ -1212,6 +1217,15 @@ export const PrumoAppSimulator: React.FC = () => {
                     </p>
                   </div>
                 </div>
+
+                {/* CONSTELAÇÃO DO CAPÍTULO: cada tarefa concluída acende uma estrela */}
+                <Constellation
+                  name={nextStepTask.chapterTitle.replace(/^Capítulo \d+:\s*/, '')}
+                  stars={tasks
+                    .filter(t => t.chapterId === nextStepTask.chapterId)
+                    .map(t => ({ id: t.id, title: t.title, done: t.status === 'completed' }))}
+                  seed={nextStepTask.chapterId * 13}
+                />
 
                 {/* CARTÃO DO PRÓXIMO PASSO (Com Ilustração-Âncora e Áudio Coach) */}
                 <div className="p-4 rounded-2xl bg-[#E3F2ED] border border-[#1F6F5C]/30 shadow-sm relative overflow-hidden">

@@ -153,3 +153,98 @@
 }
 
 
+
+/* ============================================================== */
+/* IDENTIDADE: BÚSSOLA & CONSTELAÇÃO (paleta "Noite", docs/pesquisa/03) */
+/* ============================================================== */
+
+:root {
+  --night-900: #15122A;
+  --night-800: #211C3D;
+  --night-text: #EDE8F7;
+  --night-muted: #A9A2C2;
+  --lavender: #B9A6FF;
+  --gold: #E3B860;
+  --gold-deco: #C9A04A;
+}
+
+.bg-night-sky {
+  background:
+    radial-gradient(ellipse at 50% 35%, #2B2452 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 90%, #1E2A4A 0%, transparent 55%),
+    var(--night-900);
+}
+
+/* Agulha que oscila e se assenta no norte: "encontrou o prumo" */
+@keyframes needleSettle {
+  0%   { transform: rotate(-110deg); }
+  22%  { transform: rotate(48deg); }
+  40%  { transform: rotate(-26deg); }
+  56%  { transform: rotate(13deg); }
+  70%  { transform: rotate(-6deg); }
+  84%  { transform: rotate(2.5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Agulha procurando a direção (vai e volta, sem parar) */
+@keyframes needleSeek {
+  0%   { transform: rotate(-35deg); }
+  30%  { transform: rotate(60deg); }
+  55%  { transform: rotate(-70deg); }
+  80%  { transform: rotate(25deg); }
+  100% { transform: rotate(-35deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 1; }
+}
+
+@keyframes starIgnite {
+  0%   { transform: scale(0.4); opacity: 0.3; }
+  60%  { transform: scale(1.35); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes starPulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.25); }
+}
+
+@keyframes drawLine {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes splashOut {
+  to { opacity: 0; visibility: hidden; }
+}
+
+.needle {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+.needle-settle { animation: needleSettle var(--settle-ms, 1600ms) cubic-bezier(0.3, 0.7, 0.4, 1) both; }
+.needle-seek   { animation: needleSeek 2.4s ease-in-out infinite; }
+
+.star-twinkle { animation: twinkle var(--tw-dur, 3s) ease-in-out var(--tw-delay, 0s) infinite; }
+
+.star-node { transform-box: fill-box; transform-origin: center; }
+.star-ignite { animation: starIgnite 700ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.star-pulse  { animation: starPulse 2.2s ease-in-out infinite; }
+
+.constellation-line {
+  stroke-dasharray: 1;
+  animation: drawLine 900ms ease-out both;
+}
+
+.splash-out { animation: splashOut 350ms ease-in forwards; }
+
+/* Quem pede menos movimento vê tudo estático (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  .needle-settle, .needle-seek, .star-twinkle, .star-ignite, .star-pulse, .constellation-line {
+    animation: none !important;
+  }
+  .constellation-line { stroke-dasharray: none; }
+  .splash-out { animation-duration: 1ms; }
+}
