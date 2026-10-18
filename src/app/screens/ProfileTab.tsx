@@ -150,27 +150,40 @@ export const ProfileTab: React.FC = () => {
         {/* Sobre (etapa 39): links da apresentação, das políticas e do código */}
         <div className="pt-2 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted block px-1">Sobre o Prumo</span>
-          {SITE.about && <p className="text-[13px] text-ink leading-relaxed px-1 pb-1 whitespace-pre-line">{SITE.about}</p>}
+          {/* Nossa história: texto em src/landing/site.ts (até lá, aparece "em breve") */}
+          <div className="p-3 rounded-xl bg-surface border border-line">
+            <strong className="text-sm text-ink block mb-1">Nossa história</strong>
+            <p className={`text-[13px] leading-relaxed whitespace-pre-line ${SITE.about ? 'text-ink' : 'text-muted italic'}`}>
+              {SITE.about || 'Em breve, a história de quem faz o Prumo.'}
+            </p>
+          </div>
           <div className="rounded-xl bg-surface border border-line divide-y divide-line text-sm">
             {[
               { href: '/', label: 'Página do Prumo' },
               { href: '/privacidade/', label: 'Política de privacidade' },
               { href: '/termos/', label: 'Termos de uso' },
-              ...(SITE.email ? [{ href: `mailto:${SITE.email}`, label: 'Falar com a gente' }] : []),
-              ...(SITE.instagram ? [{ href: SITE.instagram, label: 'Instagram', external: true }] : []),
-              ...(SITE.tiktok ? [{ href: SITE.tiktok, label: 'TikTok', external: true }] : []),
+              { href: SITE.email && `mailto:${SITE.email}`, label: 'Falar com a gente' },
+              { href: SITE.instagram, label: 'Instagram', external: true },
+              { href: SITE.tiktok, label: 'TikTok', external: true },
               { href: SITE.repo, label: 'Código-fonte (AGPL-3.0)', external: true },
-            ].map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                className="p-3 flex items-center justify-between hover:bg-surface-2"
-              >
-                <span>{l.label}</span>
-                {l.external ? <ExternalLink className="w-4 h-4 text-muted" /> : <ChevronRight className="w-4 h-4 text-muted" />}
-              </a>
-            ))}
+            ].map((l) =>
+              !l.href ? (
+                <span key={l.label} className="p-3 flex items-center justify-between text-muted">
+                  <span>{l.label}</span>
+                  <span className="text-xs">em breve</span>
+                </span>
+              ) : (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  className="p-3 flex items-center justify-between hover:bg-surface-2"
+                >
+                  <span>{l.label}</span>
+                  {l.external ? <ExternalLink className="w-4 h-4 text-muted" /> : <ChevronRight className="w-4 h-4 text-muted" />}
+                </a>
+              ),
+            )}
           </div>
           <p className="text-xs text-muted px-1 pt-1">Versão {__APP_VERSION__} · fase de testes</p>
         </div>
@@ -203,7 +216,7 @@ const DeleteAllData: React.FC = () => {
       <strong className="block text-sm text-ink">Apagar tudo deste celular?</strong>
       <p className="text-[13px] text-ink leading-relaxed">
         Somem suas respostas, o resultado, as cartas, as tarefas, o Caderno (anotações, pessoas e fotos) e as preferências. Não dá para
-        desfazer. Se quiser guardar uma cópia, use antes o <strong>Exportar caderno</strong>, logo acima.
+        desfazer. Se quiser guardar uma cópia, use antes o <strong>Fazer backup</strong>, logo acima.
       </p>
       <p className="text-xs text-muted">O Prumo não guarda seus dados em servidor, então não sobra cópia em lugar nenhum.</p>
       <div className="grid grid-cols-2 gap-2">

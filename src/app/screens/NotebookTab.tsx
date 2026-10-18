@@ -5,7 +5,7 @@ import { Reveal } from '../components/Reveal';
 import { PeopleSection } from '../components/PeopleSection';
 import { AddPhotoButton, LinkedText, PendingPhotos, PhotoStrip } from '../components/Photos';
 import { deleteImages, saveImage } from '../state/images';
-import { useNotebookExport } from '../components/useNotebookExport';
+import { useBackupExport } from '../components/useBackup';
 import { STAGES } from '../../domain/people';
 import { soundEffects } from '../../utils/soundEffects';
 import { copyText } from '../../utils/share';
@@ -156,7 +156,7 @@ export const NotebookTab: React.FC = () => {
   const results = searchNotebook(search, { profile, notes, taskNotes: taskNoteList, people });
   const searching = searchOpen && search.trim().length > 0;
 
-  const runExport = useNotebookExport();
+  const runExport = useBackupExport();
   const exportAll = async () => {
     if ((await runExport()) === 'downloaded') flash('Arquivo baixado ✓');
   };

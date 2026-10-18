@@ -15,6 +15,11 @@ export async function saveImage(blob: Blob): Promise<string> {
   return id;
 }
 
+/** Grava uma foto com um id já conhecido (restaurar backup, etapa 40) */
+export function saveImageAs(id: string, blob: Blob): Promise<void> {
+  return saveValue(key(id), blob);
+}
+
 export function loadImage(id: string): Promise<Blob | undefined> {
   return loadValue<Blob>(key(id));
 }

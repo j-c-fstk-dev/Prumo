@@ -12,20 +12,21 @@ export const SiteFooter: React.FC = () => (
       <nav className="flex flex-wrap gap-x-5 gap-y-2 text-muted" aria-label="Links do rodapé">
         <a href="/privacidade/" className="hover:text-ink">Política de privacidade</a>
         <a href="/termos/" className="hover:text-ink">Termos de uso</a>
-        {SITE.email && (
-          <a href={`mailto:${SITE.email}`} className="hover:text-ink">
-            Contato
-          </a>
-        )}
-        {SITE.instagram && (
-          <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
-            Instagram
-          </a>
-        )}
-        {SITE.tiktok && (
-          <a href={SITE.tiktok} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
-            TikTok
-          </a>
+        {/* Enquanto não houver endereço, aparece como "em breve" (sem link) */}
+        {[
+          { label: 'Contato', href: SITE.email && `mailto:${SITE.email}` },
+          { label: 'Instagram', href: SITE.instagram },
+          { label: 'TikTok', href: SITE.tiktok },
+        ].map((l) =>
+          l.href ? (
+            <a key={l.label} href={l.href} target={l.label === 'Contato' ? undefined : '_blank'} rel="noopener noreferrer" className="hover:text-ink">
+              {l.label}
+            </a>
+          ) : (
+            <span key={l.label} className="opacity-70">
+              {l.label} · em breve
+            </span>
+          ),
         )}
         <a href={SITE.repo} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
           Código-fonte (AGPL-3.0)
