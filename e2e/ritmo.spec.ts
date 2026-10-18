@@ -42,3 +42,27 @@ test('dia da jornada, carta no dia 90 e aviso gentil de muitas tarefas no mesmo 
   await page.getByRole('button', { name: /Hoje é o seu dia 90/ }).click();
   await expect(page.getByText('Deu certo')).toBeVisible();
 });
+
+test('apagar todos os dados: pede confirmação e volta ao começo sem nada salvo', async ({ page }) => {
+  await seedState(page, { people: [{ id: 'p1', name: 'Ana', stage: 'contato', stageHistory: [], createdAt: 1, updatedAt: 1 }] });
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  await page.getByRole('button', { name: 'Apagar todos os meus dados' }).click();
+  await expect(page.getByText('Apagar tudo deste celular?')).toBeVisible();
+  await page.getByRole('button', { name: 'Cancelar' }).click();
+  await page.getByRole('button', { name: 'Apagar todos os meus dados' }).click();
+  await page.getByRole('button', { name: 'Sim, apagar tudo' }).click();
+  await expect(page.getByRole('button', { name: 'Começar diagnóstico' })).toBeVisible();
+  const saved = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const req = indexedDB.open('prumo', 1);
+        req.onsuccess = () => {
+          const get = req.result.transaction('kv').objectStore('kv').get('prumo_state');
+          get.onsuccess = () => resolve(get.result ?? null);
+        };
+      }),
+  );
+  // Depois de apagar, o app pode gravar um estado novo e vazio, nunca o antigo
+  expect(JSON.stringify(saved ?? {})).not.toContain('Ana');
+  expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('prumo_')))).toEqual([]);
+});
