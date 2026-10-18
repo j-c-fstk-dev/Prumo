@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ProtectDataCard } from '../components/ProtectData';
 import {
   ChevronRight,
   ExternalLink,
+  Trash2,
   Volume2,
   VolumeX,
 } from 'lucide-react';
@@ -150,6 +151,54 @@ export const ProfileTab: React.FC = () => {
             <ExternalLink className="w-4 h-4 text-muted" />
           </a>
         </div>
+
+        <DeleteAllData />
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Apagar tudo (etapa 37, LGPD): some com respostas, cartas, anotações, pessoas, fotos e preferências
+ * deste aparelho. Pede confirmação e lembra de exportar antes.
+ */
+const DeleteAllData: React.FC = () => {
+  const { actions } = useApp();
+  const [asking, setAsking] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  if (!asking) {
+    return (
+      <button
+        onClick={() => setAsking(true)}
+        className="w-full p-3 rounded-xl border border-line text-sm text-muted hover:text-ink inline-flex items-center justify-center gap-1.5 cursor-pointer"
+      >
+        <Trash2 className="w-4 h-4" /> Apagar todos os meus dados
+      </button>
+    );
+  }
+  return (
+    <div className="p-4 rounded-2xl border border-gold-line bg-gold-soft space-y-2.5" role="alertdialog" aria-label="Apagar todos os dados">
+      <strong className="block text-sm text-ink">Apagar tudo deste celular?</strong>
+      <p className="text-[13px] text-ink leading-relaxed">
+        Somem suas respostas, o resultado, as cartas, as tarefas, o Caderno (anotações, pessoas e fotos) e as preferências. Não dá para
+        desfazer. Se quiser guardar uma cópia, use antes o <strong>Exportar caderno</strong>, logo acima.
+      </p>
+      <p className="text-xs text-muted">O Prumo não guarda seus dados em servidor, então não sobra cópia em lugar nenhum.</p>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            await actions.resetAll();
+          }}
+          className="min-h-10 rounded-xl bg-ink text-canvas text-sm font-semibold cursor-pointer disabled:opacity-50"
+        >
+          {busy ? 'Apagando…' : 'Sim, apagar tudo'}
+        </button>
+        <button onClick={() => setAsking(false)} className="min-h-10 rounded-xl border border-line text-sm text-ink cursor-pointer">
+          Cancelar
+        </button>
       </div>
     </div>
   );

@@ -766,6 +766,12 @@ function useAppState() {
     /** Apaga tudo do aparelho e volta ao início */
     resetAll: async () => {
       await clearAll();
+      // Preferências guardadas fora do banco (sons, abertura já vista)
+      try {
+        for (const k of Object.keys(localStorage)) if (k.startsWith('prumo_')) localStorage.removeItem(k);
+      } catch {
+        // armazenamento bloqueado: nada a apagar
+      }
       setData(initialPersisted());
       setScreen('splash');
       setTab('home');
