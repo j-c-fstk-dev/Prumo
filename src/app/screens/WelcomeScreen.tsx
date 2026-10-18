@@ -2,6 +2,7 @@ import React from 'react';
 import { soundEffects } from '../../utils/soundEffects';
 import { CompassMark } from '../../components/brand/CompassMark';
 import { useApp } from '../state/AppStore';
+import { RestoreBackup } from '../components/RestoreBackup';
 
 export const WelcomeScreen: React.FC = () => {
   const { actions } = useApp();
@@ -34,6 +35,10 @@ export const WelcomeScreen: React.FC = () => {
         >
           Começar diagnóstico
         </button>
+        {/* Celular novo: dá para trazer a jornada de volta a partir do backup (etapa 40) */}
+        <div className="flex justify-center">
+          <RestoreBackup variant="link" />
+        </div>
       </div>
     </div>
   );

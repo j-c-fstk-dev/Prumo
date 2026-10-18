@@ -52,7 +52,7 @@ const Privacy: React.FC = () => (
     </UL>
     <P>
       Como esses dados não saem do aparelho, nós não temos como vê-los, recuperá-los ou apagá-los por você. Se você limpar os dados do navegador
-      ou trocar de celular, eles somem. Use <strong>Exportar caderno</strong> para guardar uma cópia.
+      ou trocar de celular, eles somem. Use <strong>Fazer backup</strong> (aba Você) para guardar uma cópia num arquivo seu, e <strong>Restaurar de um backup</strong> para trazer tudo de volta.
     </P>
     <P>
       A lista de pessoas guarda dados de terceiros. Guarde só o necessário, e só de quem você conhece ou com quem vai de fato conversar.
@@ -128,7 +128,7 @@ const Privacy: React.FC = () => (
     </P>
     <UL>
       <li>
-        <strong>Ver e levar:</strong> aba Você → Exportar caderno;
+        <strong>Ver e levar:</strong> aba Você → Fazer backup (um .zip com tudo, que pode ser restaurado em outro aparelho);
       </li>
       <li>
         <strong>Corrigir:</strong> edite no próprio app;

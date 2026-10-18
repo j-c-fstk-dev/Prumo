@@ -75,3 +75,54 @@ test('"Sobre o Prumo" na aba Você leva às políticas e mostra a versão', asyn
   await page.getByRole('link', { name: 'Política de privacidade' }).click();
   await expect(page.getByRole('heading', { name: 'Política de privacidade' })).toBeVisible();
 });
+
+test('backup completo: faz o .zip, apaga tudo e restaura na tela de boas-vindas, com foto', async ({ page }) => {
+  await seedState(page, {
+    userName: 'Marina',
+    notes: [{ id: 'n1', text: 'Ideia da padaria', tag: 'ideia', images: ['foto1'], createdAt: 1, updatedAt: 1 }],
+    people: [{ id: 'p1', name: 'Ana Souza', stage: 'interessado', stageHistory: [], createdAt: 1, updatedAt: 1 }],
+    taskStatus: { t1: 'completed' },
+  });
+  // Uma foto de verdade no banco do aparelho
+  await page.evaluate(async () => {
+    const canvas = Object.assign(document.createElement('canvas'), { width: 8, height: 8 });
+    const blob = await new Promise<Blob>((r) => canvas.toBlob((b) => r(b!), 'image/jpeg'));
+    const db = await new Promise<IDBDatabase>((r) => {
+      const req = indexedDB.open('prumo', 1);
+      req.onsuccess = () => r(req.result);
+    });
+    await new Promise<void>((r) => {
+      const tx = db.transaction('kv', 'readwrite');
+      tx.objectStore('kv').put(blob, 'img:foto1');
+      tx.oncomplete = () => r();
+    });
+  });
+
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Fazer backup' }).click();
+  const file = await (await download).path();
+  expect((await download).suggestedFilename()).toMatch(/^prumo-backup-\d{4}-\d{2}-\d{2}\.zip$/);
+
+  await page.getByRole('button', { name: 'Apagar todos os meus dados' }).click();
+  await page.getByRole('button', { name: 'Sim, apagar tudo' }).click();
+  await expect(page.getByRole('button', { name: 'Começar diagnóstico' })).toBeVisible();
+
+  // Um arquivo qualquer é recusado com explicação
+  await page.getByLabel('Escolher arquivo de backup').setInputFiles({ name: 'nada.json', mimeType: 'application/json', buffer: Buffer.from('{"a":1}') });
+  await expect(page.getByRole('alert')).toContainText('não é um backup do Prumo');
+
+  await page.getByLabel('Escolher arquivo de backup').setInputFiles(file);
+  const confirm = page.getByRole('alertdialog', { name: 'Confirmar restauração' });
+  await expect(confirm).toContainText('Marina');
+  await expect(confirm).toContainText('1 tarefa concluída · 0 check-ins · 1 anotação · 1 pessoa · 1 foto');
+  await confirm.getByRole('button', { name: 'Substituir e restaurar' }).click();
+
+  await expect(page.getByText(/^Olá, Marina/)).toBeVisible();
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await expect(page.getByText('Ideia da padaria')).toBeVisible();
+  // A miniatura só mostra a imagem se a foto voltou para o banco do aparelho
+  await expect(page.getByRole('button', { name: 'Ver foto' }).locator('img')).toBeVisible();
+  await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
+  await expect(page.getByRole('button', { name: 'Ana Souza, Interessado' })).toBeVisible();
+});

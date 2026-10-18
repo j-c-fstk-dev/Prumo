@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Download, ShieldCheck, Smartphone } from 'lucide-react';
 import { useApp } from '../state/AppStore';
-import { useNotebookExport } from './useNotebookExport';
+import { useBackupExport } from './useBackup';
+import { RestoreBackup } from './RestoreBackup';
 import { canPromptInstall, isPersisted, isStandalone, onInstallChange, platform, promptInstall } from '../../utils/install';
 
 function useInstallState() {
@@ -48,7 +49,7 @@ const InstallSteps: React.FC<{ os: ReturnType<typeof platform>; canPrompt: boole
 /** Cartão completo (aba Você): instalar, proteção do navegador e backup */
 export const ProtectDataCard: React.FC = () => {
   const { lastExportAt } = useApp();
-  const runExport = useNotebookExport();
+  const runExport = useBackupExport();
   const { installed, canPrompt, persisted, os } = useInstallState();
   const [msg, setMsg] = useState('');
 
@@ -95,9 +96,14 @@ export const ProtectDataCard: React.FC = () => {
           }}
           className="w-full min-h-10 rounded-xl border border-line text-sm text-ink inline-flex items-center justify-center gap-1.5 cursor-pointer hover:border-primary"
         >
-          <Download className="w-4 h-4" /> Exportar caderno
+          <Download className="w-4 h-4" /> Fazer backup
         </button>
         {msg && <p className="text-[13px] text-primary font-semibold" role="status">{msg}</p>}
+        <p className="text-xs text-muted leading-snug">
+          Um arquivo .zip com tudo: respostas, cartas, tarefas, caderno, pessoas e fotos. Guarde no Drive, no e-mail ou no computador. Num
+          celular novo, é só restaurar.
+        </p>
+        <RestoreBackup />
       </div>
     </div>
   );

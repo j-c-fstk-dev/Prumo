@@ -220,14 +220,14 @@ test('fotos: anexar na anotação, ver, persistir, exportar em .zip e apagar jun
   await page.getByRole('button', { name: 'Caderno', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Ver foto' })).toHaveCount(1);
 
-  // Exportar vira .zip com o texto e a foto
+  // Exportar vira o backup completo: .zip com o texto, a foto e o json pra restaurar
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Exportar' }).first().click();
   const file = await download;
-  expect(file.suggestedFilename()).toBe('caderno-prumo.zip');
+  expect(file.suggestedFilename()).toMatch(/^prumo-backup-\d{4}-\d{2}-\d{2}\.zip$/);
   const JSZip = (await import('jszip')).default;
   const zip = await JSZip.loadAsync(readFileSync(await file.path()));
-  expect(Object.keys(zip.files)).toEqual(expect.arrayContaining(['caderno-prumo.txt', 'fotos/foto-01.jpg']));
+  expect(Object.keys(zip.files)).toEqual(expect.arrayContaining(['caderno-prumo.txt', 'fotos/foto-01.jpg', 'prumo-backup.json']));
   expect(await zip.file('caderno-prumo.txt')!.async('string')).toContain('📷 fotos/foto-01.jpg');
 
   // Apagar a anotação apaga a foto do aparelho

@@ -16,7 +16,7 @@ import { clearAll, loadValue, saveValue } from './storage';
 import { NOTE_MAX, type Note, type NoteTag, type ProfileFieldId, type ProfileOverrides } from '../../domain/notebook';
 import { cleanPerson, type Person } from '../../domain/people';
 import { requestPersistence } from '../../utils/install';
-import { deleteImages } from './images';
+import { deleteImages, saveImageAs } from './images';
 
 export type ScreenState =
   | 'splash'
@@ -776,6 +776,25 @@ function useAppState() {
     deletePerson: (id: string) => {
       void deleteImages(data.people.find((p) => p.id === id)?.images);
       setData((d) => ({ ...d, people: d.people.filter((p) => p.id !== id) }));
+    },
+
+    /** O estado salvo, como está agora (para o backup completo, etapa 40) */
+    snapshot: (): Record<string, unknown> => ({ ...data }),
+
+    /**
+     * Restaura um backup: substitui tudo deste aparelho pelo que veio no arquivo (etapa 40).
+     * Passa pela mesma checagem de quando o app abre; o id do aparelho continua o deste celular.
+     */
+    restoreBackup: async (state: Record<string, unknown>, images: Record<string, Blob>): Promise<boolean> => {
+      const restored = migrate(state);
+      if (!restored) return false;
+      await clearAll();
+      for (const [id, blob] of Object.entries(images)) await saveImageAs(id, blob);
+      track('backup_restaurado');
+      setData({ ...restored, clientId: data.clientId });
+      setScreen(restored.onboardingDone ? 'home' : 'splash');
+      setTab('home');
+      return true;
     },
 
     /** Apaga tudo do aparelho e volta ao início */
