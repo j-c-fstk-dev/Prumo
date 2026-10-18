@@ -376,7 +376,7 @@ export const DEFAULT_DIAGNOSIS: DiagnosisProfile = {
 
 export interface TaskItem {
   id: string;
-  phaseId: 'fundacao' | 'marketing' | 'lancamento';
+  phaseId: 'fundacao' | 'marketing' | 'lancamento' | 'ritmo';
   phaseName: string;
   chapterId: number;
   chapterTitle: string;
@@ -412,7 +412,8 @@ export interface TaskItem {
   };
 }
 
-export const INITIAL_TASKS: TaskItem[] = [
+/** Passos do roteiro, na ordem em que foram escritos; INITIAL_TASKS é a mesma lista ordenada pela semana */
+const ROADMAP: TaskItem[] = [
   {
     id: 't1',
     week: 1,
@@ -453,7 +454,7 @@ export const INITIAL_TASKS: TaskItem[] = [
   },
   {
     id: 't2',
-    week: 1,
+    week: 2,
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
@@ -491,11 +492,11 @@ export const INITIAL_TASKS: TaskItem[] = [
   },
   {
     id: 't3',
-    week: 2,
-    phaseId: 'fundacao',
-    phaseName: 'Fundação',
-    chapterId: 1,
-    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
+    week: 3,
+    phaseId: 'marketing',
+    phaseName: 'Teste',
+    chapterId: 2,
+    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
     title: 'Mostrar pra 3 pessoas e ouvir o que acham',
     description: 'Converse com 3 pessoas que têm esse problema e peça uma opinião sincera.',
     durationMinutes: 30,
@@ -563,11 +564,11 @@ export const INITIAL_TASKS: TaskItem[] = [
   // Tarefas de Marketing (Capítulo 2)
   {
     id: 't5',
-    week: 3,
+    week: 4,
     phaseId: 'marketing',
-    phaseName: 'Marketing',
+    phaseName: 'Teste',
     chapterId: 2,
-    chapterTitle: 'Capítulo 2: Mostrar pra quem precisa',
+    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
     title: 'Fazer 3 posts no Instagram sobre o problema que você resolve',
     description: 'Posts que mostram que você entende o que essas pessoas passam.',
     durationMinutes: 40,
@@ -600,9 +601,9 @@ export const INITIAL_TASKS: TaskItem[] = [
     id: 't6',
     week: 4,
     phaseId: 'marketing',
-    phaseName: 'Marketing',
+    phaseName: 'Teste',
     chapterId: 2,
-    chapterTitle: 'Capítulo 2: Mostrar pra quem precisa',
+    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
     title: 'Convidar 10 pessoas pra conhecer o que você criou',
     description: 'Conversar com quem já demonstrou interesse.',
     durationMinutes: 30,
@@ -634,9 +635,9 @@ export const INITIAL_TASKS: TaskItem[] = [
   // Tarefa de Lançamento (Capítulo 3)
   {
     id: 't7',
-    week: 7,
+    week: 8,
     phaseId: 'lancamento',
-    phaseName: 'Lançamento',
+    phaseName: 'Vendas',
     chapterId: 3,
     chapterTitle: 'Capítulo 3: As primeiras vendas',
     title: 'Abrir as vendas e pedir depoimentos',
@@ -666,5 +667,348 @@ export const INITIAL_TASKS: TaskItem[] = [
       transcript: 'A primeira notificação de venda não é sobre o dinheiro em si: é a confirmação de que sua mente é capaz de gerar valor no mundo real. Guarde esse momento.',
       audioWaveHeights: [30, 50, 75, 95, 80, 85, 100, 75, 60, 45, 35, 25, 20]
     }
+  },
+  // Etapa 43: passos que completam os 90 dias (4 capítulos, 13 semanas)
+  {
+    id: 't8',
+    week: 1,
+    phaseId: 'fundacao',
+    phaseName: 'Fundação',
+    chapterId: 1,
+    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
+    title: 'Listar 20 pessoas que podem ter esse problema',
+    description: 'Gente que você conhece, que já te pediu ajuda ou que está em grupos do tema.',
+    durationMinutes: 20,
+    status: 'pending',
+    whatToDo: 'Abra o Caderno → Pessoas e adicione pelo menos 10 nomes hoje (dá pra puxar da agenda). Ao longo da semana, chegue a 20. Ainda não precisa falar com ninguém: é só o mapa.',
+    howToKnowItIsGood: [
+      'Pelo menos 10 nomes no Caderno',
+      'Tem gente de fora do seu círculo mais próximo'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'O Mapa das Pessoas',
+      symbol: '📇',
+      meaning: 'Quem pode precisar do que você sabe',
+      badge: 'Mapa',
+      color: '#2E8B73',
+      bgGradient: 'from-[#EAF5F0] to-[#D5EDE3]'
+    }
+  },
+  {
+    id: 't9',
+    week: 2,
+    phaseId: 'fundacao',
+    phaseName: 'Fundação',
+    chapterId: 1,
+    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
+    title: 'Escrever sua mensagem de convite',
+    description: 'Uma mensagem curta, do seu jeito, para chamar alguém para conversar.',
+    durationMinutes: 15,
+    status: 'pending',
+    whatToDo: 'Abra a mensagem pronta (Caderno → Pessoas → toque num nome → Mensagem pronta) e reescreva com as suas palavras: quem você é, o que está testando e um pedido pequeno, como 10 minutos de conversa.',
+    howToKnowItIsGood: [
+      'Cabe numa tela de celular',
+      'Pede uma conversa, não uma compra',
+      'Você mandaria para um conhecido sem vergonha'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'A Carta Leve',
+      symbol: '✉️',
+      meaning: 'Um convite que não pesa',
+      badge: 'Convite',
+      color: '#C86638',
+      bgGradient: 'from-[#FCEDE7] to-[#F5D8CC]'
+    }
+  },
+  {
+    id: 't10',
+    week: 3,
+    phaseId: 'marketing',
+    phaseName: 'Teste',
+    chapterId: 2,
+    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
+    title: 'Ajustar com o que você ouviu',
+    description: 'Mudar uma coisa na sua oferta a partir das primeiras conversas.',
+    durationMinutes: 20,
+    status: 'pending',
+    whatToDo: 'Releia o que as pessoas disseram (anote no Caderno, se ainda não anotou). Mude uma coisa só: o nome, a promessa, o formato ou o preço.',
+    howToKnowItIsGood: [
+      'Você sabe dizer o que mudou e por quê',
+      'A sua frase do passo 1 ficou mais clara'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'O Ajuste Fino',
+      symbol: '🔧',
+      meaning: 'Ouvir e mudar o que precisa',
+      badge: 'Escuta',
+      color: '#3182CE',
+      bgGradient: 'from-[#EBF8FF] to-[#BEE3F8]'
+    }
+  },
+  {
+    id: 't11',
+    week: 5,
+    phaseId: 'marketing',
+    phaseName: 'Teste',
+    chapterId: 2,
+    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
+    title: 'Fazer a primeira entrega de teste',
+    description: 'Entregar para quem disse sim, mesmo que ainda simples.',
+    durationMinutes: 60,
+    status: 'pending',
+    whatToDo: 'Combine uma data e entregue para a primeira pessoa que topou. Depois, pergunte: o que ajudou? o que faltou? Anote as respostas no Caderno, na pessoa.',
+    howToKnowItIsGood: [
+      'Pelo menos 1 pessoa recebeu',
+      'Você anotou o que ajudou e o que faltou'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'O Primeiro Presente',
+      symbol: '📦',
+      meaning: 'A ideia virando algo nas mãos de alguém',
+      badge: 'Entrega',
+      color: '#6B46C1',
+      bgGradient: 'from-[#F3E8FF] to-[#E9D5FF]'
+    }
+  },
+  {
+    id: 't12',
+    week: 6,
+    phaseId: 'marketing',
+    phaseName: 'Teste',
+    chapterId: 2,
+    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
+    title: 'Decidir: seguir, ajustar ou trocar',
+    description: 'Olhar o teste com honestidade e escolher o próximo passo.',
+    durationMinutes: 15,
+    status: 'pending',
+    whatToDo: 'Veja no Caderno → Pessoas quantas disseram sim. Se 2 ou mais de 5 disseram sim, siga para as vendas. Se ficou perto, ajuste uma coisa e teste de novo com outras pessoas. Se ninguém se interessou, tudo bem: na aba Você, abra o resultado e escolha outro caminho.',
+    howToKnowItIsGood: [
+      'Você decidiu pelo que as pessoas fizeram, não pelo medo',
+      'Anotou no Caderno o que aprendeu com o teste'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'A Balança Honesta',
+      symbol: '⚖️',
+      meaning: 'Decidir com o que aconteceu de verdade',
+      badge: 'Decisão',
+      color: '#D69E2E',
+      bgGradient: 'from-[#FEFCBF] to-[#FAF089]'
+    }
+  },
+  {
+    id: 't13',
+    week: 7,
+    phaseId: 'lancamento',
+    phaseName: 'Vendas',
+    chapterId: 3,
+    chapterTitle: 'Capítulo 3: As primeiras vendas',
+    title: 'Montar sua mensagem de venda',
+    description: 'Explicar a oferta numa mensagem ou página simples.',
+    durationMinutes: 40,
+    status: 'pending',
+    whatToDo: 'Use o modelo de página de venda: o problema, o que você entrega, como funciona, o preço e como comprar. Pode ser uma mensagem longa no WhatsApp ou uma página grátis.',
+    howToKnowItIsGood: [
+      'Alguém que não te conhece entende o que é e quanto custa',
+      'Tem um jeito claro de pagar'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'O Mapa da Oferta',
+      symbol: '🗺️',
+      meaning: 'Tudo o que a pessoa precisa saber, num lugar só',
+      badge: 'Oferta',
+      color: '#C86638',
+      bgGradient: 'from-[#FCEDE7] to-[#F5D8CC]'
+    }
+  },
+  {
+    id: 't14',
+    week: 9,
+    phaseId: 'lancamento',
+    phaseName: 'Vendas',
+    chapterId: 3,
+    chapterTitle: 'Capítulo 3: As primeiras vendas',
+    title: 'Pedir indicações',
+    description: 'Quem gostou conhece outras pessoas com o mesmo problema.',
+    durationMinutes: 15,
+    status: 'pending',
+    whatToDo: 'Pergunte para quem comprou ou gostou: "você conhece alguém que também passa por isso?". Se fizer sentido, ofereça algo simples em troca, como um desconto na próxima.',
+    howToKnowItIsGood: [
+      'Você pediu para pelo menos 3 pessoas',
+      'Entrou pelo menos 1 nome novo no Caderno'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'Os Galhos que Crescem',
+      symbol: '🌳',
+      meaning: 'Uma pessoa leva a outra',
+      badge: 'Indicação',
+      color: '#2E8B73',
+      bgGradient: 'from-[#EAF5F0] to-[#D5EDE3]'
+    }
+  },
+  {
+    id: 't15',
+    week: 9,
+    phaseId: 'lancamento',
+    phaseName: 'Vendas',
+    chapterId: 3,
+    chapterTitle: 'Capítulo 3: As primeiras vendas',
+    title: 'Organizar como você entrega',
+    description: 'Um passo a passo para entregar sempre igual, sem reinventar.',
+    durationMinutes: 30,
+    status: 'pending',
+    whatToDo: 'Escreva o passo a passo da sua entrega, do "paguei" ao "recebi". Crie modelos para o que se repete: mensagem de boas-vindas, checklist, arquivos.',
+    howToKnowItIsGood: [
+      'Outra pessoa conseguiria seguir o seu passo a passo',
+      'A entrega seguinte levou menos tempo'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'O Cesto Arrumado',
+      symbol: '🧺',
+      meaning: 'Cada coisa no seu lugar',
+      badge: 'Processo',
+      color: '#3182CE',
+      bgGradient: 'from-[#EBF8FF] to-[#BEE3F8]'
+    }
+  },
+  {
+    id: 't16',
+    week: 10,
+    phaseId: 'lancamento',
+    phaseName: 'Vendas',
+    chapterId: 3,
+    chapterTitle: 'Capítulo 3: As primeiras vendas',
+    title: 'Revisar o preço',
+    description: 'Com o que você aprendeu, o preço dos próximos clientes.',
+    durationMinutes: 15,
+    status: 'pending',
+    whatToDo: 'Recalcule com a calculadora: quanto tempo leva cada entrega e quanto ela vale. Se as pessoas compram fácil e você está ficando sem tempo, é sinal de que o preço pode subir para os próximos.',
+    howToKnowItIsGood: [
+      'Você sabe quanto ganha por hora em cada entrega',
+      'Decidiu o preço dos próximos clientes'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'A Moeda Justa',
+      symbol: '🪙',
+      meaning: 'Um valor bom pra você e pra quem compra',
+      badge: 'Valor',
+      color: '#D69E2E',
+      bgGradient: 'from-[#FEFCBF] to-[#FAF089]'
+    }
+  },
+  {
+    id: 't17',
+    week: 11,
+    phaseId: 'ritmo',
+    phaseName: 'Ritmo',
+    chapterId: 4,
+    chapterTitle: 'Capítulo 4: Criar ritmo',
+    title: 'Montar a sua semana padrão',
+    description: 'Dias e horários fixos para o que se repete, com folga.',
+    durationMinutes: 20,
+    status: 'pending',
+    whatToDo: 'Escolha dias e horários para conversar com pessoas, mostrar algo útil, entregar e descansar. Anote no "quando vou fazer" das tarefas e respeite a folga: ritmo que cansa não dura.',
+    howToKnowItIsGood: [
+      'Cabe na sua semana de verdade, com folga',
+      'Tem pelo menos um momento de descanso'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'O Calendário Sereno',
+      symbol: '🗓️',
+      meaning: 'Constância sem esgotamento',
+      badge: 'Ritmo',
+      color: '#6B46C1',
+      bgGradient: 'from-[#F3E8FF] to-[#E9D5FF]'
+    }
+  },
+  {
+    id: 't18',
+    week: 11,
+    phaseId: 'ritmo',
+    phaseName: 'Ritmo',
+    chapterId: 4,
+    chapterTitle: 'Capítulo 4: Criar ritmo',
+    title: 'Juntar depoimentos e resultados',
+    description: 'As provas do que você já fez, num lugar só.',
+    durationMinutes: 30,
+    status: 'pending',
+    whatToDo: 'Reúna no Caderno os depoimentos, prints e números: quantas pessoas conversaram, compraram e indicaram. Isso vira prova para quem ainda não te conhece.',
+    howToKnowItIsGood: [
+      'Pelo menos 2 depoimentos guardados',
+      'Você sabe os seus números destes 90 dias'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'O Baú de Provas',
+      symbol: '🏺',
+      meaning: 'O que você construiu, guardado com cuidado',
+      badge: 'Prova',
+      color: '#C86638',
+      bgGradient: 'from-[#FCEDE7] to-[#F5D8CC]'
+    }
+  },
+  {
+    id: 't19',
+    week: 12,
+    phaseId: 'ritmo',
+    phaseName: 'Ritmo',
+    chapterId: 4,
+    chapterTitle: 'Capítulo 4: Criar ritmo',
+    title: 'Planejar os próximos 30 dias',
+    description: 'Uma meta para o mês que vem e o que repetir para chegar lá.',
+    durationMinutes: 20,
+    status: 'pending',
+    whatToDo: 'Escolha uma meta para o próximo mês (ex.: 5 clientes) e o que vai repetir toda semana para chegar nela. Pequeno e possível ganha de grande e bonito.',
+    howToKnowItIsGood: [
+      'Uma meta só, com número',
+      'Você sabe o que faz toda semana para chegar nela'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'O Telescópio',
+      symbol: '🔭',
+      meaning: 'Olhar um pouco mais longe',
+      badge: 'Próximo ciclo',
+      color: '#3182CE',
+      bgGradient: 'from-[#EBF8FF] to-[#BEE3F8]'
+    }
+  },
+  {
+    id: 't20',
+    week: 13,
+    phaseId: 'ritmo',
+    phaseName: 'Ritmo',
+    chapterId: 4,
+    chapterTitle: 'Capítulo 4: Criar ritmo',
+    title: 'Reler a carta e responder o seu eu do começo',
+    description: 'Fechar os 90 dias com o que aconteceu de verdade.',
+    durationMinutes: 20,
+    status: 'pending',
+    whatToDo: 'Abra a carta que você escreveu no começo (Início → Sua carta). Escreva no Caderno o que aconteceu, o que aprendeu e o que quer para os próximos 90 dias.',
+    howToKnowItIsGood: [
+      'Você reconheceu pelo menos uma coisa que conquistou',
+      'Escreveu com honestidade, sem se cobrar'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'A Carta Respondida',
+      symbol: '📜',
+      meaning: 'O círculo que se fecha',
+      badge: 'Colheita',
+      color: '#D69E2E',
+      bgGradient: 'from-[#FEFCBF] to-[#FAF089]'
+    }
   }
 ];
+
+/** O roteiro na ordem da jornada: pela semana sugerida (dentro da semana, na ordem escrita) */
+export const INITIAL_TASKS: TaskItem[] = [...ROADMAP].sort((a, b) => (a.week ?? 1) - (b.week ?? 1) || a.chapterId - b.chapterId);

@@ -95,11 +95,15 @@ const LEMBRETES: { quando: (c: ContextoLembrete) => boolean; textos: string[] }[
   },
   {
     quando: (c) => c.chapterId === 2,
-    textos: ['Capítulo 2: mostrar pra quem precisa. Dá frio na barriga, e tudo bem.', 'Cada conversa ensina algo, até o "não".'],
+    textos: ['Capítulo 2: testar com pessoas reais. Dá frio na barriga, e tudo bem.', 'Cada conversa ensina algo, até o "não".'],
   },
   {
     quando: (c) => c.chapterId === 3,
     textos: ['Capítulo 3: as primeiras vendas. Você chegou longe.', 'Vender é ajudar alguém a resolver um problema. Simples assim.'],
+  },
+  {
+    quando: (c) => c.chapterId === 4,
+    textos: ['Capítulo 4: criar ritmo. Agora é constância, sem pressa.', 'O que você repete toda semana vale mais do que um dia de esforço enorme.'],
   },
 ];
 

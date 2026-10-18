@@ -12,7 +12,7 @@ test('jornada completa: diagnóstico, carta, tarefas, check-in, capítulo e reca
   await commitAndSeal(page);
 
   // Constelação e "quando vou fazer"
-  await expect(page.getByText('0 de 4 estrelas')).toBeVisible();
+  await expect(page.getByText('0 de 5 estrelas')).toBeVisible();
   await page.getByRole('button', { name: 'Abrir tarefa' }).click();
   await page.getByRole('button', { name: 'no almoço' }).click();
   await page.getByRole('button', { name: 'Voltar' }).or(page.locator('button:has(svg.lucide-arrow-left)')).first().click();

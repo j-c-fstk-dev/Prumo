@@ -27,11 +27,12 @@ export const HomeTab: React.FC = () => {
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
-  const CHAPTERS = [
-    { id: 1, label: 'Cap. 1: Ideia clara', dot: 'bg-primary' },
-    { id: 2, label: 'Cap. 2: Mostrar', dot: 'bg-gold' },
-    { id: 3, label: 'Cap. 3: Vender', dot: 'bg-[#7A5AF8]' },
-  ].map((c) => {
+  const DOTS = ['bg-primary', 'bg-gold', 'bg-[#7A5AF8]', 'bg-success'];
+  // Capítulos vêm das próprias tarefas (etapa 43: são 4)
+  const CHAPTERS = Array.from(new Map(tasks.map((t) => [t.chapterId, t.chapterTitle])).entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([id, title], i) => ({ id, label: title.replace(/^Capítulo (\d+):\s*/, 'Cap. $1: '), dot: DOTS[i % DOTS.length] }))
+    .map((c) => {
     const inChapter = tasks.filter((t) => t.chapterId === c.id);
     const percent = inChapter.length ? Math.round((inChapter.filter((t) => t.status === 'completed').length / inChapter.length) * 100) : 0;
     return { ...c, percent, current: c.id === nextStepTask.chapterId };

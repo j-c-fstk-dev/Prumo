@@ -361,7 +361,7 @@ export function calculateDiagnosis(a: Answers, personalAnchor: string, reflectio
       skills.length ? `Cruzando sua facilidade com ${skills[0]}` : 'Olhando o que você faz bem',
       hours ? `Considerando seu tempo real: ${hours}` : 'Olhando o tempo que você tem',
       `Procurando o caminho mais leve: ${lower(niche.topic)}`,
-      'Montando sua jornada em 3 capítulos',
+      'Montando sua jornada em 4 capítulos',
     ],
     warnings,
     obstacle: plan.obstacle,

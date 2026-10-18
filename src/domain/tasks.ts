@@ -64,6 +64,13 @@ const BASE_TOOLS: Record<string, ToolCategoryId[]> = {
   t5: ['design', 'ia_texto'],
   t6: ['mensagens', 'pagamento'],
   t7: ['formulario', 'mensagens'],
+  t8: ['mensagens'],
+  t9: ['ia_texto', 'mensagens'],
+  t11: ['mensagens', 'formulario'],
+  t13: ['design', 'ia_texto', 'pagamento'],
+  t15: ['documentos'],
+  t17: ['agenda'],
+  t18: ['documentos', 'design'],
 };
 
 /** t2 depende do formato do produto */

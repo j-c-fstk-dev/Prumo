@@ -38,7 +38,7 @@ const SLIDES: { icon: React.ReactNode; title: string; body: React.ReactNode }[] 
       <ol className="text-left space-y-2.5 list-none">
         <li><strong className="text-ink">1.</strong> Você responde umas perguntas rápidas sobre você (uns 15 minutos).</li>
         <li><strong className="text-ink">2.</strong> O Prumo sugere um caminho pra você testar no digital.</li>
-        <li><strong className="text-ink">3.</strong> Você segue uma jornada em 3 capítulos, com passos pequenos, no seu ritmo: um por dia já é ótimo, e dá pra fazer mais se quiser.</li>
+        <li><strong className="text-ink">3.</strong> Você segue uma jornada de 90 dias em 4 capítulos, com passos pequenos e rotinas curtas, no seu ritmo: um por dia já é ótimo, e dá pra fazer mais se quiser.</li>
       </ol>
     ),
   },

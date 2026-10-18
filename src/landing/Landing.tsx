@@ -49,7 +49,7 @@ const STEPS = [
   {
     n: '3',
     title: 'Siga um passo de cada vez',
-    text: 'Um roteiro em 3 capítulos com passos pequenos. Um por dia já é ótimo. Cada passo vira uma estrela da sua constelação.',
+    text: 'Um roteiro de 13 semanas, em 4 capítulos: passos pequenos e rotinas curtas que se repetem. Cada passo vira uma estrela da sua constelação.',
     img: '/landing/inicio.jpg',
     alt: 'Tela de início do Prumo com o check-in do dia e o próximo passo',
   },

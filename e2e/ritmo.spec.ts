@@ -164,7 +164,7 @@ test('rotinas: as do capítulo aparecem, marcar conta no dia, e a revisão da se
 
   // No Roteiro: passos por semana e as rotinas no topo
   await page.getByRole('button', { name: 'Roteiro', exact: true }).click();
-  await expect(page.getByRole('region', { name: 'Semana 1' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Semana 1', exact: true })).toBeVisible();
   await expect(page.getByText('● esta semana')).toBeVisible();
   await expect(page.getByRole('region', { name: 'Rotinas' })).toBeVisible();
 });
