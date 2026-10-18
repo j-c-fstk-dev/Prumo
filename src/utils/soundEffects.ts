@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  * 
  * Sistema de Efeitos Sonoros Sutis e Elegantes (Web Audio API)
  * 
@@ -17,6 +17,8 @@ class SoundEffectsService {
   private audioCtx: AudioContext | null = null;
   private isMuted: boolean = false;
   private masterGain: GainNode | null = null;
+  /** Sons de toque comum (botões, opções, trocas de tela): desligados por padrão para não cansar */
+  private tapSounds: boolean = false;
 
   constructor() {
     // Carregar preferência salva se existir
@@ -25,6 +27,7 @@ class SoundEffectsService {
       if (savedMute !== null) {
         this.isMuted = savedMute === 'true';
       }
+      this.tapSounds = localStorage.getItem('prumo_tap_sounds') === 'true';
     } catch {
       // Ignore localStorage security exceptions in restricted contexts
     }
@@ -53,6 +56,30 @@ class SoundEffectsService {
     return this.audioCtx;
   }
 
+  /**
+   * Ataque suave: a nota sobe do quase-silêncio em 8 ms em vez de começar no volume cheio,
+   * o que evita o "estalo" do início (docs/pesquisa/04).
+   */
+  private softAttack(node: GainNode, peak: number, at: number): void {
+    node.gain.setValueAtTime(0.0001, at);
+    node.gain.linearRampToValueAtTime(peak, at + 0.008);
+  }
+
+  public getTapSounds(): boolean {
+    return this.tapSounds;
+  }
+
+  public toggleTapSounds(): boolean {
+    this.tapSounds = !this.tapSounds;
+    try {
+      localStorage.setItem('prumo_tap_sounds', this.tapSounds ? 'true' : 'false');
+    } catch {
+      // Ignore
+    }
+    if (this.tapSounds) this.playSoftTap();
+    return this.tapSounds;
+  }
+
   public getIsMuted(): boolean {
     return this.isMuted;
   }
@@ -70,8 +97,8 @@ class SoundEffectsService {
     const next = !this.isMuted;
     this.setMuted(next);
     if (!next) {
-      // Pequeno clique de confirmação ao desmutar
-      this.playSoftTap();
+      // Pequeno sinal de confirmação ao desmutar (mesmo com sons de toque desligados)
+      this.playCompleteTask();
     }
     return next;
   }
@@ -81,6 +108,7 @@ class SoundEffectsService {
    * Toque leve e amadeirado / tátil, para botões, chips e abas.
    */
   public playSoftTap(): void {
+    if (!this.tapSounds) return;
     if (this.isMuted) return;
     const ctx = this.getContext();
     if (!ctx || !this.masterGain) return;
@@ -95,7 +123,7 @@ class SoundEffectsService {
     osc.frequency.exponentialRampToValueAtTime(180, now + 0.045);
 
     // Envelope suave
-    gain.gain.setValueAtTime(0.08, now);
+    this.softAttack(gain, 0.08, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
 
     osc.connect(gain);
@@ -110,6 +138,7 @@ class SoundEffectsService {
    * Tom quente e acolhedor (nota de kalimba / gota d'água suave).
    */
   public playSelectOption(): void {
+    if (!this.tapSounds) return;
     if (this.isMuted) return;
     const ctx = this.getContext();
     if (!ctx || !this.masterGain) return;
@@ -128,7 +157,7 @@ class SoundEffectsService {
     osc2.type = 'triangle';
     osc2.frequency.setValueAtTime(1046.5, now); // C6 sutil
     
-    gain.gain.setValueAtTime(0.12, now);
+    this.softAttack(gain, 0.12, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
 
     osc1.connect(gain);
@@ -146,6 +175,7 @@ class SoundEffectsService {
    * Duplo tom sereno ascendente (E5 -> G#5) com sensação de progresso leve.
    */
   public playTransition(): void {
+    if (!this.tapSounds) return;
     if (this.isMuted) return;
     const ctx = this.getContext();
     if (!ctx || !this.masterGain) return;
@@ -157,7 +187,7 @@ class SoundEffectsService {
     const gain1 = ctx.createGain();
     osc1.type = 'sine';
     osc1.frequency.setValueAtTime(659.25, now);
-    gain1.gain.setValueAtTime(0.08, now);
+    this.softAttack(gain1, 0.08, now);
     gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
     osc1.connect(gain1);
     gain1.connect(this.masterGain);
@@ -169,7 +199,7 @@ class SoundEffectsService {
     const gain2 = ctx.createGain();
     osc2.type = 'sine';
     osc2.frequency.setValueAtTime(830.61, now + 0.08);
-    gain2.gain.setValueAtTime(0.09, now + 0.08);
+    this.softAttack(gain2, 0.09, now + 0.08);
     gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
     osc2.connect(gain2);
     gain2.connect(this.masterGain);
@@ -182,6 +212,7 @@ class SoundEffectsService {
    * Tom suave descendente.
    */
   public playBack(): void {
+    if (!this.tapSounds) return;
     if (this.isMuted) return;
     const ctx = this.getContext();
     if (!ctx || !this.masterGain) return;
@@ -194,7 +225,7 @@ class SoundEffectsService {
     osc.frequency.setValueAtTime(587.33, now); // D5
     osc.frequency.exponentialRampToValueAtTime(440, now + 0.12); // A4
 
-    gain.gain.setValueAtTime(0.07, now);
+    this.softAttack(gain, 0.07, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
 
     osc.connect(gain);
@@ -226,7 +257,7 @@ class SoundEffectsService {
       osc.frequency.setValueAtTime(freq, startTime);
 
       // Harmônico sutil
-      gain.gain.setValueAtTime(0.11 - idx * 0.015, startTime);
+      this.softAttack(gain, 0.11 - idx * 0.015, startTime);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.45);
 
       osc.connect(gain);
@@ -255,7 +286,7 @@ class SoundEffectsService {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(baseFreq, now);
 
-    gain.gain.setValueAtTime(0.06, now);
+    this.softAttack(gain, 0.06, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
 
     osc.connect(gain);
@@ -285,7 +316,7 @@ class SoundEffectsService {
       osc.frequency.setValueAtTime(freq, now);
 
       const initialGain = idx === 0 ? 0.18 : 0.08;
-      gain.gain.setValueAtTime(initialGain, now);
+      this.softAttack(gain, initialGain, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
 
       osc.connect(gain);
@@ -319,7 +350,7 @@ class SoundEffectsService {
       osc.frequency.exponentialRampToValueAtTime(392, now + 0.12);
     }
 
-    gain.gain.setValueAtTime(0.08, now);
+    this.softAttack(gain, 0.08, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
 
     osc.connect(gain);

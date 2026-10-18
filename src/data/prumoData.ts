@@ -10,6 +10,8 @@ export interface AnamneseQuestion {
   sliderConfig?: { min: number; max: number; minLabel: string; maxLabel: string };
   reflectionPrompt?: string;
   reflectionPlaceholder?: string;
+  /** Mostrado sob o campo aberto: para que usamos o que a pessoa escreve (transparência) */
+  reflectionPurpose?: string;
 }
 
 export interface AnamneseSection {
@@ -31,7 +33,7 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
     iconName: 'Wrench',
     valueSignal: {
       title: 'Mapeando sua facilidade natural',
-      subtitle: 'Construir sobre o que você já faz bem sem esforço reduz em 80% o atrito para começar.',
+      subtitle: 'Começar pelo que você já faz bem e pelo que já te interessa deixa o primeiro passo mais leve, e ajuda a continuar quando ficar difícil.',
       icon: '✨'
     },
     questions: [
@@ -53,8 +55,9 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'tecnologia', label: 'Resolver problemas no computador/celular', icon: '💻' },
           { id: 'saude', label: 'Treino, alimentação e hábitos', icon: '🏃' }
         ],
-        reflectionPrompt: 'Em suas próprias palavras: qual problema você tem prazer genuíno em descomplicar para alguém?',
-        reflectionPlaceholder: 'Ex: Adoro ajudar amigos a organizarem rotinas caóticas de trabalho...'
+        reflectionPrompt: 'Com suas palavras: que problema você gosta de descomplicar para alguém? Vale algo que não está na lista.',
+        reflectionPlaceholder: 'Ex: Adoro ajudar amigos a organizarem rotinas caóticas de trabalho...',
+        reflectionPurpose: 'Usamos isso para sugerir seu nicho (você confirma) e escrever sua hipótese.'
       },
       {
         id: 'q1_preference',
@@ -78,7 +81,7 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
     iconName: 'Compass',
     valueSignal: {
       title: 'Identificando sua energia sustentável',
-      subtitle: 'Quando o assunto te fascina, a disciplina deixa de ser um sacrifício pesado.',
+      subtitle: 'Interesse se fortalece fazendo. Unir o plano ao que você já gosta ajuda nos dias em que a vontade falta.',
       icon: '🧭'
     },
     questions: [
@@ -97,7 +100,10 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'desenvolvimento', label: 'Psicologia e autoconhecimento', icon: '🧠' },
           { id: 'comunicacao', label: 'Marketing, mídias e storytelling', icon: '📢' },
           { id: 'artes', label: 'Artes, criação e design', icon: '🖌️' }
-        ]
+        ],
+        reflectionPrompt: 'Algum outro tema que você consome por prazer?',
+        reflectionPlaceholder: 'Ex: culinária, jardinagem, games, maternidade...',
+        reflectionPurpose: 'Usamos isso para sugerir seu nicho (você confirma).'
       },
       {
         id: 'q2_community',
@@ -110,9 +116,7 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'solo', label: 'Bastidores / Criar produtos assíncronos', icon: '👤' },
           { id: 'comunidade', label: 'Direto com pessoas em comunidade ou mentorias', icon: '👥' },
           { id: 'misto', label: 'Um modelo equilibrado com pouco contato 1 a 1', icon: '⚖️' }
-        ],
-        reflectionPrompt: 'Com suas palavras: o que mais drena ou recarrega sua bateria social no trabalho?',
-        reflectionPlaceholder: 'Ex: Ficar o dia todo em chamadas me esgota, prefiro criar no meu ritmo...'
+        ]
       }
     ]
   },
@@ -137,22 +141,23 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'pouco', label: '3 a 5 horas/semana (cerca de 1h por noite)', icon: '🌙' },
           { id: 'medio', label: '6 a 12 horas/semana (noites + sábado)', icon: '⚡' },
           { id: 'muito', label: '15+ horas/semana (meio período ou tempo total)', icon: '🚀' }
-        ]
+        ],
+        reflectionPrompt: 'Com suas palavras: o que mais rouba seu tempo na semana?',
+        reflectionPlaceholder: 'Ex: Horas extras no trabalho e cansaço mental depois do expediente...',
+        reflectionPurpose: 'Usamos isso para sugerir horários para suas tarefas e no coach.'
       },
       {
         id: 'q3_investment',
         sectionId: 3,
         sectionName: 'Disponibilidade',
-        question: 'Quanto pode investir no primeiro mês?',
-        subtext: 'Sem pressão: é totalmente possível começar com R$ 0.',
+        question: 'Se o primeiro teste não der certo, quanto você aceita ter investido sem se arrepender?',
+        subtext: 'Decida pelo que você pode perder, não pelo que espera ganhar. Dá para começar com R$ 0.',
         type: 'single',
         options: [
-          { id: 'zero', label: 'R$ 0 (usar apenas ferramentas gratuitas)', icon: '🆓' },
-          { id: 'ate_200', label: 'Até R$ 200 (domínio, ferramentas básicas)', icon: '🌱' },
-          { id: 'mais_500', label: 'R$ 500 ou mais (tráfego e plataformas pagas)', icon: '💼' }
-        ],
-        reflectionPrompt: 'Com suas palavras: quais são os maiores ladrões de tempo da sua semana atual?',
-        reflectionPlaceholder: 'Ex: Horas extras no trabalho e cansaço mental após o expediente...'
+          { id: 'zero', label: 'R$ 0: quero testar só com ferramentas gratuitas', icon: '🆓' },
+          { id: 'ate_200', label: 'Até R$ 200, sem me arrepender', icon: '🌱' },
+          { id: 'mais_500', label: 'R$ 500 ou mais, se for preciso', icon: '💼' }
+        ]
       }
     ]
   },
@@ -200,7 +205,7 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
     iconName: 'Brain',
     valueSignal: {
       title: 'Respeitando sua personalidade',
-      subtitle: 'Não existe fórmula única: há modelos altamente lucrativos e respeitados sem aparecer na câmera.',
+      subtitle: 'Não existe fórmula única: dá para construir algo sério e respeitado sem aparecer na câmera.',
       icon: '🛡️'
     },
     questions: [
@@ -209,7 +214,7 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         sectionId: 5,
         sectionName: 'Perfil',
         question: 'Quão confortável você se sente aparecendo (câmera, voz, stories)?',
-        subtext: 'Não existe certo ou errado: há modelos lucrativos sem aparecer.',
+        subtext: 'Não existe certo ou errado: dá para começar sem aparecer.',
         type: 'single',
         options: [
           { id: 'sem_camera', label: 'Zero câmera: prefiro texto, áudio ou bastidores', icon: '🙈' },
@@ -228,6 +233,23 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'sensivel', label: 'Fico desanimado com facilidade; preciso de passos guiados', icon: '🛡️' },
           { id: 'resiliente', label: 'Entendo que faz parte do processo de aprendizado', icon: '🌱' }
         ]
+      },
+      {
+        id: 'q5_obstacle',
+        sectionId: 5,
+        sectionName: 'Perfil',
+        question: 'O que mais provavelmente vai te atrapalhar no caminho?',
+        subtext: 'Prever o obstáculo e já ter um plano B aumenta a chance de seguir em frente.',
+        type: 'single',
+        options: [
+          { id: 'tempo', label: 'Falta de tempo ou cansaço no fim do dia', icon: '🔋' },
+          { id: 'medo', label: 'Medo de julgamento ou de oferecer meu trabalho', icon: '🫣' },
+          { id: 'perfeccionismo', label: 'Querer deixar tudo perfeito antes de mostrar', icon: '🔍' },
+          { id: 'dispersao', label: 'Me distrair com novas ideias e não terminar', icon: '🦋' }
+        ],
+        reflectionPrompt: 'Com suas palavras: o que costuma te fazer parar?',
+        reflectionPlaceholder: 'Ex: Começo animado, mas na segunda semana a rotina me engole...',
+        reflectionPurpose: 'Usamos isso para montar seu plano B e no coach.'
       }
     ]
   },
@@ -281,8 +303,9 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'rotina_livre', label: 'Construí uma rotina criativa sem esgotamento nem ansiedade', icon: '🕊️' },
           { id: 'impacto_real', label: 'Gerei um alívio verdadeiro e tangível para 3+ pessoas reais', icon: '🤝' }
         ],
-        reflectionPrompt: 'Em suas próprias palavras: o que essa conquista mudaria na sua autoestima e na sua vida?',
-        reflectionPlaceholder: 'Ex: Provavelmente eu sentiria que finalmente tomei as rédeas do meu futuro sem depender da sorte...'
+        reflectionPrompt: 'Com suas palavras, complete: "Daqui a 90 dias, eu..."',
+        reflectionPlaceholder: 'Ex: ...recebi meus primeiros pagamentos e confio no meu próprio jeito de trabalhar.',
+        reflectionPurpose: 'Usamos isso como sua âncora e na carta do seu eu futuro.'
       }
     ]
   }
@@ -315,7 +338,7 @@ export interface DiagnosisProfile {
 export const DEFAULT_DIAGNOSIS: DiagnosisProfile = {
   niche: 'Produtividade e Rotina para Freelancers',
   nicheDescription: 'Ajudar pessoas que trabalham por conta própria a organizarem seu tempo e entregas sem esgotamento.',
-  product: 'Mini-curso prático + Template Notion',
+  product: 'Mini-curso prático + modelo pronto',
   productDescription: 'Um material digital gravado em vídeo curto (10-15 min) acompanhado de checklist prático que você cria uma única vez.',
   audience: 'Freelancers e Profissionais CLT em transição',
   audienceDescription: 'Pessoas com rotina corrida que sofrem com dispersão e precisam de um método simples de organização.',
@@ -323,7 +346,7 @@ export const DEFAULT_DIAGNOSIS: DiagnosisProfile = {
   channelDescription: 'Conteúdo rápido focado em dores reais e conversas consultivas no 1 a 1 para as primeiras validações.',
   timeline: '60 dias até a 1ª validação',
   personalAnchor: 'Criei e validei meu próprio mini-produto digital do zero, com rotina serena e sem burnout.',
-  futureSelfLetter: 'Oi Ana, sou você daqui a 90 dias. Escrevo para te lembrar do dia em que você segurou a tela e assumiu seu prumo. Naquele momento você estava insegura, mas decidiu dar um passo pequeno por vez. Hoje nosso mini-curso está validado, ajudamos 3 pessoas de verdade e aquela sensação de paralisia ficou para trás. Continue firme, seu prumo é real.',
+  futureSelfLetter: 'Oi, sou você daqui a 90 dias. Escrevo para te lembrar do dia em que você segurou a tela e assumiu seu prumo. Naquele momento você não sabia bem por onde começar, mas decidiu dar um passo pequeno por vez. Hoje nosso mini-curso está validado, ajudamos 3 pessoas de verdade e aquela sensação de paralisia ficou para trás. Continue firme, seu prumo é real.',
   chapterTitle: 'Capítulo 1: Onde você encontra sua promessa',
   justification: 'Você indicou facilidade para ensinar, tempo moderado (1h/dia) e prefere formatos práticos. Por isso sugerimos um mini-curso gravado com modelo pronto: você cria uma vez, valida com 3 pessoas reais e não se torna refém de horários de atendimento.',
   radarScores: {
@@ -351,6 +374,10 @@ export interface TaskItem {
   resources: { title: string; type: string }[];
   userNotes?: string;
   isLocked?: boolean;
+  /** Intenção de implementação: "quando eu ___, faço esta tarefa" (docs/pesquisa/02) */
+  when?: string;
+  /** Categorias da caixa de ferramentas que ajudam nesta tarefa (src/data/ferramentas.ts) */
+  toolCategories?: import('./ferramentas').ToolCategoryId[];
   anchorIllustration: {
     title: string;
     symbol: string;
@@ -401,8 +428,8 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'O poder de uma promessa simples',
       duration: '1:10 min',
-      narrator: 'Helena · Coach Prumo',
-      transcript: 'Ana, quando tentamos falar com todo mundo, ninguém ouve. Uma frase simples não é limitar seu talento: é estender a mão para quem está perdido exatamente onde você já esteve. Respire fundo e escreva o óbvio.',
+      narrator: 'Coach Prumo · voz sintética',
+      transcript: 'Quando tentamos falar com todo mundo, ninguém ouve. Uma frase simples não é limitar seu talento: é estender a mão para quem está perdido exatamente onde você já esteve. Respire fundo e escreva o óbvio.',
       audioWaveHeights: [25, 45, 60, 80, 50, 70, 95, 60, 40, 55, 75, 40, 30]
     }
   },
@@ -416,7 +443,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     description: 'O menor entregável possível para testar o interesse de alguém real.',
     durationMinutes: 20,
     status: 'pending',
-    whatToDo: 'Pegue o tema que você mais domina e monte o menor formato possível: um checklist em PDF, um documento estruturado no Notion ou um vídeo direto de 10 minutos.',
+    whatToDo: 'Pegue o tema que você mais domina e monte o menor formato possível: um checklist em PDF, um documento bem estruturado ou um vídeo direto de 10 minutos.',
     howToKnowItIsGood: [
       'Dá para ser consumido e aplicado em menos de 1 dia',
       'Resolve 1 problema de ponta a ponta',
@@ -438,7 +465,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'Por que perfeito é o inimigo do feito',
       duration: '1:18 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'Você não precisa de estúdio, iluminação ou 40 aulas. Uma semente bem plantada gera mais vida do que um palácio imaginário. 20 minutos focados em resolver uma dor real. Você já sabe o que colocar aí.',
       audioWaveHeights: [30, 50, 70, 60, 85, 90, 65, 45, 55, 70, 50, 35, 20]
     }
@@ -453,7 +480,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     description: 'Converse com 3 pessoas do perfil para receber feedback honesto.',
     durationMinutes: 30,
     status: 'pending',
-    whatToDo: 'Envie sua versão mínima para 3 pessoas que já expressaram dificuldade no tema. Faça duas perguntas: "O que ficou confuso?" e "Isso te poupou tempo?".',
+    whatToDo: 'Mostre sua versão mínima (o desenho do serviço, o roteiro da sessão, o esboço do guia ou a aula 1) para 3 pessoas que já expressaram dificuldade no tema. Faça duas perguntas: "O que ficou confuso?" e "Isso resolveria seu problema?".',
     howToKnowItIsGood: [
       'Pelo menos 2 pessoas confirmaram que aplicaram o conselho',
       'Você anotou as palavras exatas que elas usaram para descrever o alívio'
@@ -473,7 +500,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'A coragem de ouvir o outro',
       duration: '1:25 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'Dar a cara a tapa assusta todo mundo. Mas lembre-se: você não está pedindo aprovação pessoal, está oferecendo um atalho que você construiu com carinho. Três mensagens calmas. O que vier de resposta é ouro.',
       audioWaveHeights: [20, 40, 55, 75, 80, 60, 85, 90, 70, 50, 65, 40, 25]
     }
@@ -488,7 +515,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     description: 'Definir o valor de entrada e link de cobrança seguro.',
     durationMinutes: 15,
     status: 'pending',
-    whatToDo: 'Defina o preço inicial de validação (ex: R$ 27 a R$ 47). Crie uma conta gratuita em uma plataforma (ex: Kiwify, Hotmart ou Asaas) e gere o link de checkout.',
+    whatToDo: 'Defina o preço inicial de validação (ex: R$ 27 a R$ 47) e escolha como vai receber. O Pix do seu banco já basta no teste.',
     howToKnowItIsGood: [
       'O link de pagamento abre no celular e aceita Pix em segundos',
       'O preço não dá medo de cobrar nem parece golpe'
@@ -507,7 +534,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'Cobrar é um ato de respeito mútuo',
       duration: '1:05 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'Cobrar um valor simbólico não é ambição desmedida: é o filtro que faz as pessoas se comprometerem com o próprio resultado. R$ 27 ou R$ 47 é leve para quem paga e sagrado para o seu primeiro marco.',
       audioWaveHeights: [25, 45, 65, 70, 85, 60, 50, 75, 80, 55, 40, 30, 20]
     }
@@ -542,7 +569,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'Falar de dor sem apelação',
       duration: '1:15 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'Você não precisa viralizar com dancinhas. Quando você descreve com precisão a frustração que alguém sente às 23h da noite, essa pessoa sabe que você é o guia certo.',
       audioWaveHeights: [30, 60, 75, 90, 80, 65, 70, 85, 60, 50, 40, 30, 25]
     }
@@ -576,7 +603,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'Conversar em vez de empurrar',
       duration: '1:12 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'O melhor marketing do mundo ainda é a conversa sincera entre dois seres humanos. Chame com curiosidade e humildade: você está aqui para resolver, não para bajular.',
       audioWaveHeights: [25, 45, 65, 80, 70, 85, 90, 65, 55, 40, 30, 20, 15]
     }
@@ -611,7 +638,7 @@ export const INITIAL_TASKS: TaskItem[] = [
     audioCoach: {
       title: 'O primeiro sim muda quem você é',
       duration: '1:30 min',
-      narrator: 'Helena · Coach Prumo',
+      narrator: 'Coach Prumo · voz sintética',
       transcript: 'A primeira notificação de venda não é sobre o dinheiro em si: é a confirmação de que sua mente é capaz de gerar valor no mundo real. Guarde esse momento.',
       audioWaveHeights: [30, 50, 75, 95, 80, 85, 100, 75, 60, 45, 35, 25, 20]
     }

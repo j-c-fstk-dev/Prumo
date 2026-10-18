@@ -1,6 +1,0 @@
-{
-  "name": "Prumo - Android Studio Dev Hub & App",
-  "description": "Roteiro de desenvolvimento em etapas e ambiente Android Studio com Kotlin e Jetpack Compose para o app Prumo.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
