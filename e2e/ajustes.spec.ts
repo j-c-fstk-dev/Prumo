@@ -105,3 +105,14 @@ test('resultado mostra 3 caminhos diferentes e deixa criar o próprio', async ({
   // As 3 sugestões continuam disponíveis
   await expect(page.getByRole('button', { name: 'Escolher este caminho' })).toHaveCount(3);
 });
+
+test('abertura: na 1ª vez mostra a ilustração e espera o toque; depois, entra sozinha', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('img', { name: /bússola na mão olhando as estrelas/ })).toBeVisible();
+  const tap = page.getByRole('button', { name: 'Toque para começar' });
+  await tap.click({ timeout: 10_000 });
+  await expect(tap).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Toque para começar' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Começar diagnóstico' })).toBeVisible({ timeout: 10_000 });
+});

@@ -85,7 +85,7 @@ Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
 - [x] C: 3 caminhos diferentes + "Quero criar o meu" com ajuda da IA ([etapa 23](etapas/23-tres-caminhos-e-criar-o-meu.md))
 - [x] D1: frases rotativas na anamnese, lembrete do dia pelo momento, citações trocando por dia ([etapa 24](etapas/24-frases-e-lembretes.md))
 - [ ] D2: citações de autores de livros famosos (pesquisa em andamento)
-- [ ] E: ilustração, música do splash, comemoração e sons delicados
+- [x] E: ilustração da abertura, música, comemoração "chuva de estrelas" e sons de sino mais delicados ([etapa 25](etapas/25-sons-abertura-e-comemoracao.md))
 - [ ] F: mapa humano (opcional, depois do MVP)
 
 ### Fase 4: Jurídico e empacotamento
