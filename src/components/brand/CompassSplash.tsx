@@ -4,9 +4,9 @@ import { CompassMark } from './CompassMark';
 const SEEN_KEY = 'prumo_splash_seen';
 
 // Duração em ms: ritual completo na 1ª abertura, versão curta nas seguintes (docs/pesquisa/04)
-const FIRST_RUN_MS = 2600;
-const RETURNING_MS = 900;
-const FADE_MS = 350;
+const FIRST_RUN_MS = 4200;
+const RETURNING_MS = 1600;
+const FADE_MS = 700;
 
 function hasSeenSplash(): boolean {
   try {
@@ -101,10 +101,10 @@ export const CompassSplash: React.FC<{ onDone: () => void }> = ({ onDone }) => {
       <Starfield />
 
       <div className="relative flex flex-col items-center gap-5">
-        <CompassMark size={firstRun ? 132 : 104} mode="settle" tone="night" settleMs={firstRun ? 1700 : 650} />
+        <CompassMark size={firstRun ? 132 : 104} mode="settle" tone="night" settleMs={firstRun ? 2600 : 1100} />
         <div
           className="text-center"
-          style={firstRun ? { animation: 'fadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 1100ms both' } : undefined}
+          style={firstRun ? { animation: 'fadeIn 1100ms cubic-bezier(0.22, 1, 0.36, 1) 1800ms both' } : undefined}
         >
           <h1 className="font-display text-4xl font-bold tracking-tight" style={{ color: 'var(--night-text)' }}>
             Prumo

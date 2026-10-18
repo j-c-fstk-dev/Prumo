@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
-import { estimateSeconds, formatDuration } from '../../utils/voice';
+import { estimateSeconds, formatDuration, VOICE_ENABLED } from '../../utils/voice';
 import { Constellation } from '../../components/brand/Constellation';
 import { PersonalTasks } from '../components/PersonalTasks';
 import { DailyRhythm } from '../components/DailyRhythm';
@@ -55,12 +55,12 @@ export const HomeTab: React.FC = () => {
 
         {/* ÂNCORA EMOCIONAL FIXA DO EU FUTURO */}
         <div className="p-3 rounded-xl bg-gold-soft/80 border border-gold-line/90 shadow-2xs flex items-start gap-2.5">
-          <Bookmark className="w-4 h-4 text-gold-text shrink-0 mt-0.5" />
+          <Bookmark className="w-4 h-4 text-gold-text shrink-0 mt-0.5" aria-hidden="true" />
           <div className="flex-1 min-w-0">
             <span className="text-xs font-bold uppercase tracking-wider text-gold-text block">
-              Sua Âncora do Eu Futuro
+              Sua âncora
             </span>
-            <p className="text-sm text-ink font-serif italic truncate mt-0.5">
+            <p className="text-base text-ink font-serif italic leading-snug mt-1 break-words">
               "{personalAnchor}"
             </p>
           </div>
@@ -100,7 +100,7 @@ export const HomeTab: React.FC = () => {
           )}
 
           {/* Micro-áudio Coaching Pills */}
-          {nextStepTask.audioCoach && (
+          {nextStepTask.audioCoach && VOICE_ENABLED && (
             <div className="mt-3 p-2.5 rounded-xl bg-surface/90 border border-primary/20 flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <button
@@ -163,7 +163,7 @@ export const HomeTab: React.FC = () => {
 
         {/* Tarefas pessoais: o app também serve para o dia a dia fora do plano */}
 
-        <PersonalTasks title="Suas tarefas de hoje" />
+        <PersonalTasks title="Pra hoje · fora da jornada" />
 
 
         {/* Card de Progresso da História em Capítulos */}

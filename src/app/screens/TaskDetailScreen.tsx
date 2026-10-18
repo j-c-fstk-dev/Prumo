@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
-import { estimateSeconds, formatDuration } from '../../utils/voice';
+import { estimateSeconds, formatDuration, VOICE_ENABLED } from '../../utils/voice';
 import { WhenPicker } from '../components/WhenPicker';
 import { ToolSuggestions } from '../components/ToolSuggestions';
 import { ExecutionKit } from '../components/ExecutionKit';
@@ -98,8 +98,16 @@ export const TaskDetailScreen: React.FC = () => {
           </div>
         </div>
 
+        {/* Sem voz: as palavras de encorajamento como texto */}
+        {selectedTask.audioCoach && !VOICE_ENABLED && (
+          <div className="p-3 rounded-xl bg-surface border border-primary/30 shadow-xs">
+            <strong className="text-sm text-ink block mb-1">{selectedTask.audioCoach.title}</strong>
+            <p className="text-sm font-serif italic text-ink leading-relaxed">"{selectedTask.audioCoach.transcript}"</p>
+          </div>
+        )}
+
         {/* Player de Micro-Áudio Coaching */}
-        {selectedTask.audioCoach && (
+        {selectedTask.audioCoach && VOICE_ENABLED && (
           <div className="p-3 rounded-xl bg-surface border border-primary/30 shadow-xs space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

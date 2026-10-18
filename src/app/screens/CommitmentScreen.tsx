@@ -13,6 +13,9 @@ export const CommitmentScreen: React.FC = () => {
   // Ritual de compromisso (segurar para selar)
   const [holdProgress, setHoldProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
+  // Toque rápido demais: mostra como fazer, em vez de não acontecer nada
+  const [tapHint, setTapHint] = useState(false);
+  const holdStartRef = useRef(0);
   const holdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => () => {
@@ -21,8 +24,10 @@ export const CommitmentScreen: React.FC = () => {
 
   const handleStartHold = () => {
     setIsHolding(true);
+    setTapHint(false);
     soundEffects.playHoldPulse(5);
     const startTime = Date.now();
+    holdStartRef.current = startTime;
     let lastProgressBand = 0;
     holdIntervalRef.current = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -48,6 +53,7 @@ export const CommitmentScreen: React.FC = () => {
   const handleCancelHold = () => {
     if (holdProgress < 100) {
       if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+      if (isHolding && Date.now() - holdStartRef.current < 1500) setTapHint(true);
       setIsHolding(false);
       setHoldProgress(0);
       soundEffects.playSoftTap();
@@ -130,15 +136,17 @@ export const CommitmentScreen: React.FC = () => {
             onMouseLeave={handleCancelHold}
             onTouchStart={handleStartHold}
             onTouchEnd={handleCancelHold}
+            onContextMenu={(e) => e.preventDefault()}
+            aria-label="Segure aqui por 3 segundos para assumir seu prumo"
             className={`absolute w-24 h-24 rounded-full flex flex-col items-center justify-center transition-all select-none cursor-pointer ${
               isHolding 
                 ? 'bg-primary text-on-primary scale-95 shadow-inner' 
-                : 'bg-primary hover:bg-primary-hover text-on-primary shadow-lg active:scale-95'
+                : 'bg-primary hover:bg-primary-hover text-on-primary shadow-lg active:scale-95 pulse-subtle'
             }`}
           >
             <Compass className={`w-6 h-6 mb-1 ${isHolding ? 'animate-spin' : ''}`} style={{ animationDuration: '3s' }} />
             <span className="text-xs font-bold uppercase tracking-tight text-center leading-tight px-1">
-              {holdProgress > 0 ? `${holdProgress}%` : 'Segurar'}
+              {holdProgress > 0 ? `${holdProgress}%` : 'Segure aqui'}
             </span>
           </button>
         </div>
@@ -148,8 +156,10 @@ export const CommitmentScreen: React.FC = () => {
             <span className="text-primary font-semibold animate-pulse">
               Firmando seu prumo...
             </span>
+          ) : tapHint ? (
+            <span className="text-primary font-semibold">Quase! Mantenha o dedo apertado até o círculo fechar.</span>
           ) : (
-            <span>Pressione e segure por 3 segundos para selar</span>
+            <span>Aperte e <strong className="text-ink">segure o dedo</strong> no botão por 3 segundos</span>
           )}
         </p>
       </div>

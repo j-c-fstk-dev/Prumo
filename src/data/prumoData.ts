@@ -71,7 +71,10 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'ensinar', label: 'Ensinar e guiar outras pessoas', icon: '🎓' },
           { id: 'organizar', label: 'Organizar processos e estruturar rotinas', icon: '📋' },
           { id: 'conectar', label: 'Conectar pessoas e vender ideias', icon: '🔗' }
-        ]
+        ],
+        reflectionPrompt: 'Com suas palavras: o que você faz em que nem vê o tempo passar?',
+        reflectionPlaceholder: 'Ex: Fico horas montando apresentações bonitas para o trabalho...',
+        reflectionPurpose: 'Ajuda a sugerir a opção mais próxima (você confirma).'
       }
     ]
   },
@@ -116,7 +119,10 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'solo', label: 'Bastidores / Criar produtos assíncronos', icon: '👤' },
           { id: 'comunidade', label: 'Direto com pessoas em comunidade ou mentorias', icon: '👥' },
           { id: 'misto', label: 'Um modelo equilibrado com pouco contato 1 a 1', icon: '⚖️' }
-        ]
+        ],
+        reflectionPrompt: 'Com suas palavras: como seria um dia de trabalho bom para você?',
+        reflectionPlaceholder: 'Ex: Gosto de conversar, mas preciso de tempo sozinho para criar...',
+        reflectionPurpose: 'Ajuda a sugerir a opção mais próxima (você confirma).'
       }
     ]
   },
@@ -220,7 +226,10 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'sem_camera', label: 'Zero câmera: prefiro texto, áudio ou bastidores', icon: '🙈' },
           { id: 'moderado', label: 'Apareço se for necessário, mas sem forçar', icon: '🎙️' },
           { id: 'confortavel', label: 'Super tranquilo: gosto de falar em vídeo', icon: '📹' }
-        ]
+        ],
+        reflectionPrompt: 'Com suas palavras: como você se sente aparecendo para os outros?',
+        reflectionPlaceholder: 'Ex: Gravo áudio de boa, mas vídeo me trava...',
+        reflectionPurpose: 'Ajuda a sugerir a opção mais próxima (você confirma).'
       },
       {
         id: 'q5_rejection',
@@ -232,7 +241,10 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         options: [
           { id: 'sensivel', label: 'Fico desanimado com facilidade; preciso de passos guiados', icon: '🛡️' },
           { id: 'resiliente', label: 'Entendo que faz parte do processo de aprendizado', icon: '🌱' }
-        ]
+        ],
+        reflectionPrompt: 'Com suas palavras: o que acontece com você quando ouve um "não"?',
+        reflectionPlaceholder: 'Ex: Fico chateado no dia, mas no outro tento de novo...',
+        reflectionPurpose: 'Ajuda a sugerir a opção mais próxima (você confirma).'
       },
       {
         id: 'q5_obstacle',
@@ -276,7 +288,10 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
           { id: 'notion', label: 'Notion / Docs / Planilhas', icon: '📝' },
           { id: 'whatsapp_biz', label: 'WhatsApp Business', icon: '💬' },
           { id: 'nenhuma', label: 'Ainda não mexo com ferramentas digitais', icon: '🌱' }
-        ]
+        ],
+        reflectionPrompt: 'Usa outra ferramenta? Conte aqui.',
+        reflectionPlaceholder: 'Ex: TikTok, YouTube, Google Agenda...',
+        reflectionPurpose: 'Ajuda a sugerir a opção mais próxima (você confirma).'
       }
     ]
   },

@@ -77,6 +77,15 @@ Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
 - [x] Kit de execução: 5 modelos personalizados ([etapa 16](etapas/16-kit-e-voz.md))
 - [ ] Ambiente sonoro de natureza opcional nas tarefas de foco (pesquisa 04): usar **gravações reais** com licença livre (CC0); a evidência é sobre sons naturais, não sintetizados
 
+### Ajustes do 1º teste com usuários
+Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
+- [x] A: correções rápidas (âncora inteira, Salvar, texto livre, botão de segurar, "Pra hoje", ritmo mais calmo, voz desligada)
+- [ ] B: linguagem amigável, apresentação inicial, blocos surgindo um por vez
+- [ ] C: 3 prumos diferentes + "criar o meu" (depois da 2.4)
+- [ ] D: citações de livros famosos, frases rotativas, lembretes no dia certo
+- [ ] E: ilustração, música do splash, comemoração e sons delicados
+- [ ] F: mapa humano (opcional, depois do MVP)
+
 ### Fase 4: Jurídico e empacotamento
 - [ ] Termos de uso + Política de privacidade (LGPD), com revisão jurídica — ver [checklist](pesquisa/07-lgpd-e-play-store.md#checklist-jurídico-do-mvp)
 - [ ] "Exportar meus dados" e "Apagar tudo" nas configurações
