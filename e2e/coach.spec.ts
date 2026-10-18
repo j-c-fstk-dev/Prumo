@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { seedState, passSplash } from './helpers';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/app/');
   await seedState(page, {});
   await page.getByRole('button', { name: 'Coach' }).click();
 });

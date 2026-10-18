@@ -107,7 +107,7 @@ test('resultado mostra 3 caminhos diferentes e deixa criar o próprio', async ({
 });
 
 test('abertura: na 1ª vez mostra a ilustração e espera o toque; depois, entra sozinha', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/app/');
   await expect(page.getByRole('img', { name: /bússola na mão olhando as estrelas/ })).toBeVisible();
   const tap = page.getByRole('button', { name: 'Toque para começar' });
   await tap.click({ timeout: 10_000 });
@@ -120,7 +120,7 @@ test('abertura: na 1ª vez mostra a ilustração e espera o toque; depois, entra
 
 test('app instalável: manifesto e ícones no ar, convite no início e cartão de proteção no perfil', async ({ page, request }) => {
   const manifest = await (await request.get('/manifest.webmanifest')).json();
-  expect(manifest).toMatchObject({ name: 'Prumo', display: 'standalone', start_url: '/' });
+  expect(manifest).toMatchObject({ name: 'Prumo', display: 'standalone', start_url: '/app/', id: '/' });
   for (const icon of manifest.icons) expect((await request.get(icon.src)).status()).toBe(200);
   expect((await request.get('/icons/apple-touch-icon.png')).status()).toBe(200);
 
@@ -139,4 +139,23 @@ test('app instalável: manifesto e ícones no ar, convite no início e cartão d
   await page.getByRole('button', { name: 'Você', exact: true }).click();
   await expect(page.getByRole('heading', { name: /Proteja seus dados/ })).toBeVisible();
   await expect(page.getByText('3. Guarde uma cópia (nenhuma ainda)')).toBeVisible();
+});
+
+test('apresentação em /, app em /app/, políticas no rodapé e no "Sobre" do app', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Ache o seu caminho no digital.' })).toBeVisible();
+  for (const link of ['Política de privacidade', 'Termos de uso']) {
+    await expect(page.getByRole('contentinfo').getByRole('link', { name: link })).toBeVisible();
+  }
+  await page.getByRole('link', { name: 'Abrir o Prumo' }).click();
+  await expect(page).toHaveURL(/\/app\/$/);
+  await passSplash(page);
+  await expect(page.getByRole('button', { name: 'Começar diagnóstico' })).toBeVisible();
+
+  await page.goto('/privacidade/');
+  await expect(page.getByRole('heading', { name: 'Política de privacidade' })).toBeVisible();
+  await expect(page.getByText('nunca o nome ou o contato das pessoas da sua lista').first()).toBeVisible();
+  await page.goto('/termos/');
+  await expect(page.getByRole('heading', { name: 'Termos de uso' })).toBeVisible();
+  await expect(page.getByText('Não é promessa de renda.')).toBeVisible();
 });

@@ -5,6 +5,7 @@ import { copyText } from '../../utils/share';
 import { AddPhotoButton, LinkedText, PhotoStrip } from './Photos';
 import { deleteImages, saveImage } from '../state/images';
 import { useApp } from '../state/AppStore';
+import { track } from '../../utils/telemetry';
 import { soundEffects } from '../../utils/soundEffects';
 import { dayKey } from '../../domain/journey';
 import type { KitContext } from '../../domain/kit';
@@ -103,7 +104,10 @@ const SendButtons: React.FC<{ person: Person; text: string; subject: string; onS
           href={wa}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={onSent}
+          onClick={() => {
+            track('mensagem_enviada', { canal: 'whatsapp' });
+            onSent();
+          }}
           className="min-h-11 rounded-xl text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5 shadow-sm"
           style={{ background: '#1DA851' }}
         >
@@ -111,7 +115,13 @@ const SendButtons: React.FC<{ person: Person; text: string; subject: string; onS
         </a>
       )}
       {mail && (
-        <a href={mail} onClick={onSent} className="min-h-11 rounded-xl bg-primary hover:bg-primary-hover text-on-primary text-sm font-semibold inline-flex items-center justify-center gap-1.5 shadow-sm">
+        <a
+          href={mail}
+          onClick={() => {
+            track('mensagem_enviada', { canal: 'email' });
+            onSent();
+          }}
+          className="min-h-11 rounded-xl bg-primary hover:bg-primary-hover text-on-primary text-sm font-semibold inline-flex items-center justify-center gap-1.5 shadow-sm">
           <Mail className="w-4 h-4" /> Enviar por e-mail
         </a>
       )}

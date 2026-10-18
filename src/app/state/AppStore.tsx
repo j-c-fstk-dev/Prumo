@@ -4,6 +4,7 @@ import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, TaskItem } from '../../data/prumo
 import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption, buildCustomDiagnosis, type CustomPathInput } from '../../domain/diagnosis';
 import { buildPlanTasks } from '../../domain/tasks';
 import { ACTIONS_TO_REPAIR, addDays, buildTimeline, computeStreak, isFreshStart, journeyDayKey, journeyDayNumber, tasksDoneOn, weekKey } from '../../domain/journey';
+import { track } from '../../utils/telemetry';
 import { can as canUse, currentPlan, trialDaysLeft, type Feature } from '../../domain/entitlements';
 import type { KitId } from '../../domain/kit';
 
@@ -225,6 +226,8 @@ function useAppState() {
         loadedData.current = saved;
         setData(saved);
         if (saved.onboardingDone) setScreen('home');
+        // Em que dia da jornada a pessoa abriu o app: mostra quem volta no dia 2, 7, 30... (etapa 38)
+        if (saved.startedAt) track('app_aberto', { dia: journeyDayNumber(saved.startedAt) });
       }
       if (!saved) loadedData.current = data;
       setHydrated(true);
@@ -419,22 +422,26 @@ function useAppState() {
 
     completeOnboarding: () => {
       setData((d) => ({ ...d, onboardingDone: true, startedAt: d.startedAt ?? Date.now() }));
+      track('jornada_iniciada');
       // A partir daqui há dados que importam: pede ao navegador para não apagá-los (etapa 30)
       void requestPersistence();
     },
 
-    saveDiagnosis: (diag: Diagnosis) =>
+    saveDiagnosis: (diag: Diagnosis) => {
+      track(data.diagnosis ? 'caminho_trocado' : 'diagnostico_concluido', { caminho: diag.productId });
       setData((d) => ({
         ...d,
         diagnosis: diag,
         diagnosisAt: Date.now(),
         usage: d.onboardingDone && d.diagnosis ? { ...d.usage, pivots: d.usage.pivots + 1 } : d.usage,
-      })),
+      }));
+    },
 
     /** Check-in de 10 segundos: um por dia (refazer substitui) */
     checkIn: (text: string, mood?: CheckIn['mood']) => {
       soundEffects.playCompleteTask();
       const day = journeyDayKey();
+      track('checkin', mood ? { humor: mood } : undefined);
       setData((d) => {
         const already = d.checkIns.some((c) => c.day === day);
         const next = { ...d, checkIns: [...d.checkIns.filter((c) => c.day !== day), { day, text: text.trim(), mood }] };
@@ -446,8 +453,10 @@ function useAppState() {
 
     setLetter: (patch: Partial<FutureLetter>) =>
       setData((d) => ({ ...d, letter: { toFuture: '', fromFuture: '', ...d.letter, ...patch } })),
-    sealLetter: () =>
-      setData((d) => (d.letter ? { ...d, letter: { ...d.letter, sealedAt: Date.now() } } : d)),
+    sealLetter: () => {
+      track('carta_selada');
+      setData((d) => (d.letter ? { ...d, letter: { ...d.letter, sealedAt: Date.now() } } : d));
+    },
     /** O "pivô": troca o plano por uma das alternativas */
     /** "Quero criar o meu": a pessoa desenha o próprio caminho */
     chooseCustomPath: (input: CustomPathInput) => {
@@ -509,6 +518,7 @@ function useAppState() {
     toggleTaskStatus: (taskId: string) => {
       const next: TaskItem['status'] = (data.taskStatus[taskId] ?? 'pending') === 'completed' ? 'pending' : 'completed';
       if (next === 'completed') {
+        track('tarefa_concluida', { capitulo: tasks.find((t) => t.id === taskId)?.chapterId ?? 0 });
         soundEffects.playCompleteTask();
         confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
       } else {
@@ -635,6 +645,7 @@ function useAppState() {
       if (!guard('coach_message')) return;
       soundEffects.playSoftTap();
       const week = weekKey(journeyDayKey());
+      track('coach_mensagem');
       setData((d) => ({ ...d, usage: { ...d.usage, coachByWeek: { ...d.usage.coachByWeek, [week]: (d.usage.coachByWeek[week] ?? 0) + 1 } } }));
       const history = data.coachMessages;
       setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'user', text, time: nowTime() }] }));
@@ -743,6 +754,7 @@ function useAppState() {
         updatedAt: now,
       };
       setData((d) => ({ ...d, people: [person, ...d.people] }));
+      track('pessoa_adicionada');
       return person.id;
     },
     updatePerson: (id: string, patch: Partial<Omit<Person, 'id' | 'stageHistory' | 'createdAt'>>) =>
@@ -756,7 +768,10 @@ function useAppState() {
           return next;
         }),
       })),
-    markExported: () => setData((d) => ({ ...d, lastExportAt: Date.now() })),
+    markExported: () => {
+      track('caderno_exportado');
+      setData((d) => ({ ...d, lastExportAt: Date.now() }));
+    },
     dismissInstallHint: () => setData((d) => ({ ...d, installHintDismissedAt: Date.now() })),
     deletePerson: (id: string) => {
       void deleteImages(data.people.find((p) => p.id === id)?.images);

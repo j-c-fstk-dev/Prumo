@@ -103,18 +103,18 @@ Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
 - [ ] Backup na nuvem (com conta; junto da Fase 4 e do Premium)
 
 ### Fase 4: Jurídico e empacotamento
-- [ ] Termos de uso + Política de privacidade (LGPD), com revisão jurídica — ver [checklist](pesquisa/07-lgpd-e-play-store.md#checklist-jurídico-do-mvp)
-- [ ] "Exportar meus dados" e "Apagar tudo" nas configurações
+- [~] Termos de uso + Política de privacidade (LGPD): rascunho publicado ([etapa 39](etapas/39-apresentacao-e-politicas.md)); falta revisão jurídica, nome, CNPJ e e-mail — ver [checklist](pesquisa/07-lgpd-e-play-store.md#checklist-jurídico-do-mvp)
+- [x] "Exportar meus dados" e "Apagar tudo" nas configurações ([etapa 37](etapas/37-apagar-dados-e-offline.md))
 - [ ] APK com API alvo 36 (Android 16)
-- [ ] PWA instalável (manifest, service worker, ícones)
+- [x] PWA instalável (manifest, service worker, ícones) ([etapas 30](etapas/30-proteger-dados.md) e [37](etapas/37-apagar-dados-e-offline.md))
 - [ ] Capacitor + GitHub Actions gerando o AAB assinado
 - [ ] Notificações locais (1 por dia, horário escolhido)
 - [ ] Voz sintética no Android: plugin nativo de text-to-speech (o WebView pode não ter Web Speech)
 
 ### Fase 5: Lançamento
-- [ ] Landing page
+- [x] Página de apresentação ([etapa 39](etapas/39-apresentacao-e-politicas.md))
 - [ ] Ficha da Play Store (textos, prints, classificação etária)
-- [ ] Métricas gratuitas (PostHog free / Umami)
+- [x] Métricas gratuitas (Umami) e registro de erros ([etapa 38](etapas/38-erros-e-metricas.md))
 - [ ] Teste com 10–20 pessoas reais antes de abrir
 
 ### Pós-MVP

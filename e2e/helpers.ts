@@ -17,7 +17,7 @@ export async function passSplash(page: Page) {
 
 /** Abre o app e passa pela abertura */
 export async function openApp(page: Page) {
-  await page.goto('/');
+  await page.goto('/app/');
   await passSplash(page);
   await expect(page.getByRole('button', { name: 'Começar diagnóstico' }).or(page.getByText(/^Olá, /))).toBeVisible({ timeout: 10_000 });
 }

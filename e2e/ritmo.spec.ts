@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { dayKey, seedState } from './helpers';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/app/');
 });
 
 test('quem volta depois de dias é acolhido, sem mensagem de "quebrou"', async ({ page }) => {
@@ -65,4 +65,13 @@ test('apagar todos os dados: pede confirmação e volta ao começo sem nada salv
   // Depois de apagar, o app pode gravar um estado novo e vazio, nunca o antigo
   expect(JSON.stringify(saved ?? {})).not.toContain('Ana');
   expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('prumo_')))).toEqual([]);
+});
+
+test('"Sobre o Prumo" na aba Você leva às políticas e mostra a versão', async ({ page }) => {
+  await seedState(page, {});
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  await expect(page.getByText('Sobre o Prumo')).toBeVisible();
+  await expect(page.getByText(/^Versão \d+\.\d+\.\d+/)).toBeVisible();
+  await page.getByRole('link', { name: 'Política de privacidade' }).click();
+  await expect(page.getByRole('heading', { name: 'Política de privacidade' })).toBeVisible();
 });

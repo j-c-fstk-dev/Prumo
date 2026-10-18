@@ -6,6 +6,7 @@
 
 import { handleCoachChat, handleHealth, handleIdea, handleMessageSuggestion, handleReport, type LiveCallGuard } from '../server/coach.ts';
 import type { LlmEnv } from '../server/llm.ts';
+import { clientErrorLog } from '../server/log.ts';
 import { buildRules, cleanClientId, type LimitEnv, type LimitRule } from '../server/limits.ts';
 
 export { UsageLimiter } from './limiter.ts';
@@ -72,6 +73,15 @@ export default {
               ? await handleMessageSuggestion(body, env, guard)
               : handleReport(body);
       return json(result.status, result.body);
+    }
+
+    // Erros do app (src/utils/telemetry.ts): aparecem nos logs do Worker, sem dados da pessoa
+    if (pathname === '/api/log') {
+      if (request.method !== 'POST') return json(405, { error: 'Use POST.' });
+      const body = await readJson(request);
+      if (body instanceof Response) return body;
+      console.error(JSON.stringify(clientErrorLog(body)));
+      return new Response(null, { status: 204 });
     }
 
     if (pathname.startsWith('/api/')) return json(404, { error: 'Rota não encontrada.' });
