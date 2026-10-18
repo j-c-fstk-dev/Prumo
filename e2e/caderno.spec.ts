@@ -104,3 +104,34 @@ test('pessoas: adicionar, mensagem pronta com WhatsApp, etapas, teste "2 de 5", 
   await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
   await expect(page.getByLabel('Etapa de Ana Souza')).toHaveValue('interessado');
 });
+
+test('pessoas: o coach sugere a mensagem sem receber o nome nem o telefone', async ({ page }) => {
+  const sent: string[] = [];
+  await page.route('**/api/coach/message', async (route) => {
+    sent.push(route.request().postData() ?? '');
+    await route.fulfill({ json: { mode: 'live', text: 'Oi, [nome]! Lembrei de você por causa da nossa conversa.' } });
+  });
+  await onboard(page);
+  await commitAndSeal(page);
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await page.getByRole('tab', { name: /Pessoas/ }).click();
+  await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
+  await page.getByLabel('Nome', { exact: true }).fill('Ana Souza');
+  await page.getByLabel('WhatsApp').fill('11987654321');
+  await page.getByRole('button', { name: 'Adicionar', exact: true }).click();
+
+  await page.getByRole('button', { name: /Pedir ajuda ao coach/ }).click();
+  await expect(page.getByText(/Não vão/)).toBeVisible();
+  await page.getByRole('button', { name: 'Entendi e quero usar' }).click();
+  await page.getByLabel('Contexto para o coach').fill('ela está sem tempo este mês');
+  await page.getByRole('button', { name: 'Pedir sugestão' }).click();
+  await expect(page.getByLabel('Sugestão do coach')).toHaveValue('Oi, Ana! Lembrei de você por causa da nossa conversa.');
+  await page.getByRole('button', { name: 'Usar esta' }).click();
+  await expect(page.getByLabel('Mensagem para Ana Souza')).toHaveValue(/^Oi, Ana!/);
+  await expect(page.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /Lembrei%20de%20voc%C3%AA/);
+
+  expect(sent).toHaveLength(1);
+  expect(sent[0]).toContain('ela está sem tempo este mês');
+  expect(sent[0]).not.toContain('Ana');
+  expect(sent[0]).not.toContain('98765');
+});

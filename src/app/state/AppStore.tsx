@@ -445,6 +445,36 @@ function useAppState() {
       setData((d) => ({ ...d, diagnosis: buildCustomDiagnosis(diagnosis, input, scoredAnswers), usage: { ...d.usage, pivots: d.usage.pivots + 1 } }));
     },
 
+    /**
+     * Sugestão de mensagem para uma pessoa da lista. Vai só a etapa, o contexto digitado e o resumo do
+     * produto: o nome e o contato da pessoa nunca saem do aparelho (a IA escreve "[nome]").
+     */
+    suggestMessage: async (stage: string, context: string, another = false): Promise<{ mode: string; text?: string; reply?: string }> => {
+      try {
+        const response = await fetch('/api/coach/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            stage,
+            context,
+            another,
+            clientId: data.clientId,
+            userContext: {
+              userName: data.userName,
+              diagnosis: {
+                product: data.profileOverrides.offer || diagnosis?.product,
+                audience: data.profileOverrides.audience || diagnosis?.audience,
+              },
+            },
+          }),
+        });
+        if (!response.ok) return { mode: 'offline' };
+        return await response.json();
+      } catch {
+        return { mode: 'offline' };
+      }
+    },
+
     /** Pede à IA uma sugestão organizada a partir da ideia contada com as próprias palavras */
     suggestPath: async (description: string): Promise<{ mode: string; idea?: { offer: string; audience: string; pain: string; format: string } }> => {
       try {

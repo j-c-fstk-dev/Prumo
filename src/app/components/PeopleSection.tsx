@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Mail, MessageCircle, Pencil, Phone, Trash2, UserPlus, Users } from 'lucide-react';
+import { Mail, MessageCircle, Pencil, Phone, Sparkles, Trash2, UserPlus, Users } from 'lucide-react';
+import { copyText } from '../../utils/share';
 import { useApp } from '../state/AppStore';
 import { soundEffects } from '../../utils/soundEffects';
 import { dayKey } from '../../domain/journey';
@@ -68,11 +69,104 @@ const PersonForm: React.FC<{ initial?: Draft; onSave: (d: Draft) => void; onCanc
   );
 };
 
+/**
+ * "Pedir ajuda ao coach" para escrever a mensagem (etapa 29). O nome da pessoa é trocado aqui, no
+ * aparelho: a IA só vê "[nome]".
+ */
+const CoachMessageModal: React.FC<{ person: Person; onUse: (text: string) => void; onClose: () => void }> = ({ person, onUse, onClose }) => {
+  const { coachConsentAt, actions } = useApp();
+  const [context, setContext] = useState('');
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState('');
+  const first = person.name.trim().split(/\s+/)[0] || person.name;
+
+  const ask = async (another: boolean) => {
+    setLoading(true);
+    setNotice('');
+    const r = await actions.suggestMessage(person.stage, context, another);
+    setLoading(false);
+    if (r.mode === 'live' && r.text) setText(r.text.split('[nome]').join(first));
+    else if (r.mode === 'limited') setNotice('O coach já ajudou bastante por hoje. Use a mensagem pronta, ela funciona igual.');
+    else if (r.mode === 'crisis') setNotice('Parece que você não está bem. O CVV atende de graça, 24 h: ligue 188 ou acesse cvv.org.br.');
+    else setNotice('O coach não respondeu agora. Tente de novo daqui a pouco ou use a mensagem pronta.');
+  };
+
+  return (
+    <div className="absolute inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-3 animate-fadeIn" role="dialog" aria-modal="true" aria-label={`Ajuda do coach para a mensagem de ${person.name}`}>
+      <div className="w-full max-h-[90%] overflow-y-auto rounded-2xl bg-surface border border-line p-4 space-y-3 animate-slide-up">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-base font-bold text-ink flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-primary" /> Mensagem para {first}
+          </h3>
+          <button onClick={onClose} className="min-h-9 px-2 text-sm text-muted cursor-pointer">
+            Fechar
+          </button>
+        </div>
+
+        {!coachConsentAt ? (
+          <div className="space-y-2 text-sm text-ink leading-relaxed">
+            <p>O coach usa inteligência artificial de um provedor externo. Para escrever a sugestão, vão a etapa da conversa, o que você oferece e o contexto que você digitar.</p>
+            <p><strong>Não vão</strong> o nome, o telefone nem o e-mail de {first}.</p>
+            <button onClick={actions.giveCoachConsent} className="w-full min-h-10 rounded-xl bg-primary text-on-primary text-sm font-semibold cursor-pointer">
+              Entendi e quero usar
+            </button>
+          </div>
+        ) : (
+          <>
+            <label className="block">
+              <span className="text-[13px] text-muted block mb-1">Quer contar algo pra mensagem ficar melhor? (opcional)</span>
+              <textarea
+                rows={2}
+                maxLength={500}
+                value={context}
+                onChange={(e) => setContext(e.target.value)}
+                placeholder="Ex: ela disse que está sem tempo até o fim do mês"
+                className={`${inputClass} resize-none`}
+                aria-label="Contexto para o coach"
+              />
+            </label>
+            <p className="text-xs text-muted">O coach não recebe o nome nem o contato de {first}.</p>
+
+            {!text && (
+              <button disabled={loading} onClick={() => ask(false)} className="w-full min-h-10 rounded-xl bg-primary hover:bg-primary-hover disabled:opacity-50 text-on-primary text-sm font-semibold cursor-pointer">
+                {loading ? 'Escrevendo…' : 'Pedir sugestão'}
+              </button>
+            )}
+
+            {text && (
+              <div className="space-y-2">
+                <textarea rows={7} value={text} onChange={(e) => setText(e.target.value)} aria-label="Sugestão do coach" className={`${inputClass} resize-none text-[13px]`} />
+                <div className="grid grid-cols-3 gap-2">
+                  <button onClick={() => onUse(text)} className="min-h-10 rounded-xl bg-primary text-on-primary text-[13px] font-semibold cursor-pointer">
+                    Usar esta
+                  </button>
+                  <button disabled={loading} onClick={() => ask(true)} className="min-h-10 rounded-xl border border-line text-[13px] text-ink cursor-pointer disabled:opacity-50">
+                    {loading ? '…' : 'Outra'}
+                  </button>
+                  <button
+                    onClick={async () => setNotice((await copyText(text)) ? 'Copiado ✓' : 'Não deu para copiar')}
+                    className="min-h-10 rounded-xl border border-line text-[13px] text-ink cursor-pointer"
+                  >
+                    Copiar
+                  </button>
+                </div>
+              </div>
+            )}
+            {notice && <p className="text-[13px] text-ink font-medium" role="status">{notice}</p>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string }> = ({ person, ctx, today }) => {
   const { actions } = useApp();
   const [editing, setEditing] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [msg, setMsg] = useState('');
+  const [askCoach, setAskCoach] = useState(false);
   const stage = STAGES.find((s) => s.id === person.stage)!;
   const late = person.nextDate && person.nextDate < today && person.stage !== 'agora_nao';
 
@@ -160,6 +254,9 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string }> =
         <button onClick={openMessage} className="min-h-9 px-1.5 text-xs font-semibold text-primary cursor-pointer">
           {showMessage ? 'Fechar mensagem' : 'Mensagem pronta'}
         </button>
+        <button onClick={() => setAskCoach(true)} className="min-h-9 px-1.5 inline-flex items-center gap-1 text-xs font-semibold text-primary cursor-pointer">
+          <Sparkles className="w-3.5 h-3.5" /> Pedir ajuda ao coach
+        </button>
         {showMessage && wa && (
           <a href={wa} target="_blank" rel="noopener noreferrer" className="min-h-9 px-1.5 inline-flex items-center gap-1 text-xs text-ink hover:text-primary">
             <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
@@ -188,6 +285,18 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string }> =
         </button>
       </div>
       {showMessage && !wa && !mail && <p className="text-xs text-muted">Adicione o WhatsApp ou o e-mail (em Editar) para abrir a conversa.</p>}
+      {askCoach && (
+        <CoachMessageModal
+          person={person}
+          onClose={() => setAskCoach(false)}
+          onUse={(t) => {
+            setMsg(t);
+            setShowMessage(true);
+            setAskCoach(false);
+            soundEffects.playSelectOption();
+          }}
+        />
+      )}
     </div>
   );
 };
