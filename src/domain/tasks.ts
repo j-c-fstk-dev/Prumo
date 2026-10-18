@@ -75,7 +75,7 @@ const MINIMUM_VERSION_TOOLS: Record<ProductId, ToolCategoryId[]> = {
 };
 
 /** t4: preço de teste (referência inicial, não regra) */
-const TEST_PRICE: Record<ProductId, string> = {
+export const TEST_PRICE: Record<ProductId, string> = {
   servico: 'R$ 50 a R$ 150 por entrega de teste',
   sessao: 'R$ 50 a R$ 120 por sessão de teste',
   guia: 'R$ 19 a R$ 47',

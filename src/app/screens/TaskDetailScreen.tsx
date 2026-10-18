@@ -24,7 +24,7 @@ import type { TemaCitacao } from '../../data/citacoes';
 const QUOTE_BY_TASK: Record<string, TemaCitacao> = { t2: 'perfeccionismo', t6: 'medo' };
 
 export const TaskDetailScreen: React.FC = () => {
-  const { selectedTask, reflections, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, actions } = useApp();
+  const { selectedTask, reflections, taskNotes, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, actions } = useApp();
   const [renaming, setRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(selectedTask.title);
   const [showTranscript, setShowTranscript] = useState(false);
@@ -213,7 +213,23 @@ export const TaskDetailScreen: React.FC = () => {
         </div>
         </Reveal>
 
-        <Reveal i={4}>{QUOTE_BY_TASK[selectedTask.id] && <QuoteByTheme tema={QUOTE_BY_TASK[selectedTask.id]} />}</Reveal>
+        <Reveal i={4}>
+          {/* Caderno: anotações desta tarefa (aparecem também na aba Caderno) */}
+          <label className="block p-3.5 rounded-xl bg-surface border border-line">
+            <strong className="text-sm text-ink block mb-1.5">✍️ Minhas anotações desta tarefa</strong>
+            <textarea
+              rows={3}
+              value={taskNotes[selectedTask.id] ?? ''}
+              maxLength={4000}
+              onChange={(e) => actions.setTaskNote(selectedTask.id, e.target.value)}
+              placeholder="O que você fez, o que as pessoas disseram, o que aprendeu..."
+              className="w-full p-2.5 text-sm rounded-lg border border-line bg-canvas text-ink placeholder:text-muted focus:outline-none focus:border-primary resize-none"
+            />
+            <span className="text-xs text-muted">Salva sozinho e aparece também no Caderno.</span>
+          </label>
+        </Reveal>
+
+        <Reveal i={5}>{QUOTE_BY_TASK[selectedTask.id] && <QuoteByTheme tema={QUOTE_BY_TASK[selectedTask.id]} />}</Reveal>
 
 
         {/* Ferramentas por categoria + exemplos curados, sem preços (docs/etapas/14) */}

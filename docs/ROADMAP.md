@@ -88,6 +88,10 @@ Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
 - [x] E: ilustração da abertura, música, comemoração "chuva de estrelas" e sons de sino mais delicados ([etapa 25](etapas/25-sons-abertura-e-comemoracao.md))
 - [ ] F: mapa humano (opcional, depois do MVP)
 
+### Caderno do projeto
+- [x] Aba Caderno (ficha, anotações com etiquetas, notas por tarefa, exportar) + copiar/salvar respostas do coach ([etapa 27](etapas/27-caderno.md))
+- [ ] Registro de conversas do teste ("2 de 5 disseram sim") na etiqueta Conversas
+
 ### Fase 4: Jurídico e empacotamento
 - [ ] Termos de uso + Política de privacidade (LGPD), com revisão jurídica — ver [checklist](pesquisa/07-lgpd-e-play-store.md#checklist-jurídico-do-mvp)
 - [ ] "Exportar meus dados" e "Apagar tudo" nas configurações

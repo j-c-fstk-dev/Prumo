@@ -12,6 +12,7 @@ const PAYWALL_ENABLED = import.meta.env.VITE_PAYWALL_ENABLED === 'true';
 import { soundEffects } from '../../utils/soundEffects';
 import { speak, stopSpeaking } from '../../utils/voice';
 import { clearAll, loadValue, saveValue } from './storage';
+import { NOTE_MAX, type Note, type NoteTag, type ProfileFieldId, type ProfileOverrides } from '../../domain/notebook';
 
 export type ScreenState =
   | 'splash'
@@ -28,7 +29,7 @@ export type ScreenState =
   | 'task_detail'
   | 'paywall';
 
-export type TabId = 'home' | 'roadmap' | 'coach' | 'profile';
+export type TabId = 'home' | 'roadmap' | 'coach' | 'notebook' | 'profile';
 export type MacroGoal = 'renda_extra' | 'substituir' | 'proposito';
 /** auto segue o sistema; light = "Pergaminho"; dark = "Noite" (docs/pesquisa/03) */
 export type ThemePref = 'auto' | 'light' | 'dark';
@@ -79,6 +80,10 @@ interface PersistedState {
   /** Ajustes da pessoa nas tarefas do plano (título e "quando vou fazer") */
   planEdits: Record<string, { title?: string; when?: string }>;
   personalTasks: PersonalTask[];
+  /** Caderno do projeto (etapa 27): anotações, ficha editada e notas por tarefa. Só no aparelho. */
+  notes: Note[];
+  profileOverrides: ProfileOverrides;
+  taskNotes: Record<string, string>;
   coachMessages: CoachMessage[];
   /** Diagnóstico calculado ao fim da anamnese (null até lá) */
   diagnosis: Diagnosis | null;
@@ -119,6 +124,9 @@ function initialPersisted(): PersistedState {
     taskStatus: {},
     planEdits: {},
     personalTasks: [],
+    notes: [],
+    profileOverrides: {},
+    taskNotes: {},
     coachMessages: [],
     diagnosis: null,
     letter: null,
@@ -639,6 +647,28 @@ function useAppState() {
       setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'coach', text: reply, time: nowTime(), mode }] }));
       setIsTyping(false);
     },
+
+    /** Caderno: nova anotação (opcionalmente ligada à tarefa em que a pessoa estava) */
+    addNote: (text: string, tag: NoteTag, taskTitle?: string) => {
+      const clean = text.trim().slice(0, NOTE_MAX);
+      if (!clean) return;
+      soundEffects.playSelectOption();
+      const now = Date.now();
+      const note: Note = { id: `n${now}-${Math.random().toString(36).slice(2, 7)}`, text: clean, tag, taskTitle, createdAt: now, updatedAt: now };
+      setData((d) => ({ ...d, notes: [note, ...d.notes] }));
+    },
+    updateNote: (id: string, patch: Partial<Pick<Note, 'text' | 'tag'>>) =>
+      setData((d) => ({
+        ...d,
+        notes: d.notes.map((n) =>
+          n.id === id ? { ...n, ...patch, text: (patch.text ?? n.text).slice(0, NOTE_MAX), updatedAt: Date.now() } : n,
+        ),
+      })),
+    deleteNote: (id: string) => setData((d) => ({ ...d, notes: d.notes.filter((n) => n.id !== id) })),
+    setProfileField: (id: ProfileFieldId, value: string) =>
+      setData((d) => ({ ...d, profileOverrides: { ...d.profileOverrides, [id]: value.slice(0, 300) } })),
+    setTaskNote: (taskId: string, text: string) =>
+      setData((d) => ({ ...d, taskNotes: { ...d.taskNotes, [taskId]: text.slice(0, NOTE_MAX) } })),
 
     /** Apaga tudo do aparelho e volta ao início */
     resetAll: async () => {
