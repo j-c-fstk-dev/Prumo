@@ -12,6 +12,9 @@
   },
   // Domínio próprio: a Cloudflare cria o DNS e o certificado (o endereço *.workers.dev continua ativo)
   "routes": [{ "pattern": "prumo.jardimdofazer.com.br", "custom_domain": true }],
+  // Limite de uso do coach (server/limits.ts): contadores num Durable Object com SQLite (plano grátis)
+  "durable_objects": { "bindings": [{ "name": "LIMITER", "class_name": "UsageLimiter" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["UsageLimiter"] }],
   // Logs no painel da Cloudflare (inclui as denúncias de resposta do coach)
   "observability": { "enabled": true }
   // Variáveis da IA: configure como SECRETS, nunca aqui

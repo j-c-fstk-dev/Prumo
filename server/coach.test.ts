@@ -129,3 +129,41 @@ describe('LLM_EXTRA_BODY', () => {
     expect(fetchMock).toHaveBeenCalled();
   });
 });
+
+describe('limite de uso', () => {
+  it('bloqueado: não chama a IA e responde em modo "limited"', async () => {
+    const fetchMock = mockLlm();
+    const r = await handleCoachChat({ message: 'oi', userContext: { userName: 'Jo' } }, LIVE_ENV, async () => ({ allowed: false, blockedBy: 'd:x:dev:a' }));
+    expect(r.body.mode).toBe('limited');
+    expect(r.body.reply).toContain('volta amanhã');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('crise e modo offline não passam pelo limite', async () => {
+    const guard = vi.fn(async () => ({ allowed: false }));
+    mockLlm();
+    expect((await handleCoachChat({ message: 'quero morrer' }, LIVE_ENV, guard)).body.mode).toBe('crisis');
+    expect((await handleCoachChat({ message: 'oi' }, {}, guard)).body.mode).toBe('offline');
+    expect(guard).not.toHaveBeenCalled();
+  });
+
+  it('se o contador falhar, o coach segue funcionando', async () => {
+    mockLlm('ok');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const r = await handleCoachChat({ message: 'oi' }, LIVE_ENV, async () => {
+      throw new Error('contador fora');
+    });
+    expect(r.body.mode).toBe('live');
+  });
+});
+
+describe('registro de custo', () => {
+  it('anota só os tokens gastos, nunca o texto da conversa', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: 'oi' } }], usage: { prompt_tokens: 120, completion_tokens: 30 } }), { status: 200 })));
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    await handleCoachChat({ message: 'meu segredo', userContext: { userName: 'Jo' } }, LIVE_ENV);
+    const entry = JSON.parse(log.mock.calls.find((c) => String(c[0]).includes('coach_usage'))![0] as string);
+    expect(entry).toMatchObject({ type: 'coach_usage', provider: 'openai', inputTokens: 120, outputTokens: 30 });
+    expect(JSON.stringify(log.mock.calls)).not.toContain('segredo');
+  });
+});
