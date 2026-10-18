@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, buildTimeline, computeStreak, dayKey, isFreshStart, weekKey } from './journey';
+import { addDays, buildTimeline, computeStreak, dayKey, isFreshStart, journeyDayKey, journeyDayLabel, journeyDayNumber, tasksDoneOn, weekKey } from './journey';
 
 // 2026-10-14 é uma quarta-feira
 const WED = '2026-10-14';
@@ -91,5 +91,37 @@ describe('buildTimeline', () => {
     const t = buildTimeline({ tasks, completedAt: { a: 10, b: 20 } });
     expect(t[0]).toMatchObject({ kind: 'capitulo', title: 'Capítulo 1 concluído' });
     expect(t.filter((e) => e.kind === 'capitulo')).toHaveLength(1);
+  });
+});
+
+describe('dia da jornada (etapa 33)', () => {
+  it('o dia vira às 4h: 0h30 ainda é ontem, 4h já é hoje', () => {
+    expect(journeyDayKey(new Date(2026, 9, 18, 0, 30))).toBe('2026-10-17');
+    expect(journeyDayKey(new Date(2026, 9, 18, 3, 59))).toBe('2026-10-17');
+    expect(journeyDayKey(new Date(2026, 9, 18, 4, 0))).toBe('2026-10-18');
+    expect(journeyDayKey(new Date(2026, 9, 1, 1, 0))).toBe('2026-09-30');
+  });
+
+  it('conta dias de calendário, não blocos de 24h', () => {
+    const start = new Date(2026, 9, 1, 22, 0).getTime();
+    expect(journeyDayNumber(start, new Date(2026, 9, 1, 23, 0))).toBe(1);
+    // 11h depois, mas já é outro dia: Dia 2 (a conta antiga dava 0)
+    expect(journeyDayNumber(start, new Date(2026, 9, 2, 9, 0))).toBe(2);
+    expect(journeyDayNumber(start, new Date(2026, 9, 3, 2, 0))).toBe(2);
+    expect(journeyDayNumber(start, new Date(2026, 11, 29, 12, 0))).toBe(90);
+  });
+
+  it('depois dos 90 o texto muda, sem "Dia 95 de 90"', () => {
+    expect(journeyDayLabel(12)).toBe('Dia 12 de 90');
+    expect(journeyDayLabel(90)).toBe('Dia 90 de 90');
+    expect(journeyDayLabel(95)).toBe('Dia 95 · além dos 90 ✨');
+  });
+
+  it('tarefas são contadas por dia, à parte da sequência', () => {
+    const at = (h: number, d = 18) => new Date(2026, 9, d, h).getTime();
+    const completedAt = { a: at(9), b: at(15), c: at(2, 19), d: at(10, 17) };
+    // a "c" foi às 2h do dia 19: ainda é o dia 18
+    expect(tasksDoneOn(completedAt, '2026-10-18')).toBe(3);
+    expect(tasksDoneOn(completedAt, '2026-10-17')).toBe(1);
   });
 });

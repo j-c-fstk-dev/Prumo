@@ -3,7 +3,7 @@ import confetti from 'canvas-confetti';
 import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, TaskItem } from '../../data/prumoData';
 import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption, buildCustomDiagnosis, type CustomPathInput } from '../../domain/diagnosis';
 import { buildPlanTasks } from '../../domain/tasks';
-import { ACTIONS_TO_REPAIR, addDays, buildTimeline, computeStreak, dayKey, isFreshStart, weekKey } from '../../domain/journey';
+import { ACTIONS_TO_REPAIR, addDays, buildTimeline, computeStreak, isFreshStart, journeyDayKey, journeyDayNumber, tasksDoneOn, weekKey } from '../../domain/journey';
 import { can as canUse, currentPlan, trialDaysLeft, type Feature } from '../../domain/entitlements';
 import type { KitId } from '../../domain/kit';
 
@@ -178,7 +178,7 @@ function migrate(raw: unknown): PersistedState | null {
 
 /** Soma uma ação ao dia de hoje e, se completar o remendo, remenda o dia de ontem. */
 function withAction(d: PersistedState): PersistedState {
-  const today = dayKey(new Date());
+  const today = journeyDayKey();
   const before = computeStreak({ actionsByDay: d.actionsByDay, repairedDays: d.repairedDays, today });
   const actionsByDay = { ...d.actionsByDay, [today]: (d.actionsByDay[today] ?? 0) + 1 };
   const repairedDays =
@@ -299,7 +299,7 @@ function useAppState() {
     [data.diagnosis, scoredAnswers, personalAnchor, data.reflections],
   );
 
-  const today = dayKey(new Date());
+  const today = journeyDayKey();
   const streak = computeStreak({ actionsByDay: data.actionsByDay, repairedDays: data.repairedDays, today });
   const todayCheckIn = data.checkIns.find((c) => c.day === today);
   const freshStart = isFreshStart(today);
@@ -311,6 +311,7 @@ function useAppState() {
   });
 
   const now = Date.now();
+  const journeyDay = data.startedAt ? journeyDayNumber(data.startedAt, new Date(now)) : null;
   const entitlementCtx = {
     paywallEnabled: PAYWALL_ENABLED,
     isPremium: data.isPremium,
@@ -433,7 +434,7 @@ function useAppState() {
     /** Check-in de 10 segundos: um por dia (refazer substitui) */
     checkIn: (text: string, mood?: CheckIn['mood']) => {
       soundEffects.playCompleteTask();
-      const day = dayKey(new Date());
+      const day = journeyDayKey();
       setData((d) => {
         const already = d.checkIns.some((c) => c.day === day);
         const next = { ...d, checkIns: [...d.checkIns.filter((c) => c.day !== day), { day, text: text.trim(), mood }] };
@@ -633,7 +634,7 @@ function useAppState() {
       if (!text.trim() || isTyping) return;
       if (!guard('coach_message')) return;
       soundEffects.playSoftTap();
-      const week = weekKey(dayKey(new Date()));
+      const week = weekKey(journeyDayKey());
       setData((d) => ({ ...d, usage: { ...d.usage, coachByWeek: { ...d.usage.coachByWeek, [week]: (d.usage.coachByWeek[week] ?? 0) + 1 } } }));
       const history = data.coachMessages;
       setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'user', text, time: nowTime() }] }));
@@ -782,8 +783,11 @@ function useAppState() {
     can,
     paywallReason,
     trialDaysLeft: trialDaysLeft(data.startedAt, now),
+    /** Dia da jornada (1 = o dia em que começou, pelo calendário, virando às 4h); null antes do onboarding */
+    journeyDay,
     /** Dias desde o início da jornada (0 = hoje); null antes de terminar o onboarding */
-    daysSinceStart: data.startedAt ? Math.floor((now - data.startedAt) / 86_400_000) : null,
+    daysSinceStart: journeyDay === null ? null : journeyDay - 1,
+    tasksDoneToday: tasksDoneOn(data.completedAt, today),
     paywallEnabled: PAYWALL_ENABLED,
     todayCheckIn,
     freshStart,

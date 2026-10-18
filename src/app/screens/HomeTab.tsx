@@ -17,9 +17,10 @@ import { DailyInspiration } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
 import { InstallHint } from '../components/ProtectData';
 import { lembreteDoDia } from '../../data/encorajamento';
+import { JOURNEY_DAYS, journeyDayLabel } from '../../domain/journey';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, actions } = useApp();
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
@@ -40,6 +41,9 @@ export const HomeTab: React.FC = () => {
         <Reveal i={0}>
         <div className="flex items-center justify-between">
           <div>
+            {journeyDay !== null && (
+              <span className="text-xs font-bold uppercase tracking-wider text-primary block mb-0.5">{journeyDayLabel(journeyDay)}</span>
+            )}
             <h2 className="text-xl font-bold text-ink">
               Olá, {userName} 👋
             </h2>
@@ -52,6 +56,22 @@ export const HomeTab: React.FC = () => {
           </div>
         </div>
         </Reveal>
+
+        {/* Dia 90 em diante: hora de reabrir a carta que a pessoa escreveu no começo */}
+        {journeyDay !== null && journeyDay >= JOURNEY_DAYS && letter?.sealedAt && (
+          <Reveal i={1}>
+            <button
+              onClick={() => {
+                soundEffects.playSoftTap();
+                actions.go('future_letter');
+              }}
+              className="w-full text-left p-4 rounded-2xl bg-gold-soft border border-gold-line cursor-pointer hover:border-primary transition-colors"
+            >
+              <strong className="block text-ink">📜 {journeyDay === JOURNEY_DAYS ? 'Hoje é o seu dia 90.' : 'Você passou dos 90 dias.'}</strong>
+              <span className="text-sm text-gold-ink">Chegou a hora de reler a carta que você escreveu no começo e ver o quanto caminhou.</span>
+            </button>
+          </Reveal>
+        )}
 
         {/* Ritmo diário: check-in, sequência gentil, remendo e boas-vindas de volta */}
 

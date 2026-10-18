@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { commitAndSeal, onboard } from './helpers';
+import { commitAndSeal, onboard, passSplash } from './helpers';
 
 // Caderno do projeto (docs/etapas/27-caderno.md)
 test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
@@ -57,6 +57,7 @@ test('caderno: ficha preenchida, anotações, nota da tarefa, resposta do coach 
 
   // Persiste depois de recarregar
   await page.reload();
+  await passSplash(page);
   await page.getByRole('button', { name: 'Caderno', exact: true }).click();
   await expect(page.getByText('Testar oferta no grupo do bairro')).toBeVisible();
   await expect(page.getByText('Eu ajudo pessoas em transição a se apresentar')).toBeVisible();
@@ -101,6 +102,7 @@ test('pessoas: adicionar, mensagem pronta com WhatsApp, etapas, teste "2 de 5", 
 
   // Persiste
   await page.reload();
+  await passSplash(page);
   await page.getByRole('button', { name: 'Caderno', exact: true }).click();
   await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
   await expect(page.getByLabel('Etapa de Ana Souza')).toHaveValue('interessado');
@@ -168,6 +170,7 @@ test('fotos: anexar na anotação, ver, persistir, exportar em .zip e apagar jun
 
   // Persiste
   await page.reload();
+  await passSplash(page);
   await page.getByRole('button', { name: 'Caderno', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Ver foto' })).toHaveCount(1);
 

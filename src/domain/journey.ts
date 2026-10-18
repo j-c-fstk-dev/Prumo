@@ -14,6 +14,22 @@ export function dayKey(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** O dia do Prumo vira às 4h, não à meia-noite: quem registra à 0h30 ainda está no "hoje" (etapa 33). */
+export const DAY_STARTS_AT_HOUR = 4;
+
+/** Duração da jornada combinada na carta para o eu do futuro */
+export const JOURNEY_DAYS = 90;
+
+/** A partir de quantas tarefas no mesmo dia o app lembra, com carinho, de descansar */
+export const BUSY_DAY_TASKS = 3;
+
+/** Dia do Prumo (AAAA-MM-DD) de um momento: antes das 4h ainda conta como o dia anterior. */
+export function journeyDayKey(date: Date = new Date()): string {
+  const d = new Date(date);
+  if (d.getHours() < DAY_STARTS_AT_HOUR) d.setDate(d.getDate() - 1);
+  return dayKey(d);
+}
+
 function parseDay(key: string): Date {
   const [y, m, d] = key.split('-').map(Number);
   return new Date(y, m - 1, d);
@@ -23,6 +39,25 @@ export function addDays(key: string, delta: number): string {
   const d = parseDay(key);
   d.setDate(d.getDate() + delta);
   return dayKey(d);
+}
+
+/** Diferença em dias de calendário entre duas datas AAAA-MM-DD (b - a) */
+export function daysBetween(a: string, b: string): number {
+  return Math.round((parseDay(b).getTime() - parseDay(a).getTime()) / 86_400_000);
+}
+
+/** Em que dia da jornada a pessoa está: 1 no dia em que começou, e cresce com o calendário. */
+export function journeyDayNumber(startedAt: number, now: Date = new Date()): number {
+  return Math.max(1, daysBetween(journeyDayKey(new Date(startedAt)), journeyDayKey(now)) + 1);
+}
+
+export function journeyDayLabel(day: number): string {
+  return day <= JOURNEY_DAYS ? `Dia ${day} de ${JOURNEY_DAYS}` : `Dia ${day} · além dos ${JOURNEY_DAYS} ✨`;
+}
+
+/** Quantas tarefas foram concluídas num dia do Prumo */
+export function tasksDoneOn(completedAt: Record<string, number>, day: string): number {
+  return Object.values(completedAt).filter((at) => journeyDayKey(new Date(at)) === day).length;
 }
 
 /** Segunda-feira da semana do dia (a semana vai de segunda a domingo). */
@@ -92,7 +127,7 @@ export function computeStreak({ actionsByDay, repairedDays, today }: StreakInput
   const repairedWalk = walk(counted(today) ? today : yesterday, yesterday);
   const canRepairYesterday = !counted(yesterday) && brokeAt !== null && repairedWalk.count > count + 1;
 
-  const daysAway = last ? Math.round((parseDay(today).getTime() - parseDay(last).getTime()) / 86_400_000) : null;
+  const daysAway = last ? daysBetween(last, today) : null;
 
   return { current: count, restDays: rest, canRepairYesterday, actionsToday, daysAway };
 }

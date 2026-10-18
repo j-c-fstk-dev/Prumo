@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { seedState } from './helpers';
+import { seedState, passSplash } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -15,6 +15,7 @@ test('pede consentimento antes do primeiro uso, explicando o que é enviado', as
   await expect(page.getByPlaceholder('Escreva sua dúvida...')).toBeVisible();
   // O consentimento fica salvo
   await page.reload();
+  await passSplash(page);
   await page.getByRole('button', { name: 'Coach' }).click();
   await expect(page.getByPlaceholder('Escreva sua dúvida...')).toBeVisible();
 });

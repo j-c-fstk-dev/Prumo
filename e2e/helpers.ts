@@ -1,14 +1,25 @@
 import { expect, type Page } from '@playwright/test';
 
-/** Abre o app; na 1ª vez, toca em "Toque para começar" (a abertura espera o toque para tocar a música) */
+/**
+ * Espera a abertura (bonequinho e depois bússola, etapa 34). Na 1ª vez toca em "Toque para começar"
+ * (a música só pode tocar depois de um toque); nas seguintes, a abertura sai sozinha.
+ */
+export async function passSplash(page: Page) {
+  const splash = page.locator('[data-splash]');
+  const tap = page.getByRole('button', { name: 'Toque para começar' });
+  await expect(async () => {
+    if (await tap.isVisible()) return;
+    expect(await splash.count()).toBe(0);
+  }).toPass({ timeout: 15_000 });
+  if (await tap.isVisible()) await tap.click({ timeout: 10_000 });
+  await expect(splash).toHaveCount(0, { timeout: 10_000 });
+}
+
+/** Abre o app e passa pela abertura */
 export async function openApp(page: Page) {
   await page.goto('/');
-  const ready = page.getByRole('button', { name: 'Começar diagnóstico' }).or(page.getByText(/^Olá, /));
-  const tap = page.getByRole('button', { name: 'Toque para começar' });
-  await expect(ready.or(tap).first()).toBeVisible({ timeout: 10_000 });
-  if (await tap.count()) await tap.click({ timeout: 10_000 });
-  await expect(tap).toHaveCount(0, { timeout: 10_000 });
-  await expect(ready).toBeVisible({ timeout: 10_000 });
+  await passSplash(page);
+  await expect(page.getByRole('button', { name: 'Começar diagnóstico' }).or(page.getByText(/^Olá, /))).toBeVisible({ timeout: 10_000 });
 }
 
 /**
@@ -88,12 +99,15 @@ export async function seedState(page: Page, patch: Record<string, unknown>) {
     });
   }, patch);
   await page.reload();
+  await passSplash(page);
   await expect(page.getByText(/^Olá, /)).toBeVisible({ timeout: 10_000 });
 }
 
 /** Data local AAAA-MM-DD a "delta" dias de hoje */
 export function dayKey(delta = 0): string {
   const d = new Date();
+  // O dia do Prumo vira às 4h (etapa 33)
+  if (d.getHours() < 4) d.setDate(d.getDate() - 1);
   d.setDate(d.getDate() + delta);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
