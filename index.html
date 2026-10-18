@@ -2,29 +2,28 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="theme-color" content="#FBF8F2" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <!-- App instalável (etapa 30): na Tela de Início o Safari não apaga os dados após 7 dias sem uso -->
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Prumo" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Prumo — encontre seu prumo no digital</title>
-    <meta name="description" content="Em 15 minutos, descubra o que criar, para quem e como dar o primeiro passo no digital — com um plano prático e um coach que te acompanha." />
-    <meta property="og:title" content="Prumo" />
-    <meta property="og:description" content="Em 15 minutos, descubra o que criar, para quem e como dar o primeiro passo no digital — com um plano prático e um coach que te acompanha." />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#15122A" />
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="2d12d990-1a02-494e-a805-c3b118864922" data-domains="prumo.jardimdofazer.com.br"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Prumo · ache o seu caminho no digital</title>
+    <meta name="description" content="Responda umas perguntas e descubra o que oferecer, pra quem e por onde começar no digital. Depois, passos pequenos por 90 dias, com um coach que te acompanha." />
+    <meta property="og:title" content="Prumo · ache o seu caminho no digital" />
+    <meta property="og:description" content="Responda umas perguntas e descubra o que oferecer, pra quem e por onde começar no digital. Depois, passos pequenos por 90 dias, com um coach que te acompanha." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://prumo.jardimdofazer.com.br/icons/icon-512.png" />
+    <!-- Quem abre pelo ícone instalado (versões antigas abriam em /) vai direto para o app -->
+    <script>
+      if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) location.replace('/app/');
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/landing/main.tsx"></script>
   </body>
 </html>
-

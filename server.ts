@@ -3,6 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { clientErrorLog } from './server/log.ts';
 import { handleCoachChat, handleHealth, handleIdea, handleMessageSuggestion, handleReport } from './server/coach.ts';
 
 dotenv.config();
@@ -39,6 +40,11 @@ async function startServer() {
     res.status(result.status).json(result.body);
   });
 
+  app.post('/api/log', express.json({ type: () => true, limit: '8kb' }), (req, res) => {
+    console.error(JSON.stringify(clientErrorLog(req.body)));
+    res.status(204).end();
+  });
+
   app.get('/api/health', (_req, res) => {
     res.json(handleHealth().body);
   });
@@ -46,7 +52,7 @@ async function startServer() {
   if (!isProd) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'mpa',
     });
     app.use(vite.middlewares);
   } else {

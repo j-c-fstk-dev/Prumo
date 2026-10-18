@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
+import { SITE } from '../../landing/site';
 
 export const ProfileTab: React.FC = () => {
   const { userName, isSoundMuted, tapSounds, timeline, plan, trialDaysLeft, theme, actions } = useApp();
@@ -141,18 +142,35 @@ export const ProfileTab: React.FC = () => {
               </span>
             </div>
           )}
-          <a
-            href="https://github.com/j-c-fstk-dev/Prumo"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-3 bg-surface border border-line rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-2"
-          >
-            <span>Código-fonte (AGPL-3.0)</span>
-            <ExternalLink className="w-4 h-4 text-muted" />
-          </a>
+
         </div>
 
         <DeleteAllData />
+
+        {/* Sobre (etapa 39): links da apresentação, das políticas e do código */}
+        <div className="pt-2 space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted block px-1">Sobre o Prumo</span>
+          <div className="rounded-xl bg-surface border border-line divide-y divide-line text-sm">
+            {[
+              { href: '/', label: 'Página do Prumo' },
+              { href: '/privacidade/', label: 'Política de privacidade' },
+              { href: '/termos/', label: 'Termos de uso' },
+              ...(SITE.email ? [{ href: `mailto:${SITE.email}`, label: 'Falar com a gente' }] : []),
+              { href: SITE.repo, label: 'Código-fonte (AGPL-3.0)', external: true },
+            ].map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                className="p-3 flex items-center justify-between hover:bg-surface-2"
+              >
+                <span>{l.label}</span>
+                {l.external ? <ExternalLink className="w-4 h-4 text-muted" /> : <ChevronRight className="w-4 h-4 text-muted" />}
+              </a>
+            ))}
+          </div>
+          <p className="text-xs text-muted px-1 pt-1">Versão {__APP_VERSION__} · fase de testes</p>
+        </div>
       </div>
     </div>
   );

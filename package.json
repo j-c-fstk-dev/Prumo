@@ -1,7 +1,7 @@
 {
   "name": "prumo",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.9.0",
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "scripts": {
@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "deploy": "npm run build && npx wrangler@4 deploy",
-    "dev:worker": "npm run build && npx wrangler@4 dev"
+    "dev:worker": "npm run build && npx wrangler@4 dev",
+    "prints": "playwright test --config scripts/playwright.prints.config.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

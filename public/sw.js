@@ -5,13 +5,13 @@
  * - /api (coach) nunca passa por aqui: sem internet, o app avisa que o coach está offline.
  * Os dados da pessoa ficam no IndexedDB e não dependem deste arquivo.
  */
-const CACHE = 'prumo-v1';
+const CACHE = 'prumo-v2';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((c) => c.addAll(['/', '/manifest.webmanifest']))
+      .then((c) => c.addAll(['/', '/app/', '/manifest.webmanifest']))
       .catch(() => undefined)
       .then(() => self.skipWaiting()),
   );
@@ -36,16 +36,24 @@ self.addEventListener('fetch', (event) => {
   if (!sameOrigin && !fonts) return;
 
   if (req.mode === 'navigate') {
+    // Cada página (apresentação, app, políticas) guardada pelo próprio caminho, sem a busca (?...)
+    const key = url.origin + url.pathname;
+    const fallback = url.pathname.startsWith('/app') ? '/app/' : '/';
     event.respondWith(
       fetch(req)
         .then((res) => {
-          if (res.ok) {
+          if (res.ok && !res.redirected) {
             const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put('/', copy));
+            caches.open(CACHE).then((c) => c.put(key, copy));
           }
           return res;
         })
-        .catch(() => caches.match('/').then((r) => r || Response.error())),
+        .catch(() =>
+          caches
+            .match(key)
+            .then((r) => r || caches.match(fallback))
+            .then((r) => r || Response.error()),
+        ),
     );
     return;
   }
