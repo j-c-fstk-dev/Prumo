@@ -5,6 +5,8 @@ import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOpt
 import { buildPlanTasks } from '../../domain/tasks';
 import { ACTIONS_TO_REPAIR, addDays, buildTimeline, computeStreak, isFreshStart, journeyDayKey, journeyDayNumber, tasksDoneOn, weekKey } from '../../domain/journey';
 import { track } from '../../utils/telemetry';
+import { REVIEW_LIMIT, activeRoutines, currentGoal, routineProgress, toggleRoutineDay, type WeeklyReview } from '../../domain/routines';
+import { suggestedWeek } from '../../domain/pacing';
 import { can as canUse, currentPlan, trialDaysLeft, type Feature } from '../../domain/entitlements';
 import type { KitId } from '../../domain/kit';
 
@@ -90,6 +92,10 @@ interface PersistedState {
   taskNotes: Record<string, string>;
   /** Pessoas (mini-CRM, etapa 28): dados de terceiros, só no aparelho e nunca enviados à IA */
   people: Person[];
+  /** Rotinas (etapa 42): dias (AAAA-MM-DD) em que cada rotina foi feita */
+  routineLog: Record<string, string[]>;
+  /** Revisões da semana, pela segunda-feira da semana em que foram feitas */
+  weeklyReviews: Record<string, WeeklyReview>;
   /** Última vez que a pessoa exportou o Caderno (lembrete de backup) */
   lastExportAt?: number;
   /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
@@ -138,6 +144,8 @@ function initialPersisted(): PersistedState {
     profileOverrides: {},
     taskNotes: {},
     people: [],
+    routineLog: {},
+    weeklyReviews: {},
     coachMessages: [],
     diagnosis: null,
     letter: null,
@@ -199,6 +207,8 @@ function useAppState() {
   const [screen, setScreen] = useState<ScreenState>('splash');
   const [tab, setTab] = useState<TabId>('home');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  /** Em que parte o Caderno abre (as rotinas de conversa levam direto para Pessoas) */
+  const [notebookSection, setNotebookSection] = useState<'notas' | 'pessoas'>('notas');
   const [sectionIndex, setSectionIndex] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [questionDirection, setQuestionDirection] = useState<'forward' | 'backward'>('forward');
@@ -281,6 +291,8 @@ function useAppState() {
   const journeyComplete = tasks.length > 0 && tasks.every((t) => t.status === 'completed');
   // Com tudo feito, o "próximo passo" fica sendo o último (o capítulo e o coach seguem fazendo sentido)
   const nextStepTask = tasks.find((t) => t.status !== 'completed' && !t.isLocked) || tasks[tasks.length - 1];
+  /** Capítulo em que a pessoa está: o do próximo passo (as rotinas dele e dos anteriores valem) */
+  const currentChapterId = nextStepTask?.chapterId ?? 1;
   const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? nextStepTask;
 
   const personalAnchor =
@@ -318,6 +330,10 @@ function useAppState() {
 
   const now = Date.now();
   const journeyDay = data.startedAt ? journeyDayNumber(data.startedAt, new Date(now)) : null;
+  const currentWeek = suggestedWeek(journeyDay);
+  const routines = activeRoutines(currentChapterId, journeyComplete).map((r) => ({ ...r, ...routineProgress(r, data.routineLog[r.id], today) }));
+  const weeklyGoal = currentGoal(data.weeklyReviews);
+  const reviewedThisWeek = Boolean(data.weeklyReviews[weekKey(today)]);
   const entitlementCtx = {
     paywallEnabled: PAYWALL_ENABLED,
     isPremium: data.isPremium,
@@ -345,6 +361,13 @@ function useAppState() {
       setTab(t);
       setScreen('home');
     },
+    /** Abre o Caderno direto na lista de pessoas */
+    openPeople: () => {
+      setNotebookSection('pessoas');
+      setTab('notebook');
+      setScreen('home');
+    },
+    setNotebookSection,
     openTask: (id: string) => {
       setSelectedTaskId(id);
       setScreen('task_detail');
@@ -781,6 +804,38 @@ function useAppState() {
       setData((d) => ({ ...d, people: d.people.filter((p) => p.id !== id) }));
     },
 
+    /** Marca (ou desmarca) uma rotina hoje; marcar conta como ação do dia (etapa 42) */
+    toggleRoutine: (id: string) => {
+      const day = journeyDayKey();
+      if (!(data.routineLog[id] ?? []).includes(day)) {
+        soundEffects.playCompleteTask();
+        track('rotina_feita', { rotina: id });
+      } else {
+        soundEffects.playSoftTap();
+      }
+      setData((d) => {
+        const { log, added } = toggleRoutineDay(d.routineLog[id], day);
+        const next = { ...d, routineLog: { ...d.routineLog, [id]: log } };
+        return added ? withAction(next) : next;
+      });
+    },
+
+    /** Revisão da semana: guarda as 3 respostas e conta como a rotina da revisão feita hoje */
+    saveWeeklyReview: (review: Omit<WeeklyReview, 'at'>) => {
+      const day = journeyDayKey();
+      const clip = (t: string) => t.trim().slice(0, REVIEW_LIMIT);
+      track('revisao_semana', { com_meta: Boolean(review.goal.trim()) });
+      setData((d) => {
+        const already = (d.routineLog.r_revisao ?? []).includes(day);
+        const next = {
+          ...d,
+          weeklyReviews: { ...d.weeklyReviews, [weekKey(day)]: { worked: clip(review.worked), change: clip(review.change), goal: clip(review.goal), at: Date.now() } },
+          routineLog: already ? d.routineLog : { ...d.routineLog, r_revisao: [...(d.routineLog.r_revisao ?? []), day] },
+        };
+        return already ? next : withAction(next);
+      });
+    },
+
     /** O estado salvo, como está agora (para o backup completo, etapa 40) */
     snapshot: (): Record<string, unknown> => ({ ...data }),
 
@@ -822,6 +877,12 @@ function useAppState() {
     selectedTask,
     nextStepTask,
     journeyComplete,
+    notebookSection,
+    currentChapterId,
+    currentWeek,
+    routines,
+    weeklyGoal,
+    reviewedThisWeek,
     personalAnchor,
     scoredAnswers,
     streak,

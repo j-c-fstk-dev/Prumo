@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { dayKey, seedState } from './helpers';
+import { INITIAL_TASKS } from '../src/data/prumoData';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/app/');
@@ -128,8 +129,8 @@ test('backup completo: faz o .zip, apaga tudo e restaura na tela de boas-vindas,
 });
 
 test('roteiro concluído: a Início não volta pra tarefa 1, e rever o resultado não refaz o compromisso', async ({ page }) => {
-  const ids = await page.evaluate(async () => (await import('/src/data/prumoData.ts')).INITIAL_TASKS.map((t: { id: string }) => t.id));
-  await seedState(page, { taskStatus: Object.fromEntries(ids.map((id: string) => [id, 'completed'])), startedAt: Date.now(), celebratedChapters: [1, 2, 3, 4] });
+  const ids = INITIAL_TASKS.map((t) => t.id);
+  await seedState(page, { taskStatus: Object.fromEntries(ids.map((id) => [id, 'completed'])), startedAt: Date.now(), celebratedChapters: [1, 2, 3, 4] });
   await expect(page.getByText('✦ Roteiro concluído')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Abrir tarefa' })).toHaveCount(0);
 
@@ -138,4 +139,32 @@ test('roteiro concluído: a Início não volta pra tarefa 1, e rever o resultado
   await expect(page.getByRole('button', { name: /Assumir meu prumo/ })).toHaveCount(0);
   await page.getByRole('button', { name: /Voltar para a jornada/ }).click();
   await expect(page.getByText('✦ Roteiro concluído')).toBeVisible();
+});
+
+test('rotinas: as do capítulo aparecem, marcar conta no dia, e a revisão da semana vira a meta', async ({ page }) => {
+  // Capítulo 1 feito: o próximo passo é do capítulo 2, então as rotinas de conversa valem
+  const ch1 = INITIAL_TASKS.filter((t) => t.chapterId === 1).map((t) => t.id);
+  await seedState(page, { taskStatus: Object.fromEntries(ch1.map((id) => [id, 'completed'])), startedAt: Date.now(), celebratedChapters: [1] });
+  const card = page.getByRole('region', { name: 'Rotina da semana' });
+  await expect(card.getByText('Falar com 1 pessoa nova')).toBeVisible();
+  await expect(card.getByText('Retomar quem ficou de responder')).toHaveCount(0);
+
+  await card.getByRole('button', { name: 'Falar com 1 pessoa nova: marcar como feita hoje' }).click();
+  await expect(card.getByText('1 de 5 esta semana')).toBeVisible();
+  await expect(page.getByText(/1 dia de prumo/)).toBeVisible();
+
+  // A revisão abre as 3 perguntas; a meta aparece no cartão
+  await card.getByRole('button', { name: 'Revisão da semana: marcar como feita hoje' }).click();
+  const review = page.getByRole('dialog', { name: 'Revisão da semana' });
+  await review.getByLabel('O que funcionou esta semana?').fill('Mandar mensagem de manhã');
+  await review.getByLabel('Uma meta para a próxima semana').fill('Conversar com 5 pessoas novas');
+  await review.getByRole('button', { name: 'Salvar revisão' }).click();
+  await expect(card.getByText('Conversar com 5 pessoas novas')).toBeVisible();
+  await expect(card.getByRole('button', { name: 'Revisão da semana: feita hoje' })).toBeVisible();
+
+  // No Roteiro: passos por semana e as rotinas no topo
+  await page.getByRole('button', { name: 'Roteiro', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Semana 1' })).toBeVisible();
+  await expect(page.getByText('● esta semana')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Rotinas' })).toBeVisible();
 });

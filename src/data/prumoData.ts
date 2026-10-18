@@ -380,6 +380,8 @@ export interface TaskItem {
   phaseName: string;
   chapterId: number;
   chapterTitle: string;
+  /** Semana sugerida da jornada (1 a 13). Só sugere: dá para adiantar (etapa 42) */
+  week?: number;
   title: string;
   description: string;
   durationMinutes: number;
@@ -413,6 +415,7 @@ export interface TaskItem {
 export const INITIAL_TASKS: TaskItem[] = [
   {
     id: 't1',
+    week: 1,
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
@@ -450,6 +453,7 @@ export const INITIAL_TASKS: TaskItem[] = [
   },
   {
     id: 't2',
+    week: 1,
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
@@ -487,6 +491,7 @@ export const INITIAL_TASKS: TaskItem[] = [
   },
   {
     id: 't3',
+    week: 2,
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
@@ -522,6 +527,7 @@ export const INITIAL_TASKS: TaskItem[] = [
   },
   {
     id: 't4',
+    week: 2,
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
@@ -557,6 +563,7 @@ export const INITIAL_TASKS: TaskItem[] = [
   // Tarefas de Marketing (Capítulo 2)
   {
     id: 't5',
+    week: 3,
     phaseId: 'marketing',
     phaseName: 'Marketing',
     chapterId: 2,
@@ -591,6 +598,7 @@ export const INITIAL_TASKS: TaskItem[] = [
   },
   {
     id: 't6',
+    week: 4,
     phaseId: 'marketing',
     phaseName: 'Marketing',
     chapterId: 2,
@@ -626,6 +634,7 @@ export const INITIAL_TASKS: TaskItem[] = [
   // Tarefa de Lançamento (Capítulo 3)
   {
     id: 't7',
+    week: 7,
     phaseId: 'lancamento',
     phaseName: 'Lançamento',
     chapterId: 3,

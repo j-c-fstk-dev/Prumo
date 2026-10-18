@@ -33,10 +33,11 @@ test('jornada completa: diagnóstico, carta, tarefas, check-in, capítulo e reca
 
   // Concluir o capítulo 1 inteiro → celebração uma única vez
   await page.getByRole('button', { name: 'Roteiro' }).click();
-  await page.getByRole('button', { name: 'Cap. 1: Ideia clara' }).click();
-  const list = page.locator('div.max-h-\\[440px\\]');
-  while (await list.locator('svg.lucide-circle').count()) {
-    await list.locator('svg.lucide-circle').first().click();
+  await page.getByRole('button', { name: /^Cap\. 1:/ }).click();
+  // Só os passos do roteiro (as rotinas usam "marcar como feita hoje")
+  const pending = page.getByRole('button', { name: /: marcar como concluída$/ });
+  while (await pending.count()) {
+    await pending.first().click();
   }
   await expect(page.getByText('Sua constelação está completa')).toBeVisible();
   await page.getByRole('button', { name: /Seguir para o Capítulo 2/ }).click();

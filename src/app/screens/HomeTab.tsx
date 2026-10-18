@@ -16,12 +16,14 @@ import { DailyRhythm } from '../components/DailyRhythm';
 import { DailyInspiration } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
 import { JourneyComplete } from '../components/JourneyComplete';
+import { RoutinesCard } from '../components/Routines';
+import { WeekHint } from '../components/WeekHint';
 import { InstallHint } from '../components/ProtectData';
 import { lembreteDoDia } from '../../data/encorajamento';
 import { JOURNEY_DAYS, journeyDayLabel } from '../../domain/journey';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, actions } = useApp();
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
@@ -139,6 +141,7 @@ export const HomeTab: React.FC = () => {
           {nextStepTask.when && (
             <p className="text-[13px] text-primary font-semibold mt-1.5">⏰ Combinado: {nextStepTask.when}</p>
           )}
+          {nextStepTask.week && <WeekHint week={nextStepTask.week} current={currentWeek} />}
 
           {/* Micro-áudio Coaching Pills */}
           {nextStepTask.audioCoach && VOICE_ENABLED && (
@@ -202,6 +205,11 @@ export const HomeTab: React.FC = () => {
           </div>
         </div>
                 )}
+        </Reveal>
+
+        {/* Rotina da semana: o que se repete no capítulo (etapa 42) */}
+        <Reveal i={5}>
+          <RoutinesCard />
         </Reveal>
 
         {/* Tarefas pessoais: o app também serve para o dia a dia fora do plano */}

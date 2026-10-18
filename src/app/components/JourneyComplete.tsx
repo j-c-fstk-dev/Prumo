@@ -23,7 +23,7 @@ export const JourneyComplete: React.FC = () => {
         <button
           onClick={() => {
             soundEffects.playSoftTap();
-            actions.goTab('notebook');
+            actions.openPeople();
           }}
           className="min-h-11 rounded-xl font-semibold text-sm cursor-pointer"
           style={{ background: 'var(--gold)', color: 'var(--night-900)' }}
