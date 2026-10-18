@@ -22,6 +22,8 @@ export interface Note {
   tag: NoteTag;
   /** Tarefa em que a pessoa estava quando anotou (opcional) */
   taskTitle?: string;
+  /** Fotos anexadas (ids no armazenamento do aparelho; etapa 31) */
+  images?: string[];
   createdAt: number;
   updatedAt: number;
 }
@@ -81,8 +83,11 @@ export function exportNotebook(input: {
   notes: Note[];
   taskNotes: { title: string; text: string }[];
   people?: Person[];
+  /** Nome do arquivo de cada foto dentro do .zip (etapa 31); sem isso, as fotos não são citadas */
+  photoName?: (id: string) => string;
   now?: Date;
 }): string {
+  const photos = (ids?: string[]) => (input.photoName && ids?.length ? ids.map((id) => `📷 ${input.photoName!(id)}`) : []);
   const lines: string[] = [`Caderno do Prumo · ${input.userName || 'meu projeto'} · ${fmtDate((input.now ?? new Date()).getTime())}`, ''];
   lines.push('== Ficha do meu produto ==');
   for (const f of PROFILE_FIELDS) {
@@ -94,7 +99,7 @@ export function exportNotebook(input: {
     if (!list.length) continue;
     lines.push('', `== ${tag.emoji} ${tag.label} ==`);
     for (const n of list) {
-      lines.push(`[${fmtDate(n.createdAt)}${n.taskTitle ? ` · ${n.taskTitle}` : ''}]`, n.text.trim(), '');
+      lines.push(`[${fmtDate(n.createdAt)}${n.taskTitle ? ` · ${n.taskTitle}` : ''}]`, n.text.trim(), ...photos(n.images), '');
     }
   }
   const people = input.people ?? [];
@@ -106,7 +111,7 @@ export function exportNotebook(input: {
       lines.push(`${p.name} (${stage?.emoji} ${stage?.label})${contact ? ` · ${contact}` : ''}`);
       if (p.nextStep || p.nextDate) lines.push(`Próximo passo: ${[p.nextStep, p.nextDate].filter(Boolean).join(' · ')}`);
       if (p.note) lines.push(p.note);
-      lines.push('');
+      lines.push(...photos(p.images), '');
     }
   }
   const tasks = input.taskNotes.filter((t) => t.text.trim());

@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Mail, MessageCircle, Pencil, Phone, Sparkles, Trash2, UserPlus, Users } from 'lucide-react';
 import { copyText } from '../../utils/share';
+import { AddPhotoButton, LinkedText, PhotoStrip } from './Photos';
+import { deleteImages, saveImage } from '../state/images';
 import { useApp } from '../state/AppStore';
 import { soundEffects } from '../../utils/soundEffects';
 import { dayKey } from '../../domain/journey';
@@ -221,7 +223,19 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string }> =
         </select>
       </div>
 
-      {person.note && <p className="text-[13px] text-ink leading-snug whitespace-pre-line break-words">{person.note}</p>}
+      {person.note && (
+        <p className="text-[13px] text-ink leading-snug whitespace-pre-line break-words">
+          <LinkedText text={person.note} />
+        </p>
+      )}
+      <PhotoStrip
+        ids={person.images}
+        onRemove={(id) => {
+          if (!window.confirm('Tirar esta foto?')) return;
+          void deleteImages([id]);
+          actions.updatePerson(person.id, { images: (person.images ?? []).filter((x) => x !== id) });
+        }}
+      />
 
       {/* Próximo passo com data */}
       <div className="grid grid-cols-[1fr_auto] gap-2">
@@ -272,6 +286,14 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string }> =
             <Phone className="w-3.5 h-3.5" /> Ligar
           </a>
         )}
+        <AddPhotoButton
+          count={person.images?.length ?? 0}
+          onPick={async (blobs) => {
+            const ids: string[] = [];
+            for (const b of blobs) ids.push(await saveImage(b));
+            actions.updatePerson(person.id, { images: [...(person.images ?? []), ...ids] });
+          }}
+        />
         <button onClick={() => setEditing(true)} className="min-h-9 px-1.5 inline-flex items-center gap-1 text-xs text-muted hover:text-ink cursor-pointer">
           <Pencil className="w-3.5 h-3.5" /> Editar
         </button>

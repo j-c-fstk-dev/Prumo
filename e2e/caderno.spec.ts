@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { commitAndSeal, onboard } from './helpers';
 
@@ -134,4 +135,55 @@ test('pessoas: o coach sugere a mensagem sem receber o nome nem o telefone', asy
   expect(sent[0]).toContain('ela está sem tempo este mês');
   expect(sent[0]).not.toContain('Ana');
   expect(sent[0]).not.toContain('98765');
+});
+
+test('fotos: anexar na anotação, ver, persistir, exportar em .zip e apagar junto com a anotação', async ({ page }) => {
+  const imgKeys = () =>
+    page.evaluate(
+      () =>
+        new Promise<number>((resolve) => {
+          const req = indexedDB.open('prumo', 1);
+          req.onsuccess = () => {
+            const keys = req.result.transaction('kv').objectStore('kv').getAllKeys();
+            keys.onsuccess = () => resolve((keys.result as string[]).filter((k) => String(k).startsWith('img:')).length);
+          };
+        }),
+    );
+
+  await onboard(page);
+  await commitAndSeal(page);
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await page.getByLabel('Nova anotação').fill('Foto da embalagem. Vídeo: https://youtu.be/abc123');
+  await page.getByLabel('Escolher fotos').setInputFiles('public/icons/icon-512.png');
+  await expect(page.getByRole('button', { name: 'Ver foto' })).toHaveCount(1);
+  await page.getByRole('button', { name: 'Salvar anotação' }).click();
+
+  // Anotação com miniatura e link clicável
+  await expect(page.getByRole('link', { name: 'https://youtu.be/abc123' })).toHaveAttribute('href', 'https://youtu.be/abc123');
+  await expect(page.getByRole('button', { name: 'Ver foto' })).toHaveCount(1);
+  expect(await imgKeys()).toBe(1);
+  await page.getByRole('button', { name: 'Ver foto' }).click();
+  await expect(page.getByRole('img', { name: 'Foto anexada' })).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar foto' }).click();
+
+  // Persiste
+  await page.reload();
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Ver foto' })).toHaveCount(1);
+
+  // Exportar vira .zip com o texto e a foto
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Exportar' }).first().click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe('caderno-prumo.zip');
+  const JSZip = (await import('jszip')).default;
+  const zip = await JSZip.loadAsync(readFileSync(await file.path()));
+  expect(Object.keys(zip.files)).toEqual(expect.arrayContaining(['caderno-prumo.txt', 'fotos/foto-01.jpg']));
+  expect(await zip.file('caderno-prumo.txt')!.async('string')).toContain('📷 fotos/foto-01.jpg');
+
+  // Apagar a anotação apaga a foto do aparelho
+  page.once('dialog', (d) => d.accept());
+  await page.getByRole('button', { name: 'Apagar' }).first().click();
+  await expect(page.getByRole('button', { name: 'Ver foto' })).toHaveCount(0);
+  await expect.poll(imgKeys).toBe(0);
 });

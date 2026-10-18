@@ -49,3 +49,26 @@ export async function shareOrDownload(text: string, title: string, filename: str
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   return 'downloaded';
 }
+
+/** Compartilha um arquivo (ex.: .zip com fotos) quando o celular deixa; senão, baixa */
+export async function shareFileOrDownload(blob: Blob, filename: string, title: string): Promise<'shared' | 'downloaded' | 'cancelled'> {
+  const file = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
+  const nav = navigator as Navigator & { canShare?: (d: { files: File[] }) => boolean };
+  if (typeof nav.share === 'function' && nav.canShare?.({ files: [file] })) {
+    try {
+      await nav.share({ title, files: [file] });
+      return 'shared';
+    } catch (e) {
+      if ((e as Error)?.name === 'AbortError') return 'cancelled';
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return 'downloaded';
+}

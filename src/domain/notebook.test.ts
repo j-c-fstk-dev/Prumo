@@ -109,3 +109,16 @@ describe('pessoas no caderno', () => {
     expect(text).toContain('Próximo passo: Mandar proposta · 2026-10-20');
   });
 });
+
+describe('exportar com fotos', () => {
+  it('cita o arquivo de cada foto embaixo da anotação e da pessoa', () => {
+    const n = { ...note('a', 'Foto do produto', 'ideia', 1), images: ['i1', 'i2'] };
+    const p = { id: 'p1', name: 'Ana', stage: 'cliente' as const, stageHistory: [], createdAt: 0, updatedAt: 0, images: ['i3'] };
+    const names: Record<string, string> = { i1: 'fotos/foto-01.jpg', i2: 'fotos/foto-02.jpg', i3: 'fotos/foto-03.jpg' };
+    const text = exportNotebook({ userName: 'Jo', profile: profileValues(d, {}), notes: [n], taskNotes: [], people: [p], photoName: (id) => names[id] });
+    expect(text).toContain('Foto do produto\n📷 fotos/foto-01.jpg\n📷 fotos/foto-02.jpg');
+    expect(text).toContain('📷 fotos/foto-03.jpg');
+    // sem photoName (exportação só de texto), as fotos não aparecem
+    expect(exportNotebook({ userName: 'Jo', profile: profileValues(d, {}), notes: [n], taskNotes: [] })).not.toContain('📷');
+  });
+});

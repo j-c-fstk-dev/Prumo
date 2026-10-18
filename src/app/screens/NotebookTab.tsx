@@ -3,6 +3,8 @@ import { Copy, Download, Pencil, Search, Trash2, X } from 'lucide-react';
 import { useApp } from '../state/AppStore';
 import { Reveal } from '../components/Reveal';
 import { PeopleSection } from '../components/PeopleSection';
+import { AddPhotoButton, LinkedText, PendingPhotos, PhotoStrip } from '../components/Photos';
+import { deleteImages, saveImage } from '../state/images';
 import { useNotebookExport } from '../components/useNotebookExport';
 import { STAGES } from '../../domain/people';
 import { soundEffects } from '../../utils/soundEffects';
@@ -82,7 +84,32 @@ const NoteCard: React.FC<{ note: Note; onFlash: (m: string) => void }> = ({ note
           </div>
         </>
       ) : (
-        <p className="text-sm text-ink leading-relaxed whitespace-pre-line break-words">{note.text}</p>
+        note.text && (
+          <p className="text-sm text-ink leading-relaxed whitespace-pre-line break-words">
+            <LinkedText text={note.text} />
+          </p>
+        )
+      )}
+      <PhotoStrip
+        ids={note.images}
+        onRemove={
+          editing
+            ? (id) => {
+                void deleteImages([id]);
+                actions.updateNote(note.id, { images: (note.images ?? []).filter((x) => x !== id) });
+              }
+            : undefined
+        }
+      />
+      {editing && (
+        <AddPhotoButton
+          count={note.images?.length ?? 0}
+          onPick={async (blobs) => {
+            const ids = [];
+            for (const b of blobs) ids.push(await saveImage(b));
+            actions.updateNote(note.id, { images: [...(note.images ?? []), ...ids] });
+          }}
+        />
       )}
       {!editing && (
         <div className="flex gap-1 -ml-1.5">
@@ -115,6 +142,7 @@ export const NotebookTab: React.FC = () => {
   const [section, setSection] = useState<'notas' | 'pessoas'>('notas');
   const [editingProfile, setEditingProfile] = useState(false);
   const [draft, setDraft] = useState('');
+  const [draftPhotos, setDraftPhotos] = useState<Blob[]>([]);
   const [draftTag, setDraftTag] = useState<NoteTag>('ideia');
   const [filter, setFilter] = useState<NoteTag | 'todas'>('todas');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -318,6 +346,7 @@ export const NotebookTab: React.FC = () => {
             className={`${inputClass} resize-none`}
             aria-label="Nova anotação"
           />
+          <PendingPhotos blobs={draftPhotos} onRemove={(i) => setDraftPhotos(draftPhotos.filter((_, k) => k !== i))} />
           <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Etiqueta">
             {NOTE_TAGS.filter((t) => t.id !== 'coach').map((t) => (
               <button
@@ -331,11 +360,18 @@ export const NotebookTab: React.FC = () => {
               </button>
             ))}
           </div>
+          <div className="flex items-center gap-2">
+            <AddPhotoButton count={draftPhotos.length} onPick={(blobs) => setDraftPhotos([...draftPhotos, ...blobs])} />
+            <span className="text-xs text-muted">Vídeo? Cole o link no texto.</span>
+          </div>
           <button
-            disabled={!draft.trim()}
-            onClick={() => {
-              actions.addNote(draft, draftTag, nextStepTask?.title);
+            disabled={!draft.trim() && !draftPhotos.length}
+            onClick={async () => {
+              const ids = [];
+              for (const b of draftPhotos) ids.push(await saveImage(b));
+              actions.addNote(draft, draftTag, nextStepTask?.title, ids);
               setDraft('');
+              setDraftPhotos([]);
               flash('Anotado ✓');
             }}
             className="w-full min-h-10 rounded-xl bg-primary hover:bg-primary-hover disabled:opacity-40 text-on-primary text-sm font-semibold cursor-pointer"

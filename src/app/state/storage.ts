@@ -73,3 +73,19 @@ export async function clearAll(): Promise<void> {
     }
   });
 }
+
+export async function deleteValue(key: string): Promise<void> {
+  memory.delete(key);
+  const db = await openDb();
+  if (!db) return;
+  await new Promise<void>((resolve) => {
+    try {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).delete(key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    } catch {
+      resolve();
+    }
+  });
+}

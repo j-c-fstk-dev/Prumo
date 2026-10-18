@@ -31,6 +31,8 @@ export interface Person {
   nextDate?: string;
   /** Quando entrou em cada etapa (para métricas futuras) */
   stageHistory: { stage: Stage; at: number }[];
+  /** Fotos anexadas (ids no armazenamento do aparelho; etapa 31) */
+  images?: string[];
   createdAt: number;
   updatedAt: number;
 }

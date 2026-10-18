@@ -15,6 +15,7 @@ import { clearAll, loadValue, saveValue } from './storage';
 import { NOTE_MAX, type Note, type NoteTag, type ProfileFieldId, type ProfileOverrides } from '../../domain/notebook';
 import { cleanPerson, type Person } from '../../domain/people';
 import { requestPersistence } from '../../utils/install';
+import { deleteImages } from './images';
 
 export type ScreenState =
   | 'splash'
@@ -692,22 +693,33 @@ function useAppState() {
     },
 
     /** Caderno: nova anotação (opcionalmente ligada à tarefa em que a pessoa estava) */
-    addNote: (text: string, tag: NoteTag, taskTitle?: string) => {
+    addNote: (text: string, tag: NoteTag, taskTitle?: string, images: string[] = []) => {
       const clean = text.trim().slice(0, NOTE_MAX);
-      if (!clean) return;
+      if (!clean && !images.length) return;
       soundEffects.playSelectOption();
       const now = Date.now();
-      const note: Note = { id: `n${now}-${Math.random().toString(36).slice(2, 7)}`, text: clean, tag, taskTitle, createdAt: now, updatedAt: now };
+      const note: Note = {
+        id: `n${now}-${Math.random().toString(36).slice(2, 7)}`,
+        text: clean,
+        tag,
+        taskTitle,
+        images: images.length ? images : undefined,
+        createdAt: now,
+        updatedAt: now,
+      };
       setData((d) => ({ ...d, notes: [note, ...d.notes] }));
     },
-    updateNote: (id: string, patch: Partial<Pick<Note, 'text' | 'tag'>>) =>
+    updateNote: (id: string, patch: Partial<Pick<Note, 'text' | 'tag' | 'images'>>) =>
       setData((d) => ({
         ...d,
         notes: d.notes.map((n) =>
           n.id === id ? { ...n, ...patch, text: (patch.text ?? n.text).slice(0, NOTE_MAX), updatedAt: Date.now() } : n,
         ),
       })),
-    deleteNote: (id: string) => setData((d) => ({ ...d, notes: d.notes.filter((n) => n.id !== id) })),
+    deleteNote: (id: string) => {
+      void deleteImages(data.notes.find((n) => n.id === id)?.images);
+      setData((d) => ({ ...d, notes: d.notes.filter((n) => n.id !== id) }));
+    },
     setProfileField: (id: ProfileFieldId, value: string) =>
       setData((d) => ({ ...d, profileOverrides: { ...d.profileOverrides, [id]: value.slice(0, 300) } })),
     setTaskNote: (taskId: string, text: string) =>
@@ -743,7 +755,10 @@ function useAppState() {
       })),
     markExported: () => setData((d) => ({ ...d, lastExportAt: Date.now() })),
     dismissInstallHint: () => setData((d) => ({ ...d, installHintDismissedAt: Date.now() })),
-    deletePerson: (id: string) => setData((d) => ({ ...d, people: d.people.filter((p) => p.id !== id) })),
+    deletePerson: (id: string) => {
+      void deleteImages(data.people.find((p) => p.id === id)?.images);
+      setData((d) => ({ ...d, people: d.people.filter((p) => p.id !== id) }));
+    },
 
     /** Apaga tudo do aparelho e volta ao início */
     resetAll: async () => {
