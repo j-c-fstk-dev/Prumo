@@ -163,7 +163,29 @@ const CoachMessageModal: React.FC<{ person: Person; onUse: (text: string) => voi
   );
 };
 
-const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string }> = ({ person, ctx, today }) => {
+/** Inicial sem acento, para agrupar "Ágata" junto com "Ana" */
+const initialOf = (name: string) => (name.trim()[0] ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+
+/** Selinho da etapa, com a cor de cada uma */
+const STAGE_BADGE: Record<Stage, string> = {
+  contato: 'bg-surface-2 text-muted border-line',
+  conversou: 'bg-primary-soft text-primary border-primary/25',
+  interessado: 'bg-gold-soft text-gold-ink border-gold-line',
+  cliente: 'bg-primary text-on-primary border-primary',
+  agora_nao: 'bg-surface-2 text-muted border-line',
+};
+
+/**
+ * Uma pessoa na lista (etapa 35): fechada é só a inicial, o nome e a etapa, como na agenda do celular.
+ * Tocando no nome, abre logo abaixo com contato, nota, fotos, próximo passo e as ações.
+ */
+const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string; open: boolean; onToggle: () => void }> = ({
+  person,
+  ctx,
+  today,
+  open,
+  onToggle,
+}) => {
   const { actions } = useApp();
   const [editing, setEditing] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -171,6 +193,7 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string }> =
   const [askCoach, setAskCoach] = useState(false);
   const stage = STAGES.find((s) => s.id === person.stage)!;
   const late = person.nextDate && person.nextDate < today && person.stage !== 'agora_nao';
+  const dueToday = person.nextDate === today && person.stage !== 'agora_nao';
 
   if (editing) {
     return (
@@ -197,15 +220,42 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string }> =
   const mail = emailLink(person.email, subject, msg);
   const tel = phoneLink(person.phone);
 
+  const header = (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-label={`${person.name}, ${stage.label}`}
+      className="w-full flex items-center gap-3 px-3 py-2.5 text-left cursor-pointer"
+    >
+      <span className="w-9 h-9 shrink-0 rounded-full bg-primary-soft text-primary font-bold flex items-center justify-center text-sm" aria-hidden="true">
+        {initialOf(person.name)}
+      </span>
+      <span className="flex-1 min-w-0 text-sm font-semibold text-ink truncate">{person.name}</span>
+      {(late || dueToday) && (
+        <span className="shrink-0 text-[11px] font-semibold text-gold-ink" aria-hidden="true">
+          {late ? '⏰ atrasado' : '🔔 hoje'}
+        </span>
+      )}
+      {/* Aberta, a etapa aparece na caixa de escolha logo abaixo */}
+      {!open && (
+        <span className={`shrink-0 text-[11px] font-semibold rounded-full border px-2 py-0.5 ${STAGE_BADGE[person.stage]}`} aria-hidden="true">
+          {stage.emoji} {stage.label}
+        </span>
+      )}
+    </button>
+  );
+
+  if (!open) return <div className="rounded-xl bg-surface border border-line">{header}</div>;
+
   return (
-    <div className="p-3 rounded-xl bg-surface border border-line space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <strong className="text-sm text-ink block break-words">{person.name}</strong>
-          <span className="text-xs text-muted">
-            {[person.source, person.phone, person.email].filter(Boolean).join(' · ') || 'Sem contato ainda'}
-          </span>
-        </div>
+    <div className="rounded-xl bg-surface border border-primary/40 shadow-xs">
+      {header}
+      <div className="px-3 pb-3 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-muted min-w-0 break-words">
+          {[person.source, person.phone, person.email].filter(Boolean).join(' · ') || 'Sem contato ainda'}
+        </span>
         <select
           value={person.stage}
           onChange={(e) => {
@@ -319,6 +369,7 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string }> =
           }}
         />
       )}
+      </div>
     </div>
   );
 };
@@ -328,14 +379,19 @@ export const PeopleSection: React.FC = () => {
   const { people, userName, diagnosis, profileOverrides, actions } = useApp();
   const [adding, setAdding] = useState(false);
   const [filter, setFilter] = useState<Stage | 'todas'>('todas');
+  // Só uma pessoa aberta por vez; quem está aberto continua na lista mesmo se mudar de etapa
+  const [openId, setOpenId] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
   const today = dayKey(new Date());
   const stats = testStats(people);
   const counts = countByStage(people);
   const due = dueFollowUps(people, today);
   const visible = useMemo(
-    () => people.filter((p) => filter === 'todas' || p.stage === filter).sort((a, b) => b.updatedAt - a.updatedAt),
-    [people, filter],
+    () =>
+      people
+        .filter((p) => filter === 'todas' || p.stage === filter || p.id === openId)
+        .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })),
+    [people, filter, openId],
   );
   const picker = contactsApi();
 
@@ -387,7 +443,9 @@ export const PeopleSection: React.FC = () => {
           <ul className="text-[13px] text-ink space-y-0.5">
             {due.map((p) => (
               <li key={p.id}>
-                {p.nextDate! < today ? '⏰' : '📌'} <strong>{p.name}</strong>: {p.nextStep || 'retomar contato'}
+                <button type="button" onClick={() => setOpenId(p.id)} className="text-left cursor-pointer hover:underline">
+                  {p.nextDate! < today ? '⏰' : '📌'} <strong>{p.name}</strong>: {p.nextStep || 'retomar contato'}
+                </button>
               </li>
             ))}
           </ul>
@@ -401,7 +459,8 @@ export const PeopleSection: React.FC = () => {
             saveLabel="Adicionar"
             onCancel={() => setAdding(false)}
             onSave={(d) => {
-              actions.addPerson(d);
+              const id = actions.addPerson(d);
+              if (id) setOpenId(id);
               setAdding(false);
               soundEffects.playSelectOption();
             }}
@@ -425,7 +484,7 @@ export const PeopleSection: React.FC = () => {
       {people.length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto pb-1">
           <button onClick={() => setFilter('todas')} className={chip(filter === 'todas')}>
-            Todas {people.length}
+            Todos {people.length}
           </button>
           {STAGES.map((s) => (
             <button key={s.id} onClick={() => setFilter(s.id)} className={chip(filter === s.id)} title={s.hint}>
@@ -434,9 +493,19 @@ export const PeopleSection: React.FC = () => {
           ))}
         </div>
       )}
-      {visible.map((p) => (
-        <PersonCard key={p.id} person={p} ctx={ctx} today={today} />
-      ))}
+      <div className="space-y-1.5">
+        {visible.map((p, i) => {
+          const letter = initialOf(p.name);
+          const prev = visible[i - 1] && initialOf(visible[i - 1].name);
+          const showLetter = filter === 'todas' && visible.length > 6 && letter !== prev;
+          return (
+            <React.Fragment key={p.id}>
+              {showLetter && <span className="block px-1 pt-1 text-xs font-bold text-primary">{letter}</span>}
+              <PersonCard person={p} ctx={ctx} today={today} open={openId === p.id} onToggle={() => setOpenId(openId === p.id ? null : p.id)} />
+            </React.Fragment>
+          );
+        })}
+      </div>
       {people.length === 0 && (
         <p className="text-sm text-muted leading-relaxed">
           Anote aqui com quem você vai conversar. Comece por quem já te conhece ou já te pediu ajuda. Para cada pessoa, o Prumo

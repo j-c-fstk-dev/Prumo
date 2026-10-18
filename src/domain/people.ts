@@ -9,7 +9,7 @@ import { buildKitText, type KitContext } from './kit';
 export type Stage = 'contato' | 'conversou' | 'interessado' | 'cliente' | 'agora_nao';
 
 export const STAGES: { id: Stage; label: string; emoji: string; hint: string }[] = [
-  { id: 'contato', label: 'Contato', emoji: '👋', hint: 'Ainda não conversaram sobre a sua ideia' },
+  { id: 'contato', label: 'Novo', emoji: '👋', hint: 'Ainda não conversaram sobre a sua ideia' },
   { id: 'conversou', label: 'Conversou', emoji: '💬', hint: 'Vocês já conversaram' },
   { id: 'interessado', label: 'Interessado', emoji: '✨', hint: 'Disse sim ou pediu mais' },
   { id: 'cliente', label: 'Cliente', emoji: '🤝', hint: 'Pagou' },

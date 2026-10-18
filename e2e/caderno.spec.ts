@@ -105,7 +105,38 @@ test('pessoas: adicionar, mensagem pronta com WhatsApp, etapas, teste "2 de 5", 
   await passSplash(page);
   await page.getByRole('button', { name: 'Caderno', exact: true }).click();
   await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
+  // A lista volta fechada: nome e etapa; tocando no nome, a ficha abre
+  const row = page.getByRole('button', { name: 'Ana Souza, Interessado' });
+  await expect(row).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByLabel('Etapa de Ana Souza')).toHaveCount(0);
+  await row.click();
   await expect(page.getByLabel('Etapa de Ana Souza')).toHaveValue('interessado');
+});
+
+test('pessoas: lista em ordem alfabética, uma ficha aberta por vez, e quem muda de etapa não some', async ({ page }) => {
+  await onboard(page);
+  await commitAndSeal(page);
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await page.getByRole('tab', { name: /Pessoas/ }).click();
+  for (const name of ['Carla Dias', 'Ágata Reis', 'Beto Lima']) {
+    await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
+    await page.getByLabel('Nome', { exact: true }).fill(name);
+    await page.getByRole('button', { name: 'Adicionar', exact: true }).click();
+  }
+  const rows = page.getByRole('button', { name: /, (Novo|Cliente)$/ });
+  await expect(rows).toHaveText([/Ágata Reis/, /Beto Lima/, /Carla Dias/]);
+  // A última adicionada fica aberta; abrir outra fecha a anterior
+  await expect(page.getByRole('button', { name: 'Beto Lima, Novo' })).toHaveAttribute('aria-expanded', 'true');
+  await page.getByRole('button', { name: 'Carla Dias, Novo' }).click();
+  await expect(page.getByRole('button', { name: 'Beto Lima, Novo' })).toHaveAttribute('aria-expanded', 'false');
+
+  // Filtrando pelos novos, virar cliente não tira a Carla da tela enquanto a ficha está aberta
+  await page.getByRole('button', { name: /👋 Novo 3/ }).click();
+  await page.getByLabel('Etapa de Carla Dias').selectOption('cliente');
+  await expect(page.getByRole('button', { name: 'Carla Dias, Cliente' })).toBeVisible();
+  // e em "Todos" todo mundo continua na lista
+  await page.getByRole('button', { name: /^Todos 3/ }).click();
+  await expect(rows).toHaveCount(3);
 });
 
 test('pessoas: o coach sugere a mensagem sem receber o nome nem o telefone', async ({ page }) => {
