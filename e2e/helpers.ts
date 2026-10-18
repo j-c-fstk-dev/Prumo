@@ -94,6 +94,8 @@ export async function seedState(page: Page, patch: Record<string, unknown>) {
 /** Data local AAAA-MM-DD a "delta" dias de hoje */
 export function dayKey(delta = 0): string {
   const d = new Date();
+  // O dia do Prumo vira às 4h (etapa 33)
+  if (d.getHours() < 4) d.setDate(d.getDate() - 1);
   d.setDate(d.getDate() + delta);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ACTIONS_TO_REPAIR } from '../../domain/journey';
+import { ACTIONS_TO_REPAIR, BUSY_DAY_TASKS } from '../../domain/journey';
 import { useApp, type CheckIn } from '../state/AppStore';
 
 const MOODS: Array<{ id: NonNullable<CheckIn['mood']>; label: string }> = [
@@ -15,7 +15,7 @@ const MOOD_LABEL = Object.fromEntries(MOODS.map((m) => [m.id, m.label]));
  * remendo, e acolhimento para quem volta. Nunca mostra "você quebrou a sequência".
  */
 export const DailyRhythm: React.FC = () => {
-  const { userName, streak, todayCheckIn, freshStart, actions } = useApp();
+  const { userName, streak, todayCheckIn, freshStart, tasksDoneToday, actions } = useApp();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(todayCheckIn?.text ?? '');
   const [mood, setMood] = useState<CheckIn['mood']>(todayCheckIn?.mood);
@@ -44,6 +44,13 @@ export const DailyRhythm: React.FC = () => {
             ({Math.min(streak.actionsToday, ACTIONS_TO_REPAIR)}/{ACTIONS_TO_REPAIR})
           </strong>
           .
+        </div>
+      )}
+
+      {tasksDoneToday >= BUSY_DAY_TASKS && (
+        <div className="p-3 rounded-xl bg-primary-soft border border-primary/30 text-sm text-primary leading-relaxed">
+          <strong>{tasksDoneToday} passos hoje, que dia!</strong> Fazer mais de um por dia adianta o caminho. Só lembra de descansar
+          também: amanhã ele continua aqui. 🌙
         </div>
       )}
 

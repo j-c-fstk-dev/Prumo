@@ -24,3 +24,21 @@ test('remendo: 2 ações hoje recuperam o dia em branco de ontem', async ({ page
   await expect(banner).toHaveCount(0);
   await expect(page.getByText(/5 dias de prumo/)).toBeVisible();
 });
+
+test('dia da jornada, carta no dia 90 e aviso gentil de muitas tarefas no mesmo dia', async ({ page }) => {
+  const start = new Date();
+  if (start.getHours() < 4) start.setDate(start.getDate() - 1);
+  start.setHours(12, 0, 0, 0);
+  start.setDate(start.getDate() - 89);
+  const now = Date.now();
+  await seedState(page, {
+    startedAt: start.getTime(),
+    letter: { toFuture: 'Oi', fromFuture: 'Deu certo', sealedAt: start.getTime() },
+    completedAt: { a: now, b: now, c: now },
+    actionsByDay: { [dayKey()]: 3 },
+  });
+  await expect(page.getByText('Dia 90 de 90')).toBeVisible();
+  await expect(page.getByText('3 passos hoje, que dia!')).toBeVisible();
+  await page.getByRole('button', { name: /Hoje é o seu dia 90/ }).click();
+  await expect(page.getByText('Deu certo')).toBeVisible();
+});
