@@ -103,6 +103,12 @@ async function postJson(cfg: LlmConfig, url: string, headers: Record<string, str
   return res.json();
 }
 
+/** Só números: quanto a chamada gastou, para medir o custo real por pessoa. Nenhum texto da conversa. */
+function logUsage(cfg: LlmConfig, inputTokens: unknown, outputTokens: unknown): void {
+  if (typeof inputTokens !== 'number' && typeof outputTokens !== 'number') return;
+  console.log(JSON.stringify({ type: 'coach_usage', provider: cfg.provider, model: cfg.model, inputTokens, outputTokens }));
+}
+
 async function generateGemini(cfg: LlmConfig, opts: GenerateOptions): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(cfg.model)}:generateContent`;
   const data = await postJson(cfg, url, { 'x-goog-api-key': cfg.apiKey }, {
@@ -113,6 +119,7 @@ async function generateGemini(cfg: LlmConfig, opts: GenerateOptions): Promise<st
     })),
     generationConfig: { temperature: opts.temperature, maxOutputTokens: opts.maxTokens },
   });
+  logUsage(cfg, data?.usageMetadata?.promptTokenCount, data?.usageMetadata?.candidatesTokenCount);
   const parts = data?.candidates?.[0]?.content?.parts ?? [];
   return parts.map((p: any) => p.text ?? '').join('').trim();
 }
@@ -128,6 +135,7 @@ async function generateAnthropic(cfg: LlmConfig, opts: GenerateOptions): Promise
     system: opts.system,
     messages: opts.messages,
   });
+  logUsage(cfg, data?.usage?.input_tokens, data?.usage?.output_tokens);
   const blocks = data?.content ?? [];
   return blocks.filter((b: any) => b.type === 'text').map((b: any) => b.text).join('').trim();
 }
@@ -141,6 +149,7 @@ async function generateOpenAiCompatible(cfg: LlmConfig, opts: GenerateOptions): 
     max_tokens: opts.maxTokens,
     messages: [{ role: 'system', content: opts.system }, ...opts.messages],
   });
+  logUsage(cfg, data?.usage?.prompt_tokens, data?.usage?.completion_tokens);
   return (data?.choices?.[0]?.message?.content ?? '').trim();
 }
 

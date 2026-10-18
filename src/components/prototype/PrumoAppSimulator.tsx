@@ -10,6 +10,7 @@ import { ValueSignalScreen } from '../../app/screens/ValueSignalScreen';
 import { AnamneseScreen } from '../../app/screens/AnamneseScreen';
 import { CalculatingScreen } from '../../app/screens/CalculatingScreen';
 import { ResultScreen } from '../../app/screens/ResultScreen';
+import { CustomPathScreen } from '../../app/screens/CustomPathScreen';
 import { CommitmentScreen } from '../../app/screens/CommitmentScreen';
 import { FutureLetterScreen } from '../../app/screens/FutureLetterScreen';
 import { HomeTab } from '../../app/screens/HomeTab';
@@ -29,6 +30,7 @@ const SCREENS: Record<Exclude<ScreenState, 'home'>, React.FC> = {
   anamnese: AnamneseScreen,
   calculating: CalculatingScreen,
   result: ResultScreen,
+  custom_path: CustomPathScreen,
   commitment: CommitmentScreen,
   future_letter: FutureLetterScreen,
   task_detail: TaskDetailScreen,

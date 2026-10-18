@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Constellation } from '../../components/brand/Constellation';
+import { Starfield } from '../../components/brand/CompassSplash';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { QuoteByTheme } from './QuoteCard';
@@ -16,8 +17,12 @@ export const ChapterComplete: React.FC = () => {
 
   useEffect(() => {
     if (done === undefined) return;
-    soundEffects.playCommitmentSuccess();
-    confetti({ particleCount: 70, spread: 90, origin: { y: 0.5 } });
+    soundEffects.playChapterCelebration();
+    // Chuva de estrelas lenta, em vez de confete rápido (teste com usuários: "algo mais mágico")
+    const stars = { shapes: ['star' as const], colors: ['#E3B860', '#F5E6B8', '#B9A6FF', '#FFFFFF'], gravity: 0.35, decay: 0.95, ticks: 320, scalar: 1.1 };
+    confetti({ ...stars, particleCount: 40, spread: 100, startVelocity: 22, origin: { y: 0.35 } });
+    const later = setTimeout(() => confetti({ ...stars, particleCount: 30, spread: 140, startVelocity: 15, origin: { y: 0.2 } }), 900);
+    return () => clearTimeout(later);
   }, [done]);
 
   if (done === undefined) return null;
@@ -28,7 +33,10 @@ export const ChapterComplete: React.FC = () => {
 
   return (
     <div className="absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-5 animate-fadeIn">
-      <div className="w-full rounded-3xl overflow-hidden bg-night-sky p-5 space-y-4 animate-scale-in" style={{ color: 'var(--night-text)' }}>
+      <div className="relative isolate w-full rounded-3xl overflow-hidden bg-night-sky p-5 space-y-4 animate-scale-in" style={{ color: 'var(--night-text)' }}>
+        <div className="absolute inset-0 -z-10 pointer-events-none opacity-80">
+          <Starfield />
+        </div>
         <div className="text-center space-y-1">
           <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: 'var(--gold)' }}>
             {label} concluído

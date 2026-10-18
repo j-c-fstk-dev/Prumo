@@ -58,7 +58,7 @@ Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
 ### Fase 2: Backend no ar
 - [x] Camada de IA genérica (etapa 01)
 - [x] Deploy na Cloudflare: Worker + arquivos estáticos + publicação automática ([etapa 18](etapas/18-cloudflare.md)); falta você configurar token e secrets
-- [ ] Limite de uso por usuário (rate limit) e proteção da chave
+- [x] Limite de uso por pessoa no servidor + registro de custo por chamada ([etapa 22](etapas/22-limite-de-uso.md))
 - [x] Status honesto do coach + erros no log do servidor ([etapa 17](etapas/17-seguranca-do-coach-e-ci.md))
 - [x] Testes ponta a ponta no repositório + CI no GitHub Actions ([etapa 17](etapas/17-seguranca-do-coach-e-ci.md))
 - [x] Botão "denunciar resposta" no coach ([etapa 17](etapas/17-seguranca-do-coach-e-ci.md))
@@ -82,9 +82,10 @@ Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
 - [x] A: correções rápidas (âncora inteira, Salvar, texto livre, botão de segurar, "Pra hoje", ritmo mais calmo, voz desligada)
 - [x] B1: apresentação inicial, blocos surgindo um por vez, telas de resultado/compromisso/carta, 90 dias e "Se travar, eu…" ([etapa 20](etapas/20-linguagem-parte-1.md))
 - [x] B2: revisão dos textos restantes pelo [guia de voz](guia-de-voz.md) + telas que não rolavam ([etapa 21](etapas/21-linguagem-parte-2.md))
-- [ ] C: 3 prumos diferentes + "criar o meu" (depois da 2.4)
-- [ ] D: citações de livros famosos, frases rotativas, lembretes no dia certo
-- [ ] E: ilustração, música do splash, comemoração e sons delicados
+- [x] C: 3 caminhos diferentes + "Quero criar o meu" com ajuda da IA ([etapa 23](etapas/23-tres-caminhos-e-criar-o-meu.md))
+- [x] D1: frases rotativas na anamnese, lembrete do dia pelo momento, citações trocando por dia ([etapa 24](etapas/24-frases-e-lembretes.md))
+- [x] D2: 44 citações publicadas de autores de livros famosos, com fonte ([etapa 26](etapas/26-citacoes-de-livros.md)); falta uma pessoa conferir a pontuação clicando nos links
+- [x] E: ilustração da abertura, música, comemoração "chuva de estrelas" e sons de sino mais delicados ([etapa 25](etapas/25-sons-abertura-e-comemoracao.md))
 - [ ] F: mapa humano (opcional, depois do MVP)
 
 ### Fase 4: Jurídico e empacotamento

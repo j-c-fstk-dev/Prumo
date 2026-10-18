@@ -3,7 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { handleCoachChat, handleHealth, handleReport } from './server/coach.ts';
+import { handleCoachChat, handleHealth, handleIdea, handleReport } from './server/coach.ts';
 
 dotenv.config();
 
@@ -21,6 +21,11 @@ async function startServer() {
   // Toda a lógica do coach vive em server/coach.ts (a mesma usada no Cloudflare Worker)
   app.post('/api/coach/chat', async (req, res) => {
     const result = await handleCoachChat(req.body);
+    res.status(result.status).json(result.body);
+  });
+
+  app.post('/api/coach/idea', async (req, res) => {
+    const result = await handleIdea(req.body);
     res.status(result.status).json(result.body);
   });
 

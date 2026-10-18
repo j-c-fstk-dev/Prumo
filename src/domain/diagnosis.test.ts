@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyAlternative, calculateDiagnosis, type Answers } from './diagnosis';
+import { applyAlternative, buildCustomDiagnosis, calculateDiagnosis, isCustomPathReady, CUSTOM_NICHE_ID, type Answers } from './diagnosis';
 
 const base: Answers = {
   q3_hours: ['medio'],
@@ -119,5 +119,47 @@ describe('applyAlternative', () => {
     expect(pivoted.productId).toBe(alt.productId);
     expect(pivoted.alternatives).toHaveLength(2);
     expect(pivoted.alternatives.some((x) => x.nicheId === d.nicheId && x.productId === d.productId)).toBe(true);
+  });
+});
+
+describe('3 caminhos diferentes', () => {
+  it('as alternativas são temas diferentes entre si e da sugestão principal', () => {
+    for (const q1 of [['design'], ['planilhas'], ['conselhos', 'vendas'], []]) {
+      const d = calculateDiagnosis({ ...base, q1_help: q1 }, 'âncora');
+      const niches = [d.nicheId, ...d.alternatives.map((x) => x.nicheId)];
+      expect(new Set(niches).size).toBe(3);
+    }
+  });
+});
+
+describe('caminho criado pela pessoa', () => {
+  const answers: Answers = { ...base, q1_help: ['design'], q2_themes: ['artes'] };
+  const input = { offer: 'Aulas de violão para iniciantes.', audience: 'adultos que sempre quiseram tocar', pain: 'Não saber por onde começar', productId: 'sessao' as const };
+
+  it('monta o diagnóstico a partir das palavras da pessoa e mantém as 3 sugestões como opção', () => {
+    const d = calculateDiagnosis(answers, 'âncora');
+    const c = buildCustomDiagnosis(d, input, answers);
+    expect(c.nicheId).toBe(CUSTOM_NICHE_ID);
+    expect(c.niche).toBe('Aulas de violão para iniciantes');
+    expect(c.product).toContain('aulas de violão');
+    expect(c.hypothesis).toContain('Adultos que sempre quiseram tocar pagam por');
+    expect(c.pain).toBe('não saber por onde começar');
+    expect(c.channel).toBe(d.channel);
+    expect(c.planB).toBe(d.planB);
+    expect(c.alternatives).toHaveLength(3);
+    expect(c.alternatives[0].nicheId).toBe(d.nicheId);
+  });
+
+  it('trocar do caminho próprio para uma sugestão não coloca o caminho próprio na lista', () => {
+    const c = buildCustomDiagnosis(calculateDiagnosis(answers, 'âncora'), input, answers);
+    const back = applyAlternative(c, c.alternatives[1], answers);
+    expect(back.nicheId).toBe(c.alternatives[1].nicheId);
+    expect(back.alternatives.every((x) => x.nicheId !== CUSTOM_NICHE_ID)).toBe(true);
+    expect(back.alternatives).toHaveLength(2);
+  });
+
+  it('só libera com os 3 campos preenchidos', () => {
+    expect(isCustomPathReady(input)).toBe(true);
+    expect(isCustomPathReady({ ...input, pain: ' ' })).toBe(false);
   });
 });

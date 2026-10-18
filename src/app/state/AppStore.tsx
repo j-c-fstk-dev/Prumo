@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, TaskItem } from '../../data/prumoData';
-import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption } from '../../domain/diagnosis';
+import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption, buildCustomDiagnosis, type CustomPathInput } from '../../domain/diagnosis';
 import { buildPlanTasks } from '../../domain/tasks';
 import { ACTIONS_TO_REPAIR, addDays, buildTimeline, computeStreak, dayKey, isFreshStart, weekKey } from '../../domain/journey';
 import { can as canUse, currentPlan, trialDaysLeft, type Feature } from '../../domain/entitlements';
@@ -21,6 +21,7 @@ export type ScreenState =
   | 'anamnese'
   | 'calculating'
   | 'result'
+  | 'custom_path'
   | 'commitment'
   | 'future_letter'
   | 'home'
@@ -60,7 +61,7 @@ export interface CoachMessage {
   text: string;
   time: string;
   /** live = IA respondeu · offline = resposta pronta (IA indisponível) · crisis = protocolo de crise */
-  mode?: 'live' | 'offline' | 'crisis';
+  mode?: 'live' | 'offline' | 'crisis' | 'limited';
   reported?: boolean;
 }
 
@@ -101,6 +102,8 @@ interface PersistedState {
   coachConsentAt?: number;
   theme: ThemePref;
   onboardingDone: boolean;
+  /** Id aleatório e anônimo deste aparelho, só para o limite de uso do coach no servidor */
+  clientId: string;
 }
 
 const STORAGE_KEY = 'prumo_state';
@@ -129,7 +132,16 @@ function initialPersisted(): PersistedState {
     kitUsage: {},
     theme: 'auto',
     onboardingDone: false,
+    clientId: newClientId(),
   };
+}
+
+function newClientId(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+  }
 }
 
 function migrate(raw: unknown): PersistedState | null {
@@ -142,6 +154,7 @@ function migrate(raw: unknown): PersistedState | null {
     ...data,
     textOptions: { ...base.textOptions, ...data.textOptions },
     usage: { ...base.usage, ...data.usage },
+    clientId: data.clientId || base.clientId,
   };
 }
 
@@ -413,6 +426,28 @@ function useAppState() {
     sealLetter: () =>
       setData((d) => (d.letter ? { ...d, letter: { ...d.letter, sealedAt: Date.now() } } : d)),
     /** O "pivô": troca o plano por uma das alternativas */
+    /** "Quero criar o meu": a pessoa desenha o próprio caminho */
+    chooseCustomPath: (input: CustomPathInput) => {
+      if (!guard('pivot')) return;
+      soundEffects.playSelectOption();
+      setData((d) => ({ ...d, diagnosis: buildCustomDiagnosis(diagnosis, input, scoredAnswers), usage: { ...d.usage, pivots: d.usage.pivots + 1 } }));
+    },
+
+    /** Pede à IA uma sugestão organizada a partir da ideia contada com as próprias palavras */
+    suggestPath: async (description: string): Promise<{ mode: string; idea?: { offer: string; audience: string; pain: string; format: string } }> => {
+      try {
+        const response = await fetch('/api/coach/idea', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description, clientId: data.clientId, userName: data.userName }),
+        });
+        if (!response.ok) return { mode: 'offline' };
+        return await response.json();
+      } catch {
+        return { mode: 'offline' };
+      }
+    },
+
     chooseAlternative: (alt: DiagnosisOption) => {
       if (!guard('pivot')) return;
       setData((d) => ({ ...d, diagnosis: applyAlternative(diagnosis, alt, scoredAnswers), usage: { ...d.usage, pivots: d.usage.pivots + 1 } }));
@@ -563,6 +598,7 @@ function useAppState() {
           // Contexto mínimo: as reflexões brutas não saem do aparelho (docs/pesquisa/07)
           body: JSON.stringify({
             message: text,
+            clientId: data.clientId,
             history,
             userContext: {
               userName: data.userName,
@@ -594,10 +630,10 @@ function useAppState() {
         mode = json.mode ?? (json.isLiveAI ? 'live' : 'offline');
         reply =
           json.reply ||
-          `Estou com você, ${data.userName}. Como podemos simplificar esse próximo passo em uma micro-tarefa de 15 minutos?`;
+          `Tô com você, ${data.userName}. Qual é o menor pedaço desse passo que dá pra fazer em 15 minutos?`;
       } catch (err) {
         console.error('Falha ao consultar Coach:', err);
-        reply = `Boa pergunta, ${data.userName}! Para destravar em "${task.title}", o segredo é focar no Menor Esforço Viável (MEV). Monte um roteiro de 3 tópicos e valide com 1 ou 2 pessoas conhecidas. 15 minutos de foco agora é tudo o que você precisa para dar esse passo.`;
+        reply = `Não consegui falar com o servidor agora, ${data.userName}. Enquanto isso: em "${task.title}", qual é o menor passo que dá pra fazer em 15 minutos? Às vezes é só mandar uma mensagem.`;
       }
       soundEffects.playTransition();
       setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'coach', text: reply, time: nowTime(), mode }] }));
@@ -626,6 +662,8 @@ function useAppState() {
     can,
     paywallReason,
     trialDaysLeft: trialDaysLeft(data.startedAt, now),
+    /** Dias desde o início da jornada (0 = hoje); null antes de terminar o onboarding */
+    daysSinceStart: data.startedAt ? Math.floor((now - data.startedAt) / 86_400_000) : null,
     paywallEnabled: PAYWALL_ENABLED,
     todayCheckIn,
     freshStart,

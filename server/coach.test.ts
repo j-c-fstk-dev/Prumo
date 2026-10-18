@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { handleCoachChat, handleReport, LIMITS } from './coach';
+import { handleCoachChat, handleIdea, handleReport, LIMITS, parseIdea } from './coach';
 import { crisisReply, detectCrisis } from './safety';
 
 const LIVE_ENV = { LLM_PROVIDER: 'openai', LLM_API_KEY: 'k', LLM_BASE_URL: 'http://ia.local/v1' };
@@ -127,5 +127,67 @@ describe('LLM_EXTRA_BODY', () => {
     expect(r.body.mode).toBe('live');
     expect(warn).toHaveBeenCalled();
     expect(fetchMock).toHaveBeenCalled();
+  });
+});
+
+describe('limite de uso', () => {
+  it('bloqueado: não chama a IA e responde em modo "limited"', async () => {
+    const fetchMock = mockLlm();
+    const r = await handleCoachChat({ message: 'oi', userContext: { userName: 'Jo' } }, LIVE_ENV, async () => ({ allowed: false, blockedBy: 'd:x:dev:a' }));
+    expect(r.body.mode).toBe('limited');
+    expect(r.body.reply).toContain('volta amanhã');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('crise e modo offline não passam pelo limite', async () => {
+    const guard = vi.fn(async () => ({ allowed: false }));
+    mockLlm();
+    expect((await handleCoachChat({ message: 'quero morrer' }, LIVE_ENV, guard)).body.mode).toBe('crisis');
+    expect((await handleCoachChat({ message: 'oi' }, {}, guard)).body.mode).toBe('offline');
+    expect(guard).not.toHaveBeenCalled();
+  });
+
+  it('se o contador falhar, o coach segue funcionando', async () => {
+    mockLlm('ok');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const r = await handleCoachChat({ message: 'oi' }, LIVE_ENV, async () => {
+      throw new Error('contador fora');
+    });
+    expect(r.body.mode).toBe('live');
+  });
+});
+
+describe('registro de custo', () => {
+  it('anota só os tokens gastos, nunca o texto da conversa', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: 'oi' } }], usage: { prompt_tokens: 120, completion_tokens: 30 } }), { status: 200 })));
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    await handleCoachChat({ message: 'meu segredo', userContext: { userName: 'Jo' } }, LIVE_ENV);
+    const entry = JSON.parse(log.mock.calls.find((c) => String(c[0]).includes('coach_usage'))![0] as string);
+    expect(entry).toMatchObject({ type: 'coach_usage', provider: 'openai', inputTokens: 120, outputTokens: 30 });
+    expect(JSON.stringify(log.mock.calls)).not.toContain('segredo');
+  });
+});
+
+describe('sugestão de caminho próprio', () => {
+  it('lê o JSON mesmo com texto em volta e corrige formato desconhecido', () => {
+    const idea = parseIdea('Claro! {"offer":"Aulas de violão","audience":"adultos iniciantes","pain":"não saber começar","format":"podcast"} Boa sorte');
+    expect(idea).toEqual({ offer: 'Aulas de violão', audience: 'adultos iniciantes', pain: 'não saber começar', format: 'servico' });
+    expect(parseIdea('sem json aqui')).toBeNull();
+    expect(parseIdea('{"offer":"x"}')).toBeNull();
+  });
+
+  it('com IA, devolve a sugestão; sem IA, avisa modo offline', async () => {
+    mockLlm('{"offer":"Aulas de violão","audience":"adultos","pain":"não saber começar","format":"sessao"}');
+    const r = await handleIdea({ description: 'quero ensinar violão pra adultos' }, LIVE_ENV);
+    expect(r.body).toMatchObject({ mode: 'live', idea: { format: 'sessao' } });
+    expect((await handleIdea({ description: 'quero ensinar violão' }, {})).body.mode).toBe('offline');
+  });
+
+  it('respeita o limite de uso e o protocolo de crise', async () => {
+    const fetchMock = mockLlm();
+    expect((await handleIdea({ description: 'quero ensinar violão' }, LIVE_ENV, async () => ({ allowed: false }))).body.mode).toBe('limited');
+    expect((await handleIdea({ description: 'não quero mais viver' }, LIVE_ENV)).body.mode).toBe('crisis');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect((await handleIdea({ description: 'oi' }, LIVE_ENV)).status).toBe(400);
   });
 });

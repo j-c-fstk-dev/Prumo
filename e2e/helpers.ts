@@ -1,9 +1,14 @@
 import { expect, type Page } from '@playwright/test';
 
-/** Espera a splash da bússola sair */
+/** Abre o app; na 1ª vez, toca em "Toque para começar" (a abertura espera o toque para tocar a música) */
 export async function openApp(page: Page) {
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Começar diagnóstico' }).or(page.getByText(/^Olá, /))).toBeVisible({ timeout: 10_000 });
+  const ready = page.getByRole('button', { name: 'Começar diagnóstico' }).or(page.getByText(/^Olá, /));
+  const tap = page.getByRole('button', { name: 'Toque para começar' });
+  await expect(ready.or(tap).first()).toBeVisible({ timeout: 10_000 });
+  if (await tap.count()) await tap.click({ timeout: 10_000 });
+  await expect(tap).toHaveCount(0, { timeout: 10_000 });
+  await expect(ready).toBeVisible({ timeout: 10_000 });
 }
 
 /**

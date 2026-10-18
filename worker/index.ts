@@ -4,11 +4,29 @@
  * As chaves da IA ficam como secrets do Worker (painel da Cloudflare ou `wrangler secret put`).
  */
 
-import { handleCoachChat, handleHealth, handleReport } from '../server/coach.ts';
+import { handleCoachChat, handleHealth, handleIdea, handleReport, type LiveCallGuard } from '../server/coach.ts';
 import type { LlmEnv } from '../server/llm.ts';
+import { buildRules, cleanClientId, type LimitEnv, type LimitRule } from '../server/limits.ts';
 
-interface Env extends LlmEnv {
+export { UsageLimiter } from './limiter.ts';
+
+interface LimiterStub {
+  consume(rules: LimitRule[]): Promise<{ allowed: boolean; blockedBy?: string }>;
+}
+
+interface Env extends LlmEnv, LimitEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
+  /** Durable Object do limite de uso (wrangler.jsonc). Sem ele, o coach roda sem limite. */
+  LIMITER?: { idFromName(name: string): unknown; get(id: unknown): LimiterStub };
+}
+
+/** Limite de uso por aparelho, por IP e total do dia (server/limits.ts) */
+function usageGuard(request: Request, env: Env, body: unknown): LiveCallGuard | undefined {
+  const limiter = env.LIMITER;
+  if (!limiter) return undefined;
+  const ip = request.headers.get('cf-connecting-ip') ?? 'sem-ip';
+  const clientId = cleanClientId((body as { clientId?: unknown })?.clientId);
+  return () => limiter.get(limiter.idFromName('coach')).consume(buildRules(env, { clientId, ip }, new Date()));
 }
 
 const MAX_BODY_BYTES = 64 * 1024;
@@ -40,11 +58,17 @@ export default {
       return json(200, handleHealth(env).body);
     }
 
-    if (pathname === '/api/coach/chat' || pathname === '/api/coach/report') {
+    if (pathname === '/api/coach/chat' || pathname === '/api/coach/report' || pathname === '/api/coach/idea') {
       if (request.method !== 'POST') return json(405, { error: 'Use POST.' });
       const body = await readJson(request);
       if (body instanceof Response) return body;
-      const result = pathname === '/api/coach/chat' ? await handleCoachChat(body, env) : handleReport(body);
+      const guard = usageGuard(request, env, body);
+      const result =
+        pathname === '/api/coach/chat'
+          ? await handleCoachChat(body, env, guard)
+          : pathname === '/api/coach/idea'
+            ? await handleIdea(body, env, guard)
+            : handleReport(body);
       return json(result.status, result.body);
     }
 

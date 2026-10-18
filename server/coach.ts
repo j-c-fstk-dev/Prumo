@@ -5,6 +5,7 @@
 
 import { generateReply, getLlmConfig, type ChatMessage, type LlmEnv } from './llm.ts';
 import { crisisReply, detectCrisis } from './safety.ts';
+import { limitReply } from './limits.ts';
 import { TOOL_CATEGORIES, type ToolCategoryId } from '../src/data/ferramentas.ts';
 
 /** Limites contra abuso e custo: mensagens longas demais são recusadas, o resto é cortado */
@@ -15,7 +16,7 @@ export const LIMITS = {
   contextChars: 300,
 } as const;
 
-export type CoachMode = 'live' | 'offline' | 'crisis';
+export type CoachMode = 'live' | 'offline' | 'crisis' | 'limited';
 
 export interface CoachResult {
   status: number;
@@ -103,29 +104,32 @@ DIRETRIZES FUNDAMENTAIS DO COACH PRUMO:
 }
 
 function generateFallbackReply(message: string, userContext: ReturnType<typeof sanitizeContext>): string {
-  const name = userContext?.userName || 'Criador';
+  const name = userContext?.userName || 'Ei';
   const taskTitle = userContext?.currentTask?.title || 'sua próxima tarefa';
-  const niche = userContext?.diagnosis?.niche || 'seu nicho';
-  const product = userContext?.diagnosis?.product || 'seu produto';
+  const niche = userContext?.diagnosis?.niche || 'o seu tema';
+  const product = userContext?.diagnosis?.product || 'o que você vai oferecer';
   const anchor = userContext?.personalAnchor;
   const lower = message.toLowerCase();
 
   if (lower.includes('quem chamar') || lower.includes('validar') || lower.includes('pessoas')) {
-    return `${name}, para validar ${product}, a regra de ouro é: comece por 3 pessoas que já te conhecem ou te pediram conselhos.\n\nEnvie uma mensagem leve: "Oi! Montei um roteiro rápido de 10 min sobre ${niche} e queria seu olhar sincero de quem vive isso na prática. Posso te mandar?". Zero pressão de venda, foco 100% em escuta sincera.`;
+    return `${name}, comece por 3 pessoas que já te conhecem ou que já te pediram ajuda.\n\nManda algo leve, tipo: "Oi! Tô montando uma coisa sobre ${niche} e queria sua opinião sincera. Posso te mostrar?". Sem vender nada agora: a ideia é ouvir.`;
   }
 
   if (lower.includes('preço') || lower.includes('cobrar') || lower.includes('valor')) {
-    return `${name}, para o primeiro teste de ${product}, use a calculadora de preço de teste no kit da tarefa de preço: ela parte do seu tempo e da faixa de referência do seu formato.\n\nNesta primeira rodada, o objetivo não é maximizar margem, e sim quebrar a barreira da primeira transação e colher retornos sinceros de quem realmente pagou.`;
+    return `${name}, pro primeiro teste de ${product}, usa a calculadora de preço no kit da tarefa de preço: ela parte do seu tempo e de uma faixa de referência.\n\nAgora o objetivo não é lucrar muito. É ver se alguém paga e ouvir o que essa pessoa achou.`;
   }
 
   if (lower.includes('vergonha') || lower.includes('medo') || lower.includes('insegur') || lower.includes('travei')) {
-    return `É completamente normal sentir esse frio na barriga, ${name}. Lembra da sua promessa: "${anchor || 'fazer com dignidade e paz'}".\n\nVocê não precisa se expor para uma multidão nem parecer um especialista perfeito. Você só precisa estar um passo à frente de quem você quer ajudar hoje. Qual é a menor coisa viável que você pode fazer nos próximos 15 minutos em relação a "${taskTitle}"?`;
+    return `Esse frio na barriga é normal, ${name}. Lembra da sua âncora: "${anchor || 'fazer do meu jeito, com calma'}".\n\nVocê não precisa aparecer pra todo mundo nem saber tudo. Só precisa estar um passo à frente de quem você quer ajudar. Qual é a menor coisa que dá pra fazer nos próximos 15 minutos em "${taskTitle}"?`;
   }
 
-  return `${name}, o segredo para destravar em "${taskTitle}" é focar no Menor Esforço Viável (MEV).\n\nEm vez de tentar construir a versão completa de ${product}, pegue uma única dor específica do seu público de ${niche} e resolva em 1 página de checklist ou PDF. 15 minutos de foco agora é tudo que você precisa para dar esse passo. O que acha de começarmos agora?`;
+  return `${name}, pra destravar em "${taskTitle}", pensa no menor passo possível.\n\nEm vez de fazer ${product} inteiro, escolhe um único problema de quem você quer ajudar e resolve isso em 1 página. 15 minutos agora já contam. Bora?`;
 }
 
-export async function handleCoachChat(body: any, env?: LlmEnv): Promise<CoachResult> {
+/** Chamado logo antes de usar a IA; o Worker usa para aplicar o limite de uso (server/limits.ts) */
+export type LiveCallGuard = () => Promise<{ allowed: boolean; blockedBy?: string }>;
+
+export async function handleCoachChat(body: any, env?: LlmEnv, guard?: LiveCallGuard): Promise<CoachResult> {
   const message = body?.message;
   if (!message || typeof message !== 'string' || !message.trim()) {
     return { status: 400, body: { error: 'Mensagem inválida ou ausente.' } };
@@ -144,6 +148,22 @@ export async function handleCoachChat(body: any, env?: LlmEnv): Promise<CoachRes
   const llm = getLlmConfig(env);
   if (!llm) {
     return { status: 200, body: { reply: generateFallbackReply(message, userContext), isLiveAI: false, mode: 'offline' } };
+  }
+
+  if (guard) {
+    let verdict: Awaited<ReturnType<LiveCallGuard>> = { allowed: true };
+    try {
+      verdict = await guard();
+    } catch (error) {
+      // Se o contador falhar, o coach segue (o limite total protege o orçamento no dia a dia)
+      console.error('Erro no limite de uso do coach:', error);
+    }
+    if (!verdict.allowed) {
+      return {
+        status: 200,
+        body: { reply: limitReply(userContext.userName, verdict.blockedBy, userContext.currentTask?.title), isLiveAI: false, mode: 'limited' },
+      };
+    }
   }
 
   const messages: ChatMessage[] = [];
@@ -191,4 +211,83 @@ export function handleReport(body: any): CoachResult {
 export function handleHealth(env?: LlmEnv): { status: number; body: { status: 'ok'; service: string; ai: string } } {
   const llm = getLlmConfig(env);
   return { status: 200, body: { status: 'ok', service: 'Prumo Coach API', ai: llm ? `${llm.provider}/${llm.model}` : 'offline' } };
+}
+
+const IDEA_FORMATS = ['servico', 'sessao', 'guia', 'minicurso'] as const;
+type IdeaFormat = (typeof IDEA_FORMATS)[number];
+
+export interface IdeaSuggestion {
+  offer: string;
+  audience: string;
+  pain: string;
+  format: IdeaFormat;
+}
+
+/** Tenta ler a sugestão da IA: aceita texto em volta do JSON e corta campos longos */
+export function parseIdea(text: string): IdeaSuggestion | null {
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try {
+    const raw = JSON.parse(match[0]);
+    const pick = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
+    const idea = {
+      offer: pick(raw.offer, 80),
+      audience: pick(raw.audience, 80),
+      pain: pick(raw.pain, 120),
+      format: (IDEA_FORMATS as readonly string[]).includes(raw.format) ? (raw.format as IdeaFormat) : 'servico',
+    };
+    return idea.offer && idea.audience && idea.pain ? idea : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * "Quero criar o meu": a pessoa descreve a ideia com as próprias palavras e a IA devolve
+ * uma sugestão organizada (o que oferecer, pra quem, que problema resolve e o formato).
+ * A pessoa revisa tudo antes de usar.
+ */
+export async function handleIdea(body: any, env?: LlmEnv, guard?: LiveCallGuard): Promise<{ status: number; body: Record<string, unknown> }> {
+  const description = body?.description;
+  if (!description || typeof description !== 'string' || description.trim().length < 5) {
+    return { status: 400, body: { error: 'Conte sua ideia em algumas palavras.' } };
+  }
+  if (description.length > LIMITS.message) {
+    return { status: 413, body: { error: `A descrição pode ter até ${LIMITS.message} caracteres.` } };
+  }
+  if (detectCrisis(description)) {
+    return { status: 200, body: { mode: 'crisis', reply: crisisReply(clip(body?.userName, 60)) } };
+  }
+  const llm = getLlmConfig(env);
+  if (!llm) return { status: 200, body: { mode: 'offline' } };
+  if (guard) {
+    try {
+      const verdict = await guard();
+      if (!verdict.allowed) return { status: 200, body: { mode: 'limited' } };
+    } catch (error) {
+      console.error('Erro no limite de uso do coach:', error);
+    }
+  }
+  try {
+    const reply = await generateReply(llm, {
+      system:
+        'Você ajuda brasileiros a transformar uma ideia em um primeiro produto simples para vender online. ' +
+        'Responda SOMENTE com um JSON, sem texto em volta, no formato ' +
+        '{"offer": "o que a pessoa vai oferecer, até 8 palavras", "audience": "pra quem, até 8 palavras", ' +
+        '"pain": "o problema que resolve, em palavras simples, até 12 palavras", ' +
+        '"format": "servico" | "sessao" | "guia" | "minicurso"}. ' +
+        'Use português do Brasil, linguagem simples, sem jargão de marketing e sem prometer renda. ' +
+        'Escolha o formato mais simples de testar: serviço feito pela pessoa, sessão individual de 1 hora, ' +
+        'guia com modelo pronto ou mini-curso curto em vídeo.',
+      messages: [{ role: 'user', content: description }],
+      temperature: 0.4,
+      maxTokens: 300,
+    });
+    const idea = parseIdea(reply);
+    if (!idea) throw new Error('IA não devolveu uma sugestão válida');
+    return { status: 200, body: { mode: 'live', idea } };
+  } catch (error) {
+    console.error('Erro na sugestão de caminho:', error);
+    return { status: 200, body: { mode: 'offline' } };
+  }
 }

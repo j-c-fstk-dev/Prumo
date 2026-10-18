@@ -7,6 +7,10 @@ import {
 import { ANAMNESE_SECTIONS } from '../../data/prumoData';
 import { suggestOptions } from '../../domain/textMatch';
 import { useApp } from '../state/AppStore';
+import { ENCORAJAMENTO_ANAMNESE } from '../../data/encorajamento';
+
+/** Sorteado a cada vez que o app abre: as frases mudam de uma vez para outra */
+const SESSION_SEED = Math.floor(Math.random() * ENCORAJAMENTO_ANAMNESE.length);
 
 export const AnamneseScreen: React.FC = () => {
   const { answers, scoredAnswers, reflections, textOptions, sectionIndex, questionIndex, questionDirection, actions } = useApp();
@@ -86,6 +90,9 @@ export const AnamneseScreen: React.FC = () => {
             </h2>
             <p className="text-sm text-muted mt-0.5">
               {currentQuestion.subtext}
+            </p>
+            <p className="text-[13px] text-primary font-medium italic mt-1.5">
+              💬 {ENCORAJAMENTO_ANAMNESE[(SESSION_SEED + answeredBefore + questionIndex) % ENCORAJAMENTO_ANAMNESE.length]}
             </p>
           </div>
 

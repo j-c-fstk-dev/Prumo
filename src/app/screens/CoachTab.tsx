@@ -31,6 +31,10 @@ const CoachConsent: React.FC<{ onAccept: () => void }> = ({ onAccept }) => (
           tarefa atual.
         </li>
         <li>
+          Também vai um <strong>código aleatório do aparelho</strong> (sem nome nem contato), só para limitar quantas conversas
+          cada pessoa tem por dia.
+        </li>
+        <li>
           <strong>Não vai:</strong> o que você escreveu nas perguntas, suas cartas e suas tarefas pessoais. Elas ficam só no seu celular.
         </li>
         <li>
@@ -97,6 +101,7 @@ export const CoachTab: React.FC = () => {
   const messages = coachMessages.length ? coachMessages : [greeting];
   const lastCoach = [...coachMessages].reverse().find((m) => m.sender === 'coach');
   const offline = lastCoach?.mode === 'offline';
+  const limited = lastCoach?.mode === 'limited';
 
   const handleSendMessage = (textToSend?: string) => {
     const text = (textToSend || inputMessage).slice(0, MAX_MESSAGE);
@@ -120,9 +125,13 @@ export const CoachTab: React.FC = () => {
                 <Sparkles className="w-2.5 h-2.5" /> IA
               </span>
             </div>
-            <span className={`text-xs flex items-center gap-1 ${offline ? 'text-gold-ink' : 'text-muted'}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${offline ? 'bg-gold' : 'bg-success'}`} />
-              {offline ? 'IA indisponível agora · respostas prontas' : `Conhece o plano de ${userName}`}
+            <span className={`text-xs flex items-center gap-1 ${offline || limited ? 'text-gold-ink' : 'text-muted'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${offline || limited ? 'bg-gold' : 'bg-success'}`} />
+              {limited
+                ? 'Conversas de hoje esgotadas · volta amanhã'
+                : offline
+                  ? 'IA indisponível agora · respostas prontas'
+                  : `Conhece o plano de ${userName}`}
             </span>
           </div>
         </div>
@@ -146,6 +155,9 @@ export const CoachTab: React.FC = () => {
               {msg.mode === 'crisis' && <CrisisLinks />}
               {msg.mode === 'offline' && (
                 <span className="block text-xs text-gold-ink mt-1.5">Resposta pronta: a IA não respondeu desta vez.</span>
+              )}
+              {msg.mode === 'limited' && (
+                <span className="block text-xs text-gold-ink mt-1.5">Limite de conversas com a IA por hoje.</span>
               )}
               <span className={`flex items-center justify-between gap-2 text-xs mt-1 ${msg.sender === 'user' ? 'text-on-primary/70 justify-end' : 'text-muted'}`}>
                 {msg.sender === 'coach' && msg.mode === 'live' && i < coachMessages.length && (
