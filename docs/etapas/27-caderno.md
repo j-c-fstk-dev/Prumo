@@ -19,6 +19,12 @@ Decisões do dono: Caderno como **aba própria**; registro de conversas do teste
 | | **Exportar**: no celular abre o "compartilhar" (WhatsApp, e-mail, Drive); no computador baixa `caderno-prumo.txt` |
 | **Tarefa** | Campo "✍️ Minhas anotações desta tarefa", que salva sozinho e aparece no Caderno |
 
+## Busca em todo o Caderno (pedido seguinte)
+Ícone de **lupa** no topo: procura em **tudo** (ficha, anotações, inclusive as do coach, a tarefa ligada a
+cada anotação e as notas das tarefas). Várias palavras: todas precisam aparecer, em qualquer ordem;
+sem ligar para maiúsculas nem acentos ("preco" acha "preço"). As palavras encontradas ficam
+**destacadas**, mantendo os acentos do texto original. Tocar num resultado de tarefa abre a tarefa.
+
 ## Privacidade e limite honesto
 Tudo fica **só no celular** (IndexedDB), como as reflexões. Nada vai para a IA sozinho. Se a pessoa limpar
 os dados do navegador, as anotações somem: a tela avisa e sugere "Exportar" de vez em quando. Backup

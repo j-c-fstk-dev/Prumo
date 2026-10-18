@@ -39,10 +39,20 @@ test('caderno: ficha preenchida, anotações, nota da tarefa, resposta do coach 
   await expect(page.getByText(/🧭 Do coach ·/)).toBeVisible();
   await expect(page.getByText('Ana disse que pagaria.')).toBeVisible();
 
-  // Busca e filtro
-  await page.getByLabel('Buscar nas anotações').fill('bairro');
-  await expect(page.getByText(/🧭 Do coach ·/)).toHaveCount(0);
-  await page.getByLabel('Buscar nas anotações').fill('');
+  // Busca em todo o caderno (ícone de lupa): anotações, ficha e notas das tarefas
+  await page.getByRole('button', { name: 'Buscar no caderno' }).click();
+  const busca = page.getByLabel('Buscar em todo o caderno');
+  await busca.fill('bairro');
+  await expect(page.getByText('1 resultado')).toBeVisible();
+  await expect(page.locator('mark', { hasText: 'bairro' })).toBeVisible();
+  await busca.fill('transicao');
+  await expect(page.getByText(/Ficha · Minha frase/)).toBeVisible();
+  await busca.fill('ana pagaria');
+  await expect(page.getByText(/✍️ Tarefa/)).toBeVisible();
+  await busca.fill('xyzabc');
+  await expect(page.getByText('Nada encontrado no caderno.')).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar busca' }).click();
+  await expect(page.getByRole('heading', { name: 'Ficha do meu produto' })).toBeVisible();
 
   // Persiste depois de recarregar
   await page.reload();

@@ -102,3 +102,72 @@ export function exportNotebook(input: {
   }
   return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
 }
+
+/** Letra "base" de cada caractere (sem acento, minúscula), mantendo o mesmo tamanho do texto */
+function foldChars(t: string): string {
+  return Array.from(t)
+    .map((c) => c.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().charAt(0) || c)
+    .join('');
+}
+
+function terms(query: string): string[] {
+  return foldChars(query).split(/\s+/).filter(Boolean);
+}
+
+/** Todas as palavras da busca aparecem no texto (em qualquer ordem, sem ligar para acento) */
+export function matchesQuery(text: string, query: string): boolean {
+  const t = terms(query);
+  if (!t.length) return false;
+  const hay = foldChars(text);
+  return t.every((w) => hay.includes(w));
+}
+
+/** Corta o texto em pedaços marcando onde cada palavra da busca aparece (para destacar na tela) */
+export function highlightParts(text: string, query: string): { text: string; hit: boolean }[] {
+  const t = terms(query);
+  const chars = Array.from(text);
+  const folded = Array.from(foldChars(text));
+  const hit = new Array(chars.length).fill(false);
+  // Uma posição por caractere: emoji (2 unidades) vira um marcador de 1, para os índices baterem
+  const hay = folded.map((c) => (c.length > 1 ? '\u0000' : c)).join('');
+  for (const w of t) {
+    let from = 0;
+    for (let i = hay.indexOf(w, from); i !== -1; i = hay.indexOf(w, from)) {
+      for (let k = i; k < i + w.length && k < hit.length; k++) hit[k] = true;
+      from = i + w.length;
+    }
+  }
+  const parts: { text: string; hit: boolean }[] = [];
+  chars.forEach((c, i) => {
+    const last = parts[parts.length - 1];
+    if (last && last.hit === hit[i]) last.text += c;
+    else parts.push({ text: c, hit: hit[i] });
+  });
+  return parts;
+}
+
+export type SearchResult =
+  | { kind: 'ficha'; label: string; text: string }
+  | { kind: 'nota'; note: Note }
+  | { kind: 'tarefa'; taskId: string; title: string; text: string };
+
+/** Busca em todo o Caderno: ficha, anotações (com a tarefa e a etiqueta) e notas das tarefas */
+export function searchNotebook(
+  query: string,
+  data: { profile: Record<ProfileFieldId, string>; notes: Note[]; taskNotes: { taskId: string; title: string; text: string }[] },
+): SearchResult[] {
+  if (!terms(query).length) return [];
+  const out: SearchResult[] = [];
+  for (const f of PROFILE_FIELDS) {
+    const v = data.profile[f.id];
+    if (v && matchesQuery(`${f.label} ${v}`, query)) out.push({ kind: 'ficha', label: f.label, text: v });
+  }
+  for (const n of filterNotes(data.notes)) {
+    const tag = NOTE_TAGS.find((t) => t.id === n.tag)!;
+    if (matchesQuery(`${n.text} ${n.taskTitle ?? ''} ${tag.label}`, query)) out.push({ kind: 'nota', note: n });
+  }
+  for (const t of data.taskNotes) {
+    if (t.text.trim() && matchesQuery(`${t.title} ${t.text}`, query)) out.push({ kind: 'tarefa', ...t });
+  }
+  return out;
+}
