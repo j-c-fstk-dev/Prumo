@@ -135,7 +135,7 @@ const DeviceFrame: React.FC = () => {
         </div>
 
         {/* Área de Conteúdo da Tela (Dentro do Frame) */}
-        <div className="flex-1 bg-canvas sm:rounded-[36px] overflow-hidden flex flex-col relative text-ink">
+        <div id="app-screen" className="flex-1 bg-canvas sm:rounded-[36px] overflow-hidden flex flex-col relative text-ink">
           
 
           {showBrandSplash && <CompassSplash onDone={() => setShowBrandSplash(false)} />}

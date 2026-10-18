@@ -160,14 +160,29 @@ test('pessoas: o coach sugere a mensagem sem receber o nome nem o telefone', asy
   await page.getByLabel('Contexto para o coach').fill('ela está sem tempo este mês');
   await page.getByRole('button', { name: 'Pedir sugestão' }).click();
   await expect(page.getByLabel('Sugestão do coach')).toHaveValue('Oi, Ana! Lembrei de você por causa da nossa conversa.');
-  await page.getByRole('button', { name: 'Usar esta' }).click();
+  await page.getByRole('button', { name: 'Editar antes' }).click();
   await expect(page.getByLabel('Mensagem para Ana Souza')).toHaveValue(/^Oi, Ana!/);
   await expect(page.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /Lembrei%20de%20voc%C3%AA/);
 
   expect(sent).toHaveLength(1);
   expect(sent[0]).toContain('ela está sem tempo este mês');
-  expect(sent[0]).not.toContain('Ana');
-  expect(sent[0]).not.toContain('98765');
+
+  // Enviar direto do modal: abre o WhatsApp e depois pergunta se mandou, para a etapa andar
+  await page.context().route('https://wa.me/**', (r) => r.fulfill({ body: 'ok' }));
+  await page.getByRole('button', { name: /Pedir ajuda ao coach/ }).click();
+  await page.getByRole('button', { name: 'Pedir sugestão' }).click();
+  const popup = page.waitForEvent('popup');
+  await page.getByRole('dialog').getByRole('link', { name: 'Enviar no WhatsApp' }).click();
+  await (await popup).close();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByText(/Mandou a mensagem\? Quer marcar Ana como/)).toBeVisible();
+  await page.getByRole('button', { name: 'Sim, marcar' }).click();
+  await expect(page.getByLabel('Etapa de Ana Souza')).toHaveValue('conversou');
+  expect(sent).toHaveLength(2);
+  for (const body of sent) {
+    expect(body).not.toContain('Ana');
+    expect(body).not.toContain('98765');
+  }
 });
 
 test('fotos: anexar na anotação, ver, persistir, exportar em .zip e apagar junto com a anotação', async ({ page }) => {

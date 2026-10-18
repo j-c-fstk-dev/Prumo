@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Mail, MessageCircle, Pencil, Phone, Sparkles, Trash2, UserPlus, Users } from 'lucide-react';
 import { copyText } from '../../utils/share';
 import { AddPhotoButton, LinkedText, PhotoStrip } from './Photos';
@@ -24,6 +25,10 @@ import {
 
 const inputClass =
   'w-full px-3 py-2 text-sm rounded-xl border border-line bg-surface text-ink placeholder:text-muted focus:outline-none focus:border-primary';
+const actionClass = (on: boolean) =>
+  `min-h-11 px-1.5 rounded-xl border text-[13px] font-semibold leading-tight inline-flex flex-col items-center justify-center gap-0.5 text-center cursor-pointer transition-colors ${
+    on ? 'border-primary bg-primary-soft text-primary' : 'border-line text-ink hover:border-primary'
+  }`;
 const chip = (on: boolean) =>
   `px-2.5 min-h-9 rounded-full border text-[13px] whitespace-nowrap cursor-pointer ${on ? 'border-primary bg-primary-soft text-primary font-semibold' : 'border-line text-muted'}`;
 
@@ -72,10 +77,60 @@ const PersonForm: React.FC<{ initial?: Draft; onSave: (d: Draft) => void; onCanc
 };
 
 /**
+ * Botões de envio (etapa 36): abrem o WhatsApp ou o e-mail com a mensagem já escrita. Sem contato
+ * cadastrado, mostram o caminho para adicionar.
+ */
+const SendButtons: React.FC<{ person: Person; text: string; subject: string; onSent: () => void; onAddContact: () => void }> = ({
+  person,
+  text,
+  subject,
+  onSent,
+  onAddContact,
+}) => {
+  const wa = whatsappLink(person.phone, text);
+  const mail = emailLink(person.email, subject, text);
+  if (!wa && !mail) {
+    return (
+      <button onClick={onAddContact} className="w-full min-h-11 rounded-xl border border-dashed border-primary/50 text-primary text-sm font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer">
+        <Pencil className="w-4 h-4" /> Adicionar WhatsApp ou e-mail para enviar
+      </button>
+    );
+  }
+  return (
+    <div className="grid gap-2">
+      {wa && (
+        <a
+          href={wa}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onSent}
+          className="min-h-11 rounded-xl text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5 shadow-sm"
+          style={{ background: '#1DA851' }}
+        >
+          <MessageCircle className="w-4 h-4" /> Enviar no WhatsApp
+        </a>
+      )}
+      {mail && (
+        <a href={mail} onClick={onSent} className="min-h-11 rounded-xl bg-primary hover:bg-primary-hover text-on-primary text-sm font-semibold inline-flex items-center justify-center gap-1.5 shadow-sm">
+          <Mail className="w-4 h-4" /> Enviar por e-mail
+        </a>
+      )}
+    </div>
+  );
+};
+
+/**
  * "Pedir ajuda ao coach" para escrever a mensagem (etapa 29). O nome da pessoa é trocado aqui, no
  * aparelho: a IA só vê "[nome]".
  */
-const CoachMessageModal: React.FC<{ person: Person; onUse: (text: string) => void; onClose: () => void }> = ({ person, onUse, onClose }) => {
+const CoachMessageModal: React.FC<{
+  person: Person;
+  subject: string;
+  onUse: (text: string) => void;
+  onSent: () => void;
+  onAddContact: () => void;
+  onClose: () => void;
+}> = ({ person, subject, onUse, onSent, onAddContact, onClose }) => {
   const { coachConsentAt, actions } = useApp();
   const [context, setContext] = useState('');
   const [text, setText] = useState('');
@@ -94,7 +149,9 @@ const CoachMessageModal: React.FC<{ person: Person; onUse: (text: string) => voi
     else setNotice('O coach não respondeu agora. Tente de novo daqui a pouco ou use a mensagem pronta.');
   };
 
-  return (
+  // Vai para a tela do app (e não para a área que rola), para abrir sempre no lugar visível
+  const root = document.getElementById('app-screen') ?? document.body;
+  return createPortal(
     <div className="absolute inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-3 animate-fadeIn" role="dialog" aria-modal="true" aria-label={`Ajuda do coach para a mensagem de ${person.name}`}>
       <div className="w-full max-h-[90%] overflow-y-auto rounded-2xl bg-surface border border-line p-4 space-y-3 animate-slide-up">
         <div className="flex items-start justify-between gap-2">
@@ -139,9 +196,10 @@ const CoachMessageModal: React.FC<{ person: Person; onUse: (text: string) => voi
             {text && (
               <div className="space-y-2">
                 <textarea rows={7} value={text} onChange={(e) => setText(e.target.value)} aria-label="Sugestão do coach" className={`${inputClass} resize-none text-[13px]`} />
+                <SendButtons person={person} text={text} subject={subject} onSent={onSent} onAddContact={onAddContact} />
                 <div className="grid grid-cols-3 gap-2">
-                  <button onClick={() => onUse(text)} className="min-h-10 rounded-xl bg-primary text-on-primary text-[13px] font-semibold cursor-pointer">
-                    Usar esta
+                  <button onClick={() => onUse(text)} className="min-h-10 rounded-xl border border-line text-[13px] text-ink cursor-pointer">
+                    Editar antes
                   </button>
                   <button disabled={loading} onClick={() => ask(true)} className="min-h-10 rounded-xl border border-line text-[13px] text-ink cursor-pointer disabled:opacity-50">
                     {loading ? '…' : 'Outra'}
@@ -159,7 +217,8 @@ const CoachMessageModal: React.FC<{ person: Person; onUse: (text: string) => voi
           </>
         )}
       </div>
-    </div>
+    </div>,
+    root,
   );
 };
 
@@ -191,7 +250,10 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string; ope
   const [showMessage, setShowMessage] = useState(false);
   const [msg, setMsg] = useState('');
   const [askCoach, setAskCoach] = useState(false);
+  // Depois de abrir o WhatsApp ou o e-mail, pergunta se mandou (para a etapa andar sozinha)
+  const [sent, setSent] = useState(false);
   const stage = STAGES.find((s) => s.id === person.stage)!;
+  const first = person.name.trim().split(/\s+/)[0] || person.name;
   const late = person.nextDate && person.nextDate < today && person.stage !== 'agora_nao';
   const dueToday = person.nextDate === today && person.stage !== 'agora_nao';
 
@@ -216,9 +278,12 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string; ope
     setShowMessage(!showMessage);
   };
   const subject = messageFor(person, ctx).subject;
-  const wa = whatsappLink(person.phone, msg);
-  const mail = emailLink(person.email, subject, msg);
   const tel = phoneLink(person.phone);
+  const markSent = () => setSent(true);
+  const addContact = () => {
+    setAskCoach(false);
+    setEditing(true);
+  };
 
   const header = (
     <button
@@ -306,36 +371,65 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string; ope
         />
       </div>
 
-      {/* Mensagem pronta para a etapa, editável antes de abrir o WhatsApp ou o e-mail */}
+      {/* Conversar: os três jeitos de falar com a pessoa, com o mesmo peso */}
+      <div className={`grid gap-2 ${tel ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <button onClick={openMessage} aria-expanded={showMessage} className={actionClass(showMessage)}>
+          <MessageCircle className="w-4 h-4" /> {showMessage ? 'Fechar mensagem' : 'Mensagem pronta'}
+        </button>
+        <button onClick={() => setAskCoach(true)} className={actionClass(false)}>
+          <Sparkles className="w-4 h-4" /> Pedir ajuda ao coach
+        </button>
+        {tel && (
+          <a href={tel} className={actionClass(false)}>
+            <Phone className="w-4 h-4" /> Ligar
+          </a>
+        )}
+      </div>
+
+      {/* Mensagem pronta para a etapa, editável antes de enviar */}
       {showMessage && (
-        <div className="space-y-1.5">
-          <span className="text-xs text-muted">Mensagem pronta pra etapa "{stage.label}". Troque o que estiver entre [colchetes] e ajuste do seu jeito.</span>
+        <div className="space-y-2 p-2.5 rounded-xl bg-surface-2/60 border border-line">
+          <span className="text-xs text-muted block">Mensagem pronta pra etapa "{stage.label}". Troque o que estiver entre [colchetes] e ajuste do seu jeito.</span>
           <textarea rows={6} value={msg} onChange={(e) => setMsg(e.target.value)} aria-label={`Mensagem para ${person.name}`} className={`${inputClass} resize-none text-[13px]`} />
+          <SendButtons person={person} text={msg} subject={subject} onSent={markSent} onAddContact={addContact} />
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-1 -ml-1.5">
-        <button onClick={openMessage} className="min-h-9 px-1.5 text-xs font-semibold text-primary cursor-pointer">
-          {showMessage ? 'Fechar mensagem' : 'Mensagem pronta'}
-        </button>
-        <button onClick={() => setAskCoach(true)} className="min-h-9 px-1.5 inline-flex items-center gap-1 text-xs font-semibold text-primary cursor-pointer">
-          <Sparkles className="w-3.5 h-3.5" /> Pedir ajuda ao coach
-        </button>
-        {showMessage && wa && (
-          <a href={wa} target="_blank" rel="noopener noreferrer" className="min-h-9 px-1.5 inline-flex items-center gap-1 text-xs text-ink hover:text-primary">
-            <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
-          </a>
-        )}
-        {showMessage && mail && (
-          <a href={mail} className="min-h-9 px-1.5 inline-flex items-center gap-1 text-xs text-ink hover:text-primary">
-            <Mail className="w-3.5 h-3.5" /> E-mail
-          </a>
-        )}
-        {tel && (
-          <a href={tel} className="min-h-9 px-1.5 inline-flex items-center gap-1 text-xs text-muted hover:text-ink">
-            <Phone className="w-3.5 h-3.5" /> Ligar
-          </a>
-        )}
+      {/* Depois de enviar: a etapa anda com um toque */}
+      {sent && (
+        <div className="p-3 rounded-xl bg-primary-soft border border-primary/30 text-sm text-ink space-y-2" role="status">
+          {person.stage === 'contato' ? (
+            <>
+              <p>Mandou a mensagem? Quer marcar {first} como <strong>💬 Conversou</strong>?</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    soundEffects.playSelectOption();
+                    actions.updatePerson(person.id, { stage: 'conversou' });
+                    setSent(false);
+                  }}
+                  className="min-h-9 px-3 rounded-lg bg-primary text-on-primary text-[13px] font-semibold cursor-pointer"
+                >
+                  Sim, marcar
+                </button>
+                <button onClick={() => setSent(false)} className="min-h-9 px-3 rounded-lg border border-line text-[13px] text-muted cursor-pointer">
+                  Ainda não
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="flex items-center justify-between gap-2">
+              <span>Mandou? Quando {first} responder, mude a etapa ali em cima.</span>
+              <button onClick={() => setSent(false)} className="min-h-9 px-2 text-[13px] text-muted cursor-pointer">
+                Ok
+              </button>
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Gerenciar: discreto, no fim da ficha */}
+      <div className="flex flex-wrap items-center gap-1 pt-1.5 border-t border-line -mx-0.5">
         <AddPhotoButton
           count={person.images?.length ?? 0}
           onPick={async (blobs) => {
@@ -351,15 +445,20 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string; ope
           onClick={() => {
             if (window.confirm(`Apagar ${person.name} do caderno?`)) actions.deletePerson(person.id);
           }}
-          className="min-h-9 px-1.5 inline-flex items-center gap-1 text-xs text-muted hover:text-ink cursor-pointer"
+          className="min-h-9 px-1.5 inline-flex items-center gap-1 text-xs text-muted hover:text-ink cursor-pointer ml-auto"
         >
           <Trash2 className="w-3.5 h-3.5" /> Apagar
         </button>
       </div>
-      {showMessage && !wa && !mail && <p className="text-xs text-muted">Adicione o WhatsApp ou o e-mail (em Editar) para abrir a conversa.</p>}
       {askCoach && (
         <CoachMessageModal
           person={person}
+          subject={subject}
+          onSent={() => {
+            setAskCoach(false);
+            markSent();
+          }}
+          onAddContact={addContact}
           onClose={() => setAskCoach(false)}
           onUse={(t) => {
             setMsg(t);
