@@ -84,7 +84,7 @@ Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
 - [x] B2: revisão dos textos restantes pelo [guia de voz](guia-de-voz.md) + telas que não rolavam ([etapa 21](etapas/21-linguagem-parte-2.md))
 - [x] C: 3 caminhos diferentes + "Quero criar o meu" com ajuda da IA ([etapa 23](etapas/23-tres-caminhos-e-criar-o-meu.md))
 - [x] D1: frases rotativas na anamnese, lembrete do dia pelo momento, citações trocando por dia ([etapa 24](etapas/24-frases-e-lembretes.md))
-- [ ] D2: citações de autores de livros famosos (pesquisa em andamento)
+- [x] D2: 44 citações publicadas de autores de livros famosos, com fonte ([etapa 26](etapas/26-citacoes-de-livros.md)); falta uma pessoa conferir a pontuação clicando nos links
 - [x] E: ilustração da abertura, música, comemoração "chuva de estrelas" e sons de sino mais delicados ([etapa 25](etapas/25-sons-abertura-e-comemoracao.md))
 - [ ] F: mapa humano (opcional, depois do MVP)
 
