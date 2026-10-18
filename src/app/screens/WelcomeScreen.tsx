@@ -7,7 +7,7 @@ export const WelcomeScreen: React.FC = () => {
   const { actions } = useApp();
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 text-center select-none animate-fadeIn">
+    <div className="flex-1 flex flex-col justify-between p-6 text-center select-none overflow-y-auto animate-fadeIn">
       <div className="flex-1 flex flex-col items-center justify-center space-y-6">
         {/* Logo da Bússola */}
         <div className="w-24 h-24 rounded-full bg-primary-soft flex items-center justify-center text-primary shadow-sm">

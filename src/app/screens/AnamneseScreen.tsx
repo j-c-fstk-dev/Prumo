@@ -45,7 +45,7 @@ export const AnamneseScreen: React.FC = () => {
   const progress = ((answeredBefore + questionIndex + 1) / totalQuestions) * 100;
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-5 select-none relative overflow-hidden">
+    <div className="flex-1 flex flex-col justify-between p-5 select-none relative overflow-x-hidden overflow-y-auto">
       <div 
         key={`${sectionIndex}-${questionIndex}`}
         className={`flex-1 flex flex-col justify-between ${

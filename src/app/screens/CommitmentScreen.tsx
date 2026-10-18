@@ -62,7 +62,7 @@ export const CommitmentScreen: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 select-none animate-scale-in bg-gradient-to-b from-canvas via-gold-soft to-gold-soft text-center">
+    <div className="flex-1 flex flex-col justify-between p-6 select-none overflow-y-auto animate-scale-in bg-gradient-to-b from-canvas via-gold-soft to-gold-soft text-center">
       <div className="pt-2">
         <Reveal i={0}>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-soft text-gold-ink text-[13px] font-semibold mb-4">

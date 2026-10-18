@@ -10,7 +10,7 @@ export const RegisterScreen: React.FC = () => {
   const { userName, macroGoal, actions } = useApp();
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 select-none animate-fadeIn">
+    <div className="flex-1 flex flex-col justify-between p-6 select-none overflow-y-auto animate-fadeIn">
       <div>
         <button 
           onClick={() => {

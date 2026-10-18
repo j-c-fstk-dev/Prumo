@@ -63,3 +63,14 @@ test('apresentação inicial explica o que é prumo, a constelação e a jornada
   await page.getByRole('button', { name: 'Bora começar' }).click();
   await expect(page.getByRole('button', { name: 'Entendido, vamos lá' })).toBeVisible();
 });
+
+test('em tela baixa, o compromisso rola até o botão de segurar', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 600 });
+  await onboard(page);
+  await page.getByRole('button', { name: /Assumir meu prumo/ }).click();
+  const hold = page.getByRole('button', { name: /Segure aqui/ });
+  // Rola como uma pessoa (roda do mouse), não por código: tela travada não rola assim
+  await page.mouse.move(195, 300);
+  for (let i = 0; i < 10; i++) await page.mouse.wheel(0, 300);
+  await expect(hold).toBeInViewport({ ratio: 1 });
+});

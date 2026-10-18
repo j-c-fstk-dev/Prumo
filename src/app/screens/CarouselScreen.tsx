@@ -69,7 +69,7 @@ export const CarouselScreen: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 select-none animate-fadeIn">
+    <div className="flex-1 flex flex-col justify-between p-6 select-none overflow-y-auto animate-fadeIn">
       <div className="flex items-center justify-between">
         <div className="flex gap-1.5">
           {SLIDES.map((s, i) => (
