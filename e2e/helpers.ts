@@ -39,12 +39,12 @@ export async function onboard(page: Page, name = 'Jo', opts: { confirmText?: str
   }
   expect(answered).toBe(13);
 
-  await expect(page.getByText('este é o seu prumo digital')).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText(/este é o seu prumo/)).toBeVisible({ timeout: 10_000 });
 }
 
 /** Do resultado até a home: ritual de segurar, carta 1, resposta própria e selo */
 export async function commitAndSeal(page: Page) {
-  await page.getByRole('button', { name: /Assumir meu Prumo/ }).click();
+  await page.getByRole('button', { name: /Assumir meu prumo/ }).click();
   const hold = page.getByRole('button', { name: /Segure aqui/ });
   const box = (await hold.boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);

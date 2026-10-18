@@ -7,7 +7,7 @@ test('jornada completa: diagnóstico, carta, tarefas, check-in, capítulo e reca
   // A sugestão confirmada (planilhas) muda o nicho para organização da rotina
   await expect(page.getByRole('heading', { name: /Organização e rotina/ })).toBeVisible();
   await expect(page.getByText(/Prazo curto/)).toBeVisible();
-  await expect(page.getByText(/Sua hipótese para testar/i)).toBeVisible();
+  await expect(page.getByText(/Sua aposta/)).toBeVisible();
 
   await commitAndSeal(page);
 

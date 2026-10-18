@@ -16,10 +16,10 @@ export const WelcomeScreen: React.FC = () => {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-bold font-display text-ink tracking-tight">
-            Descubra seu caminho no digital.
+            Ache o seu caminho no digital.
           </h1>
           <p className="text-base text-muted max-w-[260px] mx-auto leading-relaxed">
-            Em 15 minutos, você sabe o que criar, para quem e como começar. Sem paralisia.
+            Em uns 15 minutos você descobre o que oferecer, pra quem e por onde começar. Sem complicação.
           </p>
         </div>
       </div>
