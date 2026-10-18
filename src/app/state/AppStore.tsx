@@ -727,9 +727,10 @@ function useAppState() {
       setData((d) => ({ ...d, taskNotes: { ...d.taskNotes, [taskId]: text.slice(0, NOTE_MAX) } })),
 
     /** Pessoas: novo contato (manual ou trazido da agenda do celular) */
-    addPerson: (input: Partial<Person> & { name: string }) => {
+    /** Devolve o id da pessoa criada (para a lista já abrir a ficha dela) */
+    addPerson: (input: Partial<Person> & { name: string }): string | undefined => {
       const clean = cleanPerson(input);
-      if (!clean.name) return;
+      if (!clean.name) return undefined;
       const now = Date.now();
       const stage = clean.stage ?? 'contato';
       const person: Person = {
@@ -742,6 +743,7 @@ function useAppState() {
         updatedAt: now,
       };
       setData((d) => ({ ...d, people: [person, ...d.people] }));
+      return person.id;
     },
     updatePerson: (id: string, patch: Partial<Omit<Person, 'id' | 'stageHistory' | 'createdAt'>>) =>
       setData((d) => ({

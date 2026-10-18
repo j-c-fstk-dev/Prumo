@@ -105,7 +105,38 @@ test('pessoas: adicionar, mensagem pronta com WhatsApp, etapas, teste "2 de 5", 
   await passSplash(page);
   await page.getByRole('button', { name: 'Caderno', exact: true }).click();
   await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
+  // A lista volta fechada: nome e etapa; tocando no nome, a ficha abre
+  const row = page.getByRole('button', { name: 'Ana Souza, Interessado' });
+  await expect(row).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByLabel('Etapa de Ana Souza')).toHaveCount(0);
+  await row.click();
   await expect(page.getByLabel('Etapa de Ana Souza')).toHaveValue('interessado');
+});
+
+test('pessoas: lista em ordem alfabética, uma ficha aberta por vez, e quem muda de etapa não some', async ({ page }) => {
+  await onboard(page);
+  await commitAndSeal(page);
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await page.getByRole('tab', { name: /Pessoas/ }).click();
+  for (const name of ['Carla Dias', 'Ágata Reis', 'Beto Lima']) {
+    await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
+    await page.getByLabel('Nome', { exact: true }).fill(name);
+    await page.getByRole('button', { name: 'Adicionar', exact: true }).click();
+  }
+  const rows = page.getByRole('button', { name: /, (Novo|Cliente)$/ });
+  await expect(rows).toHaveText([/Ágata Reis/, /Beto Lima/, /Carla Dias/]);
+  // A última adicionada fica aberta; abrir outra fecha a anterior
+  await expect(page.getByRole('button', { name: 'Beto Lima, Novo' })).toHaveAttribute('aria-expanded', 'true');
+  await page.getByRole('button', { name: 'Carla Dias, Novo' }).click();
+  await expect(page.getByRole('button', { name: 'Beto Lima, Novo' })).toHaveAttribute('aria-expanded', 'false');
+
+  // Filtrando pelos novos, virar cliente não tira a Carla da tela enquanto a ficha está aberta
+  await page.getByRole('button', { name: /👋 Novo 3/ }).click();
+  await page.getByLabel('Etapa de Carla Dias').selectOption('cliente');
+  await expect(page.getByRole('button', { name: 'Carla Dias, Cliente' })).toBeVisible();
+  // e em "Todos" todo mundo continua na lista
+  await page.getByRole('button', { name: /^Todos 3/ }).click();
+  await expect(rows).toHaveCount(3);
 });
 
 test('pessoas: o coach sugere a mensagem sem receber o nome nem o telefone', async ({ page }) => {
@@ -129,14 +160,29 @@ test('pessoas: o coach sugere a mensagem sem receber o nome nem o telefone', asy
   await page.getByLabel('Contexto para o coach').fill('ela está sem tempo este mês');
   await page.getByRole('button', { name: 'Pedir sugestão' }).click();
   await expect(page.getByLabel('Sugestão do coach')).toHaveValue('Oi, Ana! Lembrei de você por causa da nossa conversa.');
-  await page.getByRole('button', { name: 'Usar esta' }).click();
+  await page.getByRole('button', { name: 'Editar antes' }).click();
   await expect(page.getByLabel('Mensagem para Ana Souza')).toHaveValue(/^Oi, Ana!/);
   await expect(page.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /Lembrei%20de%20voc%C3%AA/);
 
   expect(sent).toHaveLength(1);
   expect(sent[0]).toContain('ela está sem tempo este mês');
-  expect(sent[0]).not.toContain('Ana');
-  expect(sent[0]).not.toContain('98765');
+
+  // Enviar direto do modal: abre o WhatsApp e depois pergunta se mandou, para a etapa andar
+  await page.context().route('https://wa.me/**', (r) => r.fulfill({ body: 'ok' }));
+  await page.getByRole('button', { name: /Pedir ajuda ao coach/ }).click();
+  await page.getByRole('button', { name: 'Pedir sugestão' }).click();
+  const popup = page.waitForEvent('popup');
+  await page.getByRole('dialog').getByRole('link', { name: 'Enviar no WhatsApp' }).click();
+  await (await popup).close();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByText(/Mandou a mensagem\? Quer marcar Ana como/)).toBeVisible();
+  await page.getByRole('button', { name: 'Sim, marcar' }).click();
+  await expect(page.getByLabel('Etapa de Ana Souza')).toHaveValue('conversou');
+  expect(sent).toHaveLength(2);
+  for (const body of sent) {
+    expect(body).not.toContain('Ana');
+    expect(body).not.toContain('98765');
+  }
 });
 
 test('fotos: anexar na anotação, ver, persistir, exportar em .zip e apagar junto com a anotação', async ({ page }) => {
