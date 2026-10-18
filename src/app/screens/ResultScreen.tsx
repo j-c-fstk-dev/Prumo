@@ -11,7 +11,7 @@ import { useApp } from '../state/AppStore';
 import { Reveal } from '../components/Reveal';
 
 export const ResultScreen: React.FC = () => {
-  const { userName, diagnosis, actions } = useApp();
+  const { userName, diagnosis, onboardingDone, actions } = useApp();
   const [showJustification, setShowJustification] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -150,15 +150,17 @@ export const ResultScreen: React.FC = () => {
 
       {/* Botões de Ação */}
       <div className="space-y-2 pt-2">
+        {/* Quem já está na jornada só veio rever o resultado: volta pra ela, sem refazer o compromisso (etapa 41) */}
         <button
           onClick={() => {
             soundEffects.playTransition();
-            actions.go('commitment');
+            if (onboardingDone) actions.goTab('home');
+            else actions.go('commitment');
           }}
           className="w-full py-3.5 bg-primary hover:bg-primary-hover text-on-primary font-semibold text-base rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
         >
-          <ShieldCheck className="w-4 h-4 text-on-primary/70" />
-          <span>Assumir meu prumo</span>
+          {!onboardingDone && <ShieldCheck className="w-4 h-4 text-on-primary/70" />}
+          <span>{onboardingDone ? 'Voltar para a jornada' : 'Assumir meu prumo'}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
         <button

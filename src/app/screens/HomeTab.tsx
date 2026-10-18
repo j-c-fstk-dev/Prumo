@@ -15,12 +15,13 @@ import { PersonalTasks } from '../components/PersonalTasks';
 import { DailyRhythm } from '../components/DailyRhythm';
 import { DailyInspiration } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
+import { JourneyComplete } from '../components/JourneyComplete';
 import { InstallHint } from '../components/ProtectData';
 import { lembreteDoDia } from '../../data/encorajamento';
 import { JOURNEY_DAYS, journeyDayLabel } from '../../domain/journey';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, actions } = useApp();
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
@@ -48,7 +49,7 @@ export const HomeTab: React.FC = () => {
               Olá, {userName} 👋
             </h2>
             <p className="text-sm text-muted">
-              {nextStepTask.chapterTitle}
+              {journeyComplete ? 'Roteiro concluído ✦' : nextStepTask.chapterTitle}
             </p>
           </div>
           <div className="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-primary">
@@ -113,6 +114,9 @@ export const HomeTab: React.FC = () => {
 
         {/* CARTÃO DO PRÓXIMO PASSO (Com Ilustração-Âncora e Áudio Coach) */}
         <Reveal i={4}>
+        {journeyComplete ? (
+          <JourneyComplete />
+        ) : (
         <div className="p-4 rounded-2xl bg-primary-soft border border-primary/30 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
@@ -197,6 +201,7 @@ export const HomeTab: React.FC = () => {
             </button>
           </div>
         </div>
+                )}
         </Reveal>
 
         {/* Tarefas pessoais: o app também serve para o dia a dia fora do plano */}

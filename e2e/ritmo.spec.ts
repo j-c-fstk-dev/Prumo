@@ -126,3 +126,16 @@ test('backup completo: faz o .zip, apaga tudo e restaura na tela de boas-vindas,
   await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
   await expect(page.getByRole('button', { name: 'Ana Souza, Interessado' })).toBeVisible();
 });
+
+test('roteiro concluído: a Início não volta pra tarefa 1, e rever o resultado não refaz o compromisso', async ({ page }) => {
+  const ids = await page.evaluate(async () => (await import('/src/data/prumoData.ts')).INITIAL_TASKS.map((t: { id: string }) => t.id));
+  await seedState(page, { taskStatus: Object.fromEntries(ids.map((id: string) => [id, 'completed'])), startedAt: Date.now(), celebratedChapters: [1, 2, 3, 4] });
+  await expect(page.getByText('✦ Roteiro concluído')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Abrir tarefa' })).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  await page.getByText('Ver meu resultado completo').click();
+  await expect(page.getByRole('button', { name: /Assumir meu prumo/ })).toHaveCount(0);
+  await page.getByRole('button', { name: /Voltar para a jornada/ }).click();
+  await expect(page.getByText('✦ Roteiro concluído')).toBeVisible();
+});

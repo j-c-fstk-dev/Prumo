@@ -277,7 +277,10 @@ function useAppState() {
       })),
     [data.diagnosis, data.taskStatus, data.planEdits],
   );
-  const nextStepTask = tasks.find((t) => t.status !== 'completed' && !t.isLocked) || tasks[0];
+  /** Todos os passos do roteiro feitos (etapa 41): a Início mostra "jornada concluída" em vez de repetir a 1ª tarefa */
+  const journeyComplete = tasks.length > 0 && tasks.every((t) => t.status === 'completed');
+  // Com tudo feito, o "próximo passo" fica sendo o último (o capítulo e o coach seguem fazendo sentido)
+  const nextStepTask = tasks.find((t) => t.status !== 'completed' && !t.isLocked) || tasks[tasks.length - 1];
   const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? nextStepTask;
 
   const personalAnchor =
@@ -818,6 +821,7 @@ function useAppState() {
     tasks,
     selectedTask,
     nextStepTask,
+    journeyComplete,
     personalAnchor,
     scoredAnswers,
     streak,
