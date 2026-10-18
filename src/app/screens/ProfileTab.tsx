@@ -22,6 +22,7 @@ export const ProfileTab: React.FC = () => {
   return (
     <div key="tab-profile" className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-tab-fade">
       <div className="space-y-4">
+        <h2 className="text-2xl font-bold font-display text-ink">Você</h2>
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-primary text-on-primary font-bold flex items-center justify-center text-lg">
             {userName[0]}
