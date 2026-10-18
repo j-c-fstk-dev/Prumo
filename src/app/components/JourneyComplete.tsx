@@ -7,7 +7,7 @@ import { useApp } from '../state/AppStore';
  * Mostra o que fazer a partir daqui, sem fingir que existe uma tarefa pendente.
  */
 export const JourneyComplete: React.FC = () => {
-  const { tasks, people, actions } = useApp();
+  const { tasks, people, canChooseCycle, actions } = useApp();
   const clients = people.filter((p) => p.stage === 'cliente').length;
   return (
     <div className="p-4 rounded-2xl bg-night-sky shadow-sm space-y-3" style={{ color: 'var(--night-text)' }}>
@@ -20,13 +20,25 @@ export const JourneyComplete: React.FC = () => {
         {clients > 0 ? ` (${clients} ${clients === 1 ? 'cliente' : 'clientes'} até agora)` : ''}.
       </p>
       <div className="grid gap-2">
+        {canChooseCycle && (
+          <button
+            onClick={() => {
+              soundEffects.playTransition();
+              actions.go('next_cycle');
+            }}
+            className="min-h-11 rounded-xl font-semibold text-sm cursor-pointer"
+            style={{ background: 'var(--gold)', color: 'var(--night-900)' }}
+          >
+            Escolher o próximo ciclo
+          </button>
+        )}
         <button
           onClick={() => {
             soundEffects.playSoftTap();
             actions.openPeople();
           }}
-          className="min-h-11 rounded-xl font-semibold text-sm cursor-pointer"
-          style={{ background: 'var(--gold)', color: 'var(--night-900)' }}
+          className="min-h-11 rounded-xl border text-sm cursor-pointer"
+          style={{ borderColor: 'rgba(237,232,247,.25)', color: 'var(--night-text)' }}
         >
           Ver minhas pessoas no Caderno
         </button>

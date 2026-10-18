@@ -143,7 +143,7 @@ export function isFreshStart(today: string): 'segunda' | 'mes' | null {
 export interface TimelineEvent {
   at: number;
   title: string;
-  kind: 'diagnostico' | 'carta' | 'tarefa' | 'capitulo';
+  kind: 'diagnostico' | 'carta' | 'tarefa' | 'capitulo' | 'jornada' | 'ciclo';
 }
 
 export interface TimelineInput {

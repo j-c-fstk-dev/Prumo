@@ -88,6 +88,12 @@ Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
 - [x] E: ilustração da abertura, música, comemoração "chuva de estrelas" e sons de sino mais delicados ([etapa 25](etapas/25-sons-abertura-e-comemoracao.md))
 - [ ] F: mapa humano (opcional, depois do MVP)
 
+### 90 dias de verdade (etapas 41 a 44)
+- [x] Roteiro concluído e "voltar para a jornada" ([etapa 41](etapas/41-roteiro-concluido.md))
+- [x] Rotinas semanais, revisão da semana e ritmo pelo calendário, sem travar ([etapa 42](etapas/42-rotinas-e-ritmo.md))
+- [x] Roteiro de 4 capítulos e 20 passos em 13 semanas ([etapa 43](etapas/43-roteiro-de-90-dias.md), conteúdo em [roteiro-90-dias.md](roteiro-90-dias.md))
+- [x] Ciclos depois do roteiro ([etapa 44](etapas/44-ciclos-depois-do-roteiro.md))
+
 ### Caderno do projeto
 - [x] Aba Caderno (ficha, anotações com etiquetas, notas por tarefa, exportar) + copiar/salvar respostas do coach ([etapa 27](etapas/27-caderno.md))
 - [x] Pessoas (mini-CRM): etapas, próximo passo, mensagem pronta no WhatsApp/e-mail, agenda do Android e o teste "2 de 5" contado sozinho ([etapa 28](etapas/28-pessoas.md))
@@ -95,7 +101,8 @@ Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
 ### Continuar usando depois de dar certo (plano em 4 fases)
 - [x] 1. Pessoas (etapa 28)
 - [ ] 2. Vendas e resultados: registrar vendas, painel do mês, marcos comemorados
-- [ ] 3. Jornada "Crescer": ciclos mensais, revisão do mês, coach com números (nunca nomes)
+- [x] 3a. Ciclos de 30 dias depois do roteiro: crescer, ajustar ou trocar de caminho ([etapa 44](etapas/44-ciclos-depois-do-roteiro.md))
+- [ ] 3b. Revisão do mês e coach com números (nunca nomes)
 - [ ] 4. Lista de contato do dia: uma pessoa por vez, sem envio em massa
 - [x] Barra nova com a Início no meio + coach escrevendo mensagens para as pessoas sem receber nome/contato ([etapa 29](etapas/29-barra-e-coach-nas-mensagens.md))
 - [x] Proteger os dados: app instalável, armazenamento persistente, convite para instalar e lembrete de backup ([etapa 30](etapas/30-proteger-dados.md))

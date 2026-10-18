@@ -19,6 +19,7 @@ import { ProfileTab } from '../../app/screens/ProfileTab';
 import { NotebookTab } from '../../app/screens/NotebookTab';
 import { TaskDetailScreen } from '../../app/screens/TaskDetailScreen';
 import { PaywallScreen } from '../../app/screens/PaywallScreen';
+import { NextCycleScreen } from '../../app/screens/NextCycleScreen';
 import { BottomNav } from '../../app/screens/BottomNav';
 import { ChapterComplete } from '../../app/components/ChapterComplete';
 
@@ -34,6 +35,7 @@ const SCREENS: Record<Exclude<ScreenState, 'home'>, React.FC> = {
   commitment: CommitmentScreen,
   future_letter: FutureLetterScreen,
   task_detail: TaskDetailScreen,
+  next_cycle: NextCycleScreen,
   paywall: PaywallScreen,
 };
 

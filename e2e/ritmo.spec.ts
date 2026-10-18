@@ -168,3 +168,49 @@ test('rotinas: as do capítulo aparecem, marcar conta no dia, e a revisão da se
   await expect(page.getByText('● esta semana')).toBeVisible();
   await expect(page.getByRole('region', { name: 'Rotinas' })).toBeVisible();
 });
+
+test('ciclos: depois do roteiro, continuar com meta do Caderno; ao bater a meta, trocar de caminho recomeça o roteiro', async ({ page }) => {
+  const ids = INITIAL_TASKS.map((t) => t.id);
+  await seedState(page, {
+    taskStatus: Object.fromEntries(ids.map((id) => [id, 'completed'])),
+    startedAt: Date.now() - 40 * 86_400_000,
+    celebratedChapters: [1, 2, 3, 4],
+    diagnosis: null,
+    people: [{ id: 'p1', name: 'Ana Souza', stage: 'interessado', stageHistory: [{ stage: 'contato', at: 1 }], createdAt: 1, updatedAt: 1 }],
+  });
+  await page.getByRole('button', { name: 'Escolher o próximo ciclo' }).click();
+  await expect(page.getByText('Você chegou ao fim do roteiro. E agora?')).toBeVisible();
+  await expect(page.getByText(`${ids.length}`, { exact: true })).toBeVisible();
+
+  await page.getByRole('radio', { name: /Deu certo: continuar e crescer/ }).click();
+  await page.getByLabel('Meta do ciclo').fill('1');
+  await page.getByLabel('Foco do ciclo').fill('Pedir indicação a todo cliente');
+  await page.getByRole('button', { name: 'Começar o ciclo' }).click();
+
+  const cycle = page.getByRole('region', { name: 'Ciclo atual' });
+  await expect(cycle).toContainText('Ciclo 1 · Crescer');
+  await expect(cycle).toContainText('0 de 1 cliente novo');
+  await expect(cycle).toContainText('Pedir indicação a todo cliente');
+
+  // A Ana vira cliente no Caderno: a meta conta sozinha
+  await cycle.getByRole('button', { name: 'Ver minhas pessoas' }).click();
+  await page.getByRole('button', { name: 'Ana Souza, Interessado' }).click();
+  await page.getByLabel('Etapa de Ana Souza').selectOption('cliente');
+  await page.getByRole('button', { name: 'Início', exact: true }).click();
+  await expect(cycle).toContainText('1 de 1 cliente novo ✦');
+
+  // Meta batida: dá para fechar e escolher o próximo. Trocar de caminho recomeça o roteiro.
+  await cycle.getByRole('button', { name: 'Fechar o ciclo e escolher o próximo' }).click();
+  await expect(page.getByText('Fim do ciclo 1. E agora?')).toBeVisible();
+  await page.getByRole('radio', { name: /Não rolou: trocar de caminho/ }).click();
+  await page.getByRole('button', { name: 'Escolher outro caminho' }).click();
+  await page.getByRole('button', { name: 'Sim, recomeçar o roteiro' }).click();
+  await expect(page.getByText(/este é o seu prumo/)).toBeVisible();
+  await page.getByRole('button', { name: /Voltar para a jornada/ }).click();
+  await expect(page.getByText('Dia 1 de 90')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Abrir tarefa' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  await expect(page.getByText(/Jornada anterior:/)).toBeVisible();
+  await expect(page.getByText('Começou o ciclo: Crescer')).toBeVisible();
+});

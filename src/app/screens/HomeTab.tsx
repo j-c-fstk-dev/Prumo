@@ -16,6 +16,8 @@ import { DailyRhythm } from '../components/DailyRhythm';
 import { DailyInspiration } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
 import { JourneyComplete } from '../components/JourneyComplete';
+import { CycleCard } from '../components/CycleCard';
+import { CYCLE_LABEL } from '../../domain/cycles';
 import { RoutinesCard } from '../components/Routines';
 import { WeekHint } from '../components/WeekHint';
 import { InstallHint } from '../components/ProtectData';
@@ -23,7 +25,7 @@ import { lembreteDoDia } from '../../data/encorajamento';
 import { JOURNEY_DAYS, journeyDayLabel } from '../../domain/journey';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, cycleInfo, canChooseCycle, actions } = useApp();
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
@@ -52,7 +54,7 @@ export const HomeTab: React.FC = () => {
               Olá, {userName} 👋
             </h2>
             <p className="text-sm text-muted">
-              {journeyComplete ? 'Roteiro concluído ✦' : nextStepTask.chapterTitle}
+              {cycleInfo ? `Ciclo ${cycleInfo.number} · ${CYCLE_LABEL[cycleInfo.kind].title}` : journeyComplete ? 'Roteiro concluído ✦' : nextStepTask.chapterTitle}
             </p>
           </div>
           <div className="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-primary">
@@ -74,6 +76,17 @@ export const HomeTab: React.FC = () => {
               <strong className="block text-ink">📜 {journeyDay === JOURNEY_DAYS ? 'Hoje é o seu dia 90.' : 'Você passou dos 90 dias.'}</strong>
               <span className="text-sm text-gold-ink">Chegou a hora de reler a carta que você escreveu no começo e ver o quanto caminhou.</span>
             </button>
+            {canChooseCycle && !journeyComplete && (
+              <button
+                onClick={() => {
+                  soundEffects.playTransition();
+                  actions.go('next_cycle');
+                }}
+                className="mt-2 w-full min-h-10 rounded-xl border border-gold-line text-sm font-semibold text-gold-ink cursor-pointer"
+              >
+                Escolher o próximo ciclo
+              </button>
+            )}
           </Reveal>
         )}
 
@@ -117,8 +130,9 @@ export const HomeTab: React.FC = () => {
 
         {/* CARTÃO DO PRÓXIMO PASSO (Com Ilustração-Âncora e Áudio Coach) */}
         <Reveal i={4}>
+        {cycleInfo && <CycleCard />}
         {journeyComplete ? (
-          <JourneyComplete />
+          !cycleInfo && <JourneyComplete />
         ) : (
         <div className="p-4 rounded-2xl bg-primary-soft border border-primary/30 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between mb-2">
