@@ -46,6 +46,11 @@ Links para a página do Prumo, a política, os termos, o contato (quando houver 
   - as bases legais e os direitos com o caminho no app;
   - a idade (18+).
 - No topo das páginas aparece "Versão provisória, em revisão jurídica".
-- **A preencher em `src/landing/site.ts`:** nome do responsável, CNPJ (se houver) e e-mail de privacidade. Enquanto estiverem vazios, as páginas mostram "[a preencher]" e o link de contato não aparece.
+- **A preencher em `src/landing/site.ts`:**
+  - nome do responsável, CNPJ (se houver) e e-mail de privacidade. Enquanto estiverem vazios, as páginas legais mostram "[a preencher]" e o link de contato não aparece;
+  - texto de apresentação (`about`), que aparece no "Sobre" do app;
+  - Instagram e TikTok, com o endereço completo. Aparecem no "Sobre" e no rodapé da página.
+
+  Campos vazios não aparecem na tela.
 - **A confirmar:** país e termos de tratamento de dados da Z.ai.
 - **Ao mudar o que o app coleta, atualize a política junto.**

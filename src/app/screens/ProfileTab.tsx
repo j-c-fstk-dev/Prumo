@@ -150,12 +150,15 @@ export const ProfileTab: React.FC = () => {
         {/* Sobre (etapa 39): links da apresentação, das políticas e do código */}
         <div className="pt-2 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted block px-1">Sobre o Prumo</span>
+          {SITE.about && <p className="text-[13px] text-ink leading-relaxed px-1 pb-1 whitespace-pre-line">{SITE.about}</p>}
           <div className="rounded-xl bg-surface border border-line divide-y divide-line text-sm">
             {[
               { href: '/', label: 'Página do Prumo' },
               { href: '/privacidade/', label: 'Política de privacidade' },
               { href: '/termos/', label: 'Termos de uso' },
               ...(SITE.email ? [{ href: `mailto:${SITE.email}`, label: 'Falar com a gente' }] : []),
+              ...(SITE.instagram ? [{ href: SITE.instagram, label: 'Instagram', external: true }] : []),
+              ...(SITE.tiktok ? [{ href: SITE.tiktok, label: 'TikTok', external: true }] : []),
               { href: SITE.repo, label: 'Código-fonte (AGPL-3.0)', external: true },
             ].map((l) => (
               <a

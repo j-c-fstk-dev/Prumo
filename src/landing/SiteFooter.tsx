@@ -17,6 +17,16 @@ export const SiteFooter: React.FC = () => (
             Contato
           </a>
         )}
+        {SITE.instagram && (
+          <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
+            Instagram
+          </a>
+        )}
+        {SITE.tiktok && (
+          <a href={SITE.tiktok} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
+            TikTok
+          </a>
+        )}
         <a href={SITE.repo} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
           Código-fonte (AGPL-3.0)
         </a>

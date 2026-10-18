@@ -9,6 +9,11 @@ export const SITE = {
   cnpj: '',
   /** E-mail para privacidade e contato (canal exigido pela ANPD) */
   email: '',
+  /** Texto curto de apresentação (aparece no "Sobre" do app). Vazio: o bloco não aparece */
+  about: '',
+  /** Redes sociais (endereço completo, ex.: https://instagram.com/...). Vazio: o link não aparece */
+  instagram: '',
+  tiktok: '',
   /** Data da última revisão dos termos e da política */
   legalUpdated: '18 de outubro de 2026',
   repo: 'https://github.com/j-c-fstk-dev/Prumo',
