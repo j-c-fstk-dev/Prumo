@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Copy, Download, Pencil, Search, Trash2, X } from 'lucide-react';
 import { useApp } from '../state/AppStore';
 import { Reveal } from '../components/Reveal';
+import { PeopleSection } from '../components/PeopleSection';
+import { STAGES } from '../../domain/people';
 import { soundEffects } from '../../utils/soundEffects';
 import { copyText, shareOrDownload } from '../../utils/share';
 import {
@@ -109,7 +111,8 @@ const NoteCard: React.FC<{ note: Note; onFlash: (m: string) => void }> = ({ note
 
 /** Caderno do projeto (etapa 27): tudo o que a pessoa precisa anotar, sem sair do app */
 export const NotebookTab: React.FC = () => {
-  const { userName, diagnosis, notes, profileOverrides, taskNotes, tasks, nextStepTask, actions } = useApp();
+  const { userName, diagnosis, notes, profileOverrides, taskNotes, tasks, nextStepTask, people, actions } = useApp();
+  const [section, setSection] = useState<'notas' | 'pessoas'>('notas');
   const [editingProfile, setEditingProfile] = useState(false);
   const [draft, setDraft] = useState('');
   const [draftTag, setDraftTag] = useState<NoteTag>('ideia');
@@ -122,11 +125,11 @@ export const NotebookTab: React.FC = () => {
   const visible = useMemo(() => filterNotes(notes, { tag: filter }), [notes, filter]);
   const taskNoteList = tasks.filter((t) => taskNotes[t.id]?.trim()).map((t) => ({ taskId: t.id, title: t.title, text: taskNotes[t.id] }));
   // Busca barata (tudo em memória): roda a cada digitação, sem cache
-  const results = searchNotebook(search, { profile, notes, taskNotes: taskNoteList });
+  const results = searchNotebook(search, { profile, notes, taskNotes: taskNoteList, people });
   const searching = searchOpen && search.trim().length > 0;
 
   const exportAll = async () => {
-    const text = exportNotebook({ userName, profile, notes, taskNotes: taskNoteList });
+    const text = exportNotebook({ userName, profile, notes, taskNotes: taskNoteList, people });
     const how = await shareOrDownload(text, 'Caderno do Prumo', 'caderno-prumo.txt');
     if (how === 'downloaded') flash('Arquivo baixado ✓');
   };
@@ -201,6 +204,26 @@ export const NotebookTab: React.FC = () => {
                   <span className="text-sm text-ink leading-snug whitespace-pre-line"><Marked text={r.text} query={search} /></span>
                 </button>
               );
+            if (r.kind === 'pessoa') {
+              const st = STAGES.find((x) => x.id === r.person.stage)!;
+              return (
+                <button
+                  key={r.person.id}
+                  onClick={() => {
+                    setSection('pessoas');
+                    setSearch('');
+                    setSearchOpen(false);
+                  }}
+                  className="w-full text-left p-3 rounded-xl bg-surface border border-line cursor-pointer hover:border-primary"
+                >
+                  <span className="text-xs text-muted block">👥 Pessoa · {st.emoji} {st.label}</span>
+                  <strong className="text-sm text-ink block"><Marked text={r.person.name} query={search} /></strong>
+                  {[r.person.note, r.person.nextStep].filter(Boolean).map((t, k) => (
+                    <span key={k} className="text-[13px] text-muted block leading-snug"><Marked text={t!} query={search} /></span>
+                  ))}
+                </button>
+              );
+            }
             const tag = tagOf(r.note.tag);
             return (
               <div key={r.note.id} className="p-3 rounded-xl bg-surface border border-line">
@@ -215,7 +238,31 @@ export const NotebookTab: React.FC = () => {
         </div>
       )}
 
-      {!searching && (<>
+      {!searching && (
+        <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-surface-2 border border-line" role="tablist" aria-label="Parte do caderno">
+          {([
+            ['notas', '📒 Anotações'],
+            ['pessoas', `👥 Pessoas${people.length ? ` (${people.length})` : ''}`],
+          ] as const).map(([id, label]) => (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={section === id}
+              onClick={() => {
+                soundEffects.playSoftTap();
+                setSection(id);
+              }}
+              className={`min-h-10 rounded-lg text-sm cursor-pointer transition-colors ${section === id ? 'bg-surface text-primary font-bold shadow-xs' : 'text-muted'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!searching && section === 'pessoas' && <PeopleSection />}
+
+      {!searching && section === 'notas' && (<>
       {/* Ficha do produto */}
       <Reveal i={1}>
         <div className="p-4 rounded-2xl bg-primary-soft/60 border border-primary/25 space-y-2.5">

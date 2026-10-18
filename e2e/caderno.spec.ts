@@ -60,3 +60,47 @@ test('caderno: ficha preenchida, anotações, nota da tarefa, resposta do coach 
   await expect(page.getByText('Testar oferta no grupo do bairro')).toBeVisible();
   await expect(page.getByText('Eu ajudo pessoas em transição a se apresentar')).toBeVisible();
 });
+
+test('pessoas: adicionar, mensagem pronta com WhatsApp, etapas, teste "2 de 5", próximo passo e busca', async ({ page }) => {
+  await onboard(page);
+  await commitAndSeal(page);
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await page.getByRole('tab', { name: /Pessoas/ }).click();
+  await expect(page.getByText('0 de 0 pessoas disseram sim')).toBeVisible();
+
+  // Adicionar
+  await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
+  await page.getByLabel('Nome', { exact: true }).fill('Ana Souza');
+  await page.getByLabel('WhatsApp').fill('(11) 98765-4321');
+  await page.getByRole('radio', { name: 'Indicação' }).click();
+  await page.getByLabel('Nota').fill('Quer começar em novembro');
+  await page.getByRole('button', { name: 'Adicionar', exact: true }).click();
+  await expect(page.getByText('Ana Souza')).toBeVisible();
+
+  // Mensagem pronta com o primeiro nome e link do WhatsApp
+  await page.getByRole('button', { name: 'Mensagem pronta' }).click();
+  await expect(page.getByLabel('Mensagem para Ana Souza')).toHaveValue(/^Oi, Ana!/);
+  const wa = page.getByRole('link', { name: 'WhatsApp' });
+  await expect(wa).toHaveAttribute('href', /^https:\/\/wa\.me\/5511987654321\?text=Oi%2C%20Ana!/);
+
+  // Mudar de etapa conta no teste
+  await page.getByLabel('Etapa de Ana Souza').selectOption('interessado');
+  await expect(page.getByText('1 de 1 pessoa disse sim')).toBeVisible();
+
+  // Próximo passo atrasado aparece em "Pra hoje"
+  await page.getByLabel('Próximo passo com Ana Souza', { exact: true }).fill('Mandar proposta');
+  await page.getByLabel('Data do próximo passo com Ana Souza').fill('2026-01-01');
+  await expect(page.getByText('Pra hoje')).toBeVisible();
+
+  // Busca do caderno acha a pessoa pela nota
+  await page.getByRole('button', { name: 'Buscar no caderno' }).click();
+  await page.getByLabel('Buscar em todo o caderno').fill('novembro');
+  await expect(page.getByText(/👥 Pessoa · ✨ Interessado/)).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar busca' }).click();
+
+  // Persiste
+  await page.reload();
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
+  await expect(page.getByLabel('Etapa de Ana Souza')).toHaveValue('interessado');
+});

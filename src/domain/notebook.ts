@@ -5,6 +5,7 @@
 
 import type { Diagnosis } from './diagnosis';
 import { TEST_PRICE } from './tasks';
+import { STAGES, type Person } from './people';
 
 export type NoteTag = 'ideia' | 'conversa' | 'aprendizado' | 'coach';
 
@@ -79,6 +80,7 @@ export function exportNotebook(input: {
   profile: Record<ProfileFieldId, string>;
   notes: Note[];
   taskNotes: { title: string; text: string }[];
+  people?: Person[];
   now?: Date;
 }): string {
   const lines: string[] = [`Caderno do Prumo · ${input.userName || 'meu projeto'} · ${fmtDate((input.now ?? new Date()).getTime())}`, ''];
@@ -93,6 +95,18 @@ export function exportNotebook(input: {
     lines.push('', `== ${tag.emoji} ${tag.label} ==`);
     for (const n of list) {
       lines.push(`[${fmtDate(n.createdAt)}${n.taskTitle ? ` · ${n.taskTitle}` : ''}]`, n.text.trim(), '');
+    }
+  }
+  const people = input.people ?? [];
+  if (people.length) {
+    lines.push('', '== Pessoas ==');
+    for (const p of people) {
+      const stage = STAGES.find((s) => s.id === p.stage);
+      const contact = [p.phone, p.email].filter(Boolean).join(' · ');
+      lines.push(`${p.name} (${stage?.emoji} ${stage?.label})${contact ? ` · ${contact}` : ''}`);
+      if (p.nextStep || p.nextDate) lines.push(`Próximo passo: ${[p.nextStep, p.nextDate].filter(Boolean).join(' · ')}`);
+      if (p.note) lines.push(p.note);
+      lines.push('');
     }
   }
   const tasks = input.taskNotes.filter((t) => t.text.trim());
@@ -149,12 +163,18 @@ export function highlightParts(text: string, query: string): { text: string; hit
 export type SearchResult =
   | { kind: 'ficha'; label: string; text: string }
   | { kind: 'nota'; note: Note }
-  | { kind: 'tarefa'; taskId: string; title: string; text: string };
+  | { kind: 'tarefa'; taskId: string; title: string; text: string }
+  | { kind: 'pessoa'; person: Person };
 
 /** Busca em todo o Caderno: ficha, anotações (com a tarefa e a etiqueta) e notas das tarefas */
 export function searchNotebook(
   query: string,
-  data: { profile: Record<ProfileFieldId, string>; notes: Note[]; taskNotes: { taskId: string; title: string; text: string }[] },
+  data: {
+    profile: Record<ProfileFieldId, string>;
+    notes: Note[];
+    taskNotes: { taskId: string; title: string; text: string }[];
+    people?: Person[];
+  },
 ): SearchResult[] {
   if (!terms(query).length) return [];
   const out: SearchResult[] = [];
@@ -168,6 +188,11 @@ export function searchNotebook(
   }
   for (const t of data.taskNotes) {
     if (t.text.trim() && matchesQuery(`${t.title} ${t.text}`, query)) out.push({ kind: 'tarefa', ...t });
+  }
+  for (const p of data.people ?? []) {
+    const stage = STAGES.find((s) => s.id === p.stage)?.label ?? '';
+    const hay = [p.name, p.phone, p.email, p.source, p.note, p.nextStep, stage].filter(Boolean).join(' ');
+    if (matchesQuery(hay, query)) out.push({ kind: 'pessoa', person: p });
   }
   return out;
 }

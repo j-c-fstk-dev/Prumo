@@ -90,7 +90,14 @@ Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
 
 ### Caderno do projeto
 - [x] Aba Caderno (ficha, anotações com etiquetas, notas por tarefa, exportar) + copiar/salvar respostas do coach ([etapa 27](etapas/27-caderno.md))
-- [ ] Registro de conversas do teste ("2 de 5 disseram sim") na etiqueta Conversas
+- [x] Pessoas (mini-CRM): etapas, próximo passo, mensagem pronta no WhatsApp/e-mail, agenda do Android e o teste "2 de 5" contado sozinho ([etapa 28](etapas/28-pessoas.md))
+
+### Continuar usando depois de dar certo (plano em 4 fases)
+- [x] 1. Pessoas (etapa 28)
+- [ ] 2. Vendas e resultados: registrar vendas, painel do mês, marcos comemorados
+- [ ] 3. Jornada "Crescer": ciclos mensais, revisão do mês, coach com números (nunca nomes)
+- [ ] 4. Lista de contato do dia: uma pessoa por vez, sem envio em massa
+- [ ] Backup na nuvem (com conta; junto da Fase 4 e do Premium)
 
 ### Fase 4: Jurídico e empacotamento
 - [ ] Termos de uso + Política de privacidade (LGPD), com revisão jurídica — ver [checklist](pesquisa/07-lgpd-e-play-store.md#checklist-jurídico-do-mvp)

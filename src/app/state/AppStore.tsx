@@ -13,6 +13,7 @@ import { soundEffects } from '../../utils/soundEffects';
 import { speak, stopSpeaking } from '../../utils/voice';
 import { clearAll, loadValue, saveValue } from './storage';
 import { NOTE_MAX, type Note, type NoteTag, type ProfileFieldId, type ProfileOverrides } from '../../domain/notebook';
+import { cleanPerson, type Person } from '../../domain/people';
 
 export type ScreenState =
   | 'splash'
@@ -84,6 +85,8 @@ interface PersistedState {
   notes: Note[];
   profileOverrides: ProfileOverrides;
   taskNotes: Record<string, string>;
+  /** Pessoas (mini-CRM, etapa 28): dados de terceiros, só no aparelho e nunca enviados à IA */
+  people: Person[];
   coachMessages: CoachMessage[];
   /** Diagnóstico calculado ao fim da anamnese (null até lá) */
   diagnosis: Diagnosis | null;
@@ -127,6 +130,7 @@ function initialPersisted(): PersistedState {
     notes: [],
     profileOverrides: {},
     taskNotes: {},
+    people: [],
     coachMessages: [],
     diagnosis: null,
     letter: null,
@@ -669,6 +673,36 @@ function useAppState() {
       setData((d) => ({ ...d, profileOverrides: { ...d.profileOverrides, [id]: value.slice(0, 300) } })),
     setTaskNote: (taskId: string, text: string) =>
       setData((d) => ({ ...d, taskNotes: { ...d.taskNotes, [taskId]: text.slice(0, NOTE_MAX) } })),
+
+    /** Pessoas: novo contato (manual ou trazido da agenda do celular) */
+    addPerson: (input: Partial<Person> & { name: string }) => {
+      const clean = cleanPerson(input);
+      if (!clean.name) return;
+      const now = Date.now();
+      const stage = clean.stage ?? 'contato';
+      const person: Person = {
+        ...clean,
+        name: clean.name,
+        id: `p${now}-${Math.random().toString(36).slice(2, 7)}`,
+        stage,
+        stageHistory: [{ stage, at: now }],
+        createdAt: now,
+        updatedAt: now,
+      };
+      setData((d) => ({ ...d, people: [person, ...d.people] }));
+    },
+    updatePerson: (id: string, patch: Partial<Omit<Person, 'id' | 'stageHistory' | 'createdAt'>>) =>
+      setData((d) => ({
+        ...d,
+        people: d.people.map((p) => {
+          if (p.id !== id) return p;
+          const next = cleanPerson({ ...p, ...patch, updatedAt: Date.now() });
+          // Guarda quando mudou de etapa (para métricas da fase 2)
+          if (patch.stage && patch.stage !== p.stage) next.stageHistory = [...p.stageHistory, { stage: patch.stage, at: Date.now() }];
+          return next;
+        }),
+      })),
+    deletePerson: (id: string) => setData((d) => ({ ...d, people: d.people.filter((p) => p.id !== id) })),
 
     /** Apaga tudo do aparelho e volta ao início */
     resetAll: async () => {

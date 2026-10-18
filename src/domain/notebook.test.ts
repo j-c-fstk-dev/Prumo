@@ -90,3 +90,22 @@ describe('busca no caderno', () => {
     expect(emoji.filter((p) => p.hit).map((p) => p.text)).toEqual(['Ana']);
   });
 });
+
+describe('pessoas no caderno', () => {
+  const ana = { id: 'p1', name: 'Ana Souza', phone: '11987654321', stage: 'interessado' as const, note: 'Quer começar em novembro', nextStep: 'Mandar proposta', nextDate: '2026-10-20', stageHistory: [], createdAt: 0, updatedAt: 0 };
+
+  it('a busca acha pessoas pelo nome, nota, próximo passo ou etapa', () => {
+    const data = { profile: profileValues(d, {}), notes: [], taskNotes: [], people: [ana] };
+    expect(searchNotebook('ana', data).map((r) => r.kind)).toEqual(['pessoa']);
+    expect(searchNotebook('novembro', data)).toHaveLength(1);
+    expect(searchNotebook('interessado', data)).toHaveLength(1);
+    expect(searchNotebook('proposta', data)).toHaveLength(1);
+  });
+
+  it('a exportação inclui as pessoas', () => {
+    const text = exportNotebook({ userName: 'Jo', profile: profileValues(d, {}), notes: [], taskNotes: [], people: [ana] });
+    expect(text).toContain('== Pessoas ==');
+    expect(text).toContain('Ana Souza (✨ Interessado) · 11987654321');
+    expect(text).toContain('Próximo passo: Mandar proposta · 2026-10-20');
+  });
+});
