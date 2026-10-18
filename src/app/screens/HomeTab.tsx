@@ -15,20 +15,26 @@ import { PersonalTasks } from '../components/PersonalTasks';
 import { DailyRhythm } from '../components/DailyRhythm';
 import { DailyInspiration } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
+import { JourneyComplete } from '../components/JourneyComplete';
+import { CycleCard } from '../components/CycleCard';
+import { CYCLE_LABEL } from '../../domain/cycles';
+import { RoutinesCard } from '../components/Routines';
+import { WeekHint } from '../components/WeekHint';
 import { InstallHint } from '../components/ProtectData';
 import { lembreteDoDia } from '../../data/encorajamento';
 import { JOURNEY_DAYS, journeyDayLabel } from '../../domain/journey';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, cycleInfo, canChooseCycle, actions } = useApp();
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
-  const CHAPTERS = [
-    { id: 1, label: 'Cap. 1: Ideia clara', dot: 'bg-primary' },
-    { id: 2, label: 'Cap. 2: Mostrar', dot: 'bg-gold' },
-    { id: 3, label: 'Cap. 3: Vender', dot: 'bg-[#7A5AF8]' },
-  ].map((c) => {
+  const DOTS = ['bg-primary', 'bg-gold', 'bg-[#7A5AF8]', 'bg-success'];
+  // Capítulos vêm das próprias tarefas (etapa 43: são 4)
+  const CHAPTERS = Array.from(new Map(tasks.map((t) => [t.chapterId, t.chapterTitle])).entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([id, title], i) => ({ id, label: title.replace(/^Capítulo (\d+):\s*/, 'Cap. $1: '), dot: DOTS[i % DOTS.length] }))
+    .map((c) => {
     const inChapter = tasks.filter((t) => t.chapterId === c.id);
     const percent = inChapter.length ? Math.round((inChapter.filter((t) => t.status === 'completed').length / inChapter.length) * 100) : 0;
     return { ...c, percent, current: c.id === nextStepTask.chapterId };
@@ -48,7 +54,7 @@ export const HomeTab: React.FC = () => {
               Olá, {userName} 👋
             </h2>
             <p className="text-sm text-muted">
-              {nextStepTask.chapterTitle}
+              {cycleInfo ? `Ciclo ${cycleInfo.number} · ${CYCLE_LABEL[cycleInfo.kind].title}` : journeyComplete ? 'Roteiro concluído ✦' : nextStepTask.chapterTitle}
             </p>
           </div>
           <div className="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-primary">
@@ -70,6 +76,17 @@ export const HomeTab: React.FC = () => {
               <strong className="block text-ink">📜 {journeyDay === JOURNEY_DAYS ? 'Hoje é o seu dia 90.' : 'Você passou dos 90 dias.'}</strong>
               <span className="text-sm text-gold-ink">Chegou a hora de reler a carta que você escreveu no começo e ver o quanto caminhou.</span>
             </button>
+            {canChooseCycle && !journeyComplete && (
+              <button
+                onClick={() => {
+                  soundEffects.playTransition();
+                  actions.go('next_cycle');
+                }}
+                className="mt-2 w-full min-h-10 rounded-xl border border-gold-line text-sm font-semibold text-gold-ink cursor-pointer"
+              >
+                Escolher o próximo ciclo
+              </button>
+            )}
           </Reveal>
         )}
 
@@ -113,6 +130,10 @@ export const HomeTab: React.FC = () => {
 
         {/* CARTÃO DO PRÓXIMO PASSO (Com Ilustração-Âncora e Áudio Coach) */}
         <Reveal i={4}>
+        {cycleInfo && <CycleCard />}
+        {journeyComplete ? (
+          !cycleInfo && <JourneyComplete />
+        ) : (
         <div className="p-4 rounded-2xl bg-primary-soft border border-primary/30 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
@@ -135,6 +156,7 @@ export const HomeTab: React.FC = () => {
           {nextStepTask.when && (
             <p className="text-[13px] text-primary font-semibold mt-1.5">⏰ Combinado: {nextStepTask.when}</p>
           )}
+          {nextStepTask.week && <WeekHint week={nextStepTask.week} current={currentWeek} />}
 
           {/* Micro-áudio Coaching Pills */}
           {nextStepTask.audioCoach && VOICE_ENABLED && (
@@ -197,6 +219,12 @@ export const HomeTab: React.FC = () => {
             </button>
           </div>
         </div>
+                )}
+        </Reveal>
+
+        {/* Rotina da semana: o que se repete no capítulo (etapa 42) */}
+        <Reveal i={5}>
+          <RoutinesCard />
         </Reveal>
 
         {/* Tarefas pessoais: o app também serve para o dia a dia fora do plano */}

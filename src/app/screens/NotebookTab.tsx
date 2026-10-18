@@ -139,7 +139,9 @@ const NoteCard: React.FC<{ note: Note; onFlash: (m: string) => void }> = ({ note
 /** Caderno do projeto (etapa 27): tudo o que a pessoa precisa anotar, sem sair do app */
 export const NotebookTab: React.FC = () => {
   const { diagnosis, notes, profileOverrides, taskNotes, tasks, nextStepTask, people, lastExportAt, actions } = useApp();
-  const [section, setSection] = useState<'notas' | 'pessoas'>('notas');
+  const { notebookSection, actions: { setNotebookSection } } = useApp();
+  const section = notebookSection;
+  const setSection = setNotebookSection;
   const [editingProfile, setEditingProfile] = useState(false);
   const [draft, setDraft] = useState('');
   const [draftPhotos, setDraftPhotos] = useState<Blob[]>([]);

@@ -10,7 +10,7 @@ const plan = (productId: 'servico' | 'sessao' | 'guia' | 'minicurso', channel = 
 describe('buildPlanTasks', () => {
   it('sem diagnóstico, devolve o roteiro base sem capítulos trancados', () => {
     const tasks = buildPlanTasks(null);
-    expect(tasks).toHaveLength(7);
+    expect(tasks).toHaveLength(20);
     expect(tasks.every((t) => !t.isLocked)).toBe(true);
   });
 

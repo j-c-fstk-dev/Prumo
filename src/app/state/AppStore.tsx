@@ -3,8 +3,11 @@ import confetti from 'canvas-confetti';
 import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, TaskItem } from '../../data/prumoData';
 import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption, buildCustomDiagnosis, type CustomPathInput } from '../../domain/diagnosis';
 import { buildPlanTasks } from '../../domain/tasks';
-import { ACTIONS_TO_REPAIR, addDays, buildTimeline, computeStreak, isFreshStart, journeyDayKey, journeyDayNumber, tasksDoneOn, weekKey } from '../../domain/journey';
+import { ACTIONS_TO_REPAIR, JOURNEY_DAYS, addDays, buildTimeline, computeStreak, isFreshStart, journeyDayKey, journeyDayNumber, tasksDoneOn, weekKey } from '../../domain/journey';
 import { track } from '../../utils/telemetry';
+import { REVIEW_LIMIT, activeRoutines, currentGoal, routineProgress, toggleRoutineDay, type WeeklyReview } from '../../domain/routines';
+import { suggestedWeek } from '../../domain/pacing';
+import { CYCLE_LABEL, CYCLE_NOTE_LIMIT, activeCycle, cycleStatus, type Cycle, type CycleKind, type PastJourney } from '../../domain/cycles';
 import { can as canUse, currentPlan, trialDaysLeft, type Feature } from '../../domain/entitlements';
 import type { KitId } from '../../domain/kit';
 
@@ -31,6 +34,7 @@ export type ScreenState =
   | 'future_letter'
   | 'home'
   | 'task_detail'
+  | 'next_cycle'
   | 'paywall';
 
 export type TabId = 'home' | 'roadmap' | 'coach' | 'notebook' | 'profile';
@@ -90,6 +94,14 @@ interface PersistedState {
   taskNotes: Record<string, string>;
   /** Pessoas (mini-CRM, etapa 28): dados de terceiros, só no aparelho e nunca enviados à IA */
   people: Person[];
+  /** Rotinas (etapa 42): dias (AAAA-MM-DD) em que cada rotina foi feita */
+  routineLog: Record<string, string[]>;
+  /** Revisões da semana, pela segunda-feira da semana em que foram feitas */
+  weeklyReviews: Record<string, WeeklyReview>;
+  /** Ciclos de 30 dias depois do roteiro (etapa 44) */
+  cycles: Cycle[];
+  /** Jornadas anteriores, de quando a pessoa trocou de caminho (ficam na linha do tempo) */
+  pastJourneys: PastJourney[];
   /** Última vez que a pessoa exportou o Caderno (lembrete de backup) */
   lastExportAt?: number;
   /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
@@ -138,6 +150,10 @@ function initialPersisted(): PersistedState {
     profileOverrides: {},
     taskNotes: {},
     people: [],
+    routineLog: {},
+    weeklyReviews: {},
+    cycles: [],
+    pastJourneys: [],
     coachMessages: [],
     diagnosis: null,
     letter: null,
@@ -199,6 +215,8 @@ function useAppState() {
   const [screen, setScreen] = useState<ScreenState>('splash');
   const [tab, setTab] = useState<TabId>('home');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  /** Em que parte o Caderno abre (as rotinas de conversa levam direto para Pessoas) */
+  const [notebookSection, setNotebookSection] = useState<'notas' | 'pessoas'>('notas');
   const [sectionIndex, setSectionIndex] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [questionDirection, setQuestionDirection] = useState<'forward' | 'backward'>('forward');
@@ -277,7 +295,12 @@ function useAppState() {
       })),
     [data.diagnosis, data.taskStatus, data.planEdits],
   );
-  const nextStepTask = tasks.find((t) => t.status !== 'completed' && !t.isLocked) || tasks[0];
+  /** Todos os passos do roteiro feitos (etapa 41): a Início mostra "jornada concluída" em vez de repetir a 1ª tarefa */
+  const journeyComplete = tasks.length > 0 && tasks.every((t) => t.status === 'completed');
+  // Com tudo feito, o "próximo passo" fica sendo o último (o capítulo e o coach seguem fazendo sentido)
+  const nextStepTask = tasks.find((t) => t.status !== 'completed' && !t.isLocked) || tasks[tasks.length - 1];
+  /** Capítulo em que a pessoa está: o do próximo passo (as rotinas dele e dos anteriores valem) */
+  const currentChapterId = nextStepTask?.chapterId ?? 1;
   const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? nextStepTask;
 
   const personalAnchor =
@@ -306,15 +329,22 @@ function useAppState() {
   const streak = computeStreak({ actionsByDay: data.actionsByDay, repairedDays: data.repairedDays, today });
   const todayCheckIn = data.checkIns.find((c) => c.day === today);
   const freshStart = isFreshStart(today);
-  const timeline = buildTimeline({
-    diagnosisAt: data.diagnosisAt,
-    letterSealedAt: data.letter?.sealedAt,
-    tasks,
-    completedAt: data.completedAt,
-  });
+  const timeline = [
+    ...buildTimeline({ diagnosisAt: data.diagnosisAt, letterSealedAt: data.letter?.sealedAt, tasks, completedAt: data.completedAt }),
+    ...data.pastJourneys.map((j) => ({ at: j.endedAt, title: `Jornada anterior: ${j.title} (${j.tasksDone} passos)`, kind: 'jornada' as const })),
+    ...data.cycles.map((c) => ({ at: c.startedAt, title: `Começou o ciclo: ${CYCLE_LABEL[c.kind].title}`, kind: 'ciclo' as const })),
+  ].sort((a, b) => b.at - a.at);
 
   const now = Date.now();
   const journeyDay = data.startedAt ? journeyDayNumber(data.startedAt, new Date(now)) : null;
+  const currentWeek = suggestedWeek(journeyDay);
+  const routines = activeRoutines(currentChapterId, journeyComplete).map((r) => ({ ...r, ...routineProgress(r, data.routineLog[r.id], today) }));
+  const weeklyGoal = currentGoal(data.weeklyReviews);
+  const reviewedThisWeek = Boolean(data.weeklyReviews[weekKey(today)]);
+  const cycle = activeCycle(data.cycles);
+  const cycleInfo = cycle ? { ...cycle, ...cycleStatus(cycle, data.people, now), number: data.cycles.length } : null;
+  /** Hora de escolher o próximo ciclo: roteiro feito ou Dia 90, sem ciclo aberto (ou com o ciclo vencido) */
+  const canChooseCycle = (journeyComplete || (journeyDay ?? 0) >= JOURNEY_DAYS) && (!cycleInfo || cycleInfo.ended || cycleInfo.goalMet);
   const entitlementCtx = {
     paywallEnabled: PAYWALL_ENABLED,
     isPremium: data.isPremium,
@@ -342,6 +372,13 @@ function useAppState() {
       setTab(t);
       setScreen('home');
     },
+    /** Abre o Caderno direto na lista de pessoas */
+    openPeople: () => {
+      setNotebookSection('pessoas');
+      setTab('notebook');
+      setScreen('home');
+    },
+    setNotebookSection,
     openTask: (id: string) => {
       setSelectedTaskId(id);
       setScreen('task_detail');
@@ -778,6 +815,82 @@ function useAppState() {
       setData((d) => ({ ...d, people: d.people.filter((p) => p.id !== id) }));
     },
 
+    /** Marca (ou desmarca) uma rotina hoje; marcar conta como ação do dia (etapa 42) */
+    toggleRoutine: (id: string) => {
+      const day = journeyDayKey();
+      if (!(data.routineLog[id] ?? []).includes(day)) {
+        soundEffects.playCompleteTask();
+        track('rotina_feita', { rotina: id });
+      } else {
+        soundEffects.playSoftTap();
+      }
+      setData((d) => {
+        const { log, added } = toggleRoutineDay(d.routineLog[id], day);
+        const next = { ...d, routineLog: { ...d.routineLog, [id]: log } };
+        return added ? withAction(next) : next;
+      });
+    },
+
+    /** Revisão da semana: guarda as 3 respostas e conta como a rotina da revisão feita hoje */
+    saveWeeklyReview: (review: Omit<WeeklyReview, 'at'>) => {
+      const day = journeyDayKey();
+      const clip = (t: string) => t.trim().slice(0, REVIEW_LIMIT);
+      track('revisao_semana', { com_meta: Boolean(review.goal.trim()) });
+      setData((d) => {
+        const already = (d.routineLog.r_revisao ?? []).includes(day);
+        const next = {
+          ...d,
+          weeklyReviews: { ...d.weeklyReviews, [weekKey(day)]: { worked: clip(review.worked), change: clip(review.change), goal: clip(review.goal), at: Date.now() } },
+          routineLog: already ? d.routineLog : { ...d.routineLog, r_revisao: [...(d.routineLog.r_revisao ?? []), day] },
+        };
+        return already ? next : withAction(next);
+      });
+    },
+
+    /** Começa um ciclo de 30 dias (fecha o anterior, se houver) */
+    startCycle: (kind: CycleKind, target: number, note: string) => {
+      const now = Date.now();
+      track('ciclo_iniciado', { tipo: kind, meta: target });
+      setData((d) => ({
+        ...d,
+        cycles: [
+          ...d.cycles.map((c) => (c.closedAt ? c : { ...c, closedAt: now })),
+          {
+            id: `c${now.toString(36)}`,
+            kind,
+            startedAt: now,
+            target: Math.max(1, Math.min(99, Math.round(target) || 1)),
+            note: note.trim().slice(0, CYCLE_NOTE_LIMIT),
+          },
+        ],
+      }));
+      setTab('home');
+      setScreen('home');
+    },
+
+    /**
+     * Trocar de caminho depois do roteiro: começa um roteiro novo (passos do zero, novo Dia 1).
+     * O Caderno, as pessoas, as cartas e as rotinas ficam; a jornada anterior vai para a linha do tempo.
+     */
+    switchPath: () => {
+      const now = Date.now();
+      track('caminho_trocado', { depois_do_roteiro: true });
+      setData((d) => ({
+        ...d,
+        pastJourneys: [
+          ...d.pastJourneys,
+          { endedAt: now, title: d.diagnosis?.niche ?? 'primeiro caminho', tasksDone: Object.values(d.taskStatus).filter((x) => x === 'completed').length },
+        ],
+        cycles: d.cycles.map((c) => (c.closedAt ? c : { ...c, closedAt: now })),
+        taskStatus: {},
+        completedAt: {},
+        celebratedChapters: [],
+        planEdits: {},
+        startedAt: now,
+      }));
+      setScreen('result');
+    },
+
     /** O estado salvo, como está agora (para o backup completo, etapa 40) */
     snapshot: (): Record<string, unknown> => ({ ...data }),
 
@@ -818,6 +931,15 @@ function useAppState() {
     tasks,
     selectedTask,
     nextStepTask,
+    journeyComplete,
+    cycleInfo,
+    canChooseCycle,
+    notebookSection,
+    currentChapterId,
+    currentWeek,
+    routines,
+    weeklyGoal,
+    reviewedThisWeek,
     personalAnchor,
     scoredAnswers,
     streak,

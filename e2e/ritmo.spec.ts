@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { dayKey, seedState } from './helpers';
+import { INITIAL_TASKS } from '../src/data/prumoData';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/app/');
@@ -125,4 +126,91 @@ test('backup completo: faz o .zip, apaga tudo e restaura na tela de boas-vindas,
   await expect(page.getByRole('button', { name: 'Ver foto' }).locator('img')).toBeVisible();
   await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
   await expect(page.getByRole('button', { name: 'Ana Souza, Interessado' })).toBeVisible();
+});
+
+test('roteiro concluído: a Início não volta pra tarefa 1, e rever o resultado não refaz o compromisso', async ({ page }) => {
+  const ids = INITIAL_TASKS.map((t) => t.id);
+  await seedState(page, { taskStatus: Object.fromEntries(ids.map((id) => [id, 'completed'])), startedAt: Date.now(), celebratedChapters: [1, 2, 3, 4] });
+  await expect(page.getByText('✦ Roteiro concluído')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Abrir tarefa' })).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  await page.getByText('Ver meu resultado completo').click();
+  await expect(page.getByRole('button', { name: /Assumir meu prumo/ })).toHaveCount(0);
+  await page.getByRole('button', { name: /Voltar para a jornada/ }).click();
+  await expect(page.getByText('✦ Roteiro concluído')).toBeVisible();
+});
+
+test('rotinas: as do capítulo aparecem, marcar conta no dia, e a revisão da semana vira a meta', async ({ page }) => {
+  // Capítulo 1 feito: o próximo passo é do capítulo 2, então as rotinas de conversa valem
+  const ch1 = INITIAL_TASKS.filter((t) => t.chapterId === 1).map((t) => t.id);
+  await seedState(page, { taskStatus: Object.fromEntries(ch1.map((id) => [id, 'completed'])), startedAt: Date.now(), celebratedChapters: [1] });
+  const card = page.getByRole('region', { name: 'Rotina da semana' });
+  await expect(card.getByText('Falar com 1 pessoa nova')).toBeVisible();
+  await expect(card.getByText('Retomar quem ficou de responder')).toHaveCount(0);
+
+  await card.getByRole('button', { name: 'Falar com 1 pessoa nova: marcar como feita hoje' }).click();
+  await expect(card.getByText('1 de 5 esta semana')).toBeVisible();
+  await expect(page.getByText(/1 dia de prumo/)).toBeVisible();
+
+  // A revisão abre as 3 perguntas; a meta aparece no cartão
+  await card.getByRole('button', { name: 'Revisão da semana: marcar como feita hoje' }).click();
+  const review = page.getByRole('dialog', { name: 'Revisão da semana' });
+  await review.getByLabel('O que funcionou esta semana?').fill('Mandar mensagem de manhã');
+  await review.getByLabel('Uma meta para a próxima semana').fill('Conversar com 5 pessoas novas');
+  await review.getByRole('button', { name: 'Salvar revisão' }).click();
+  await expect(card.getByText('Conversar com 5 pessoas novas')).toBeVisible();
+  await expect(card.getByRole('button', { name: 'Revisão da semana: feita hoje' })).toBeVisible();
+
+  // No Roteiro: passos por semana e as rotinas no topo
+  await page.getByRole('button', { name: 'Roteiro', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Semana 1', exact: true })).toBeVisible();
+  await expect(page.getByText('● esta semana')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Rotinas' })).toBeVisible();
+});
+
+test('ciclos: depois do roteiro, continuar com meta do Caderno; ao bater a meta, trocar de caminho recomeça o roteiro', async ({ page }) => {
+  const ids = INITIAL_TASKS.map((t) => t.id);
+  await seedState(page, {
+    taskStatus: Object.fromEntries(ids.map((id) => [id, 'completed'])),
+    startedAt: Date.now() - 40 * 86_400_000,
+    celebratedChapters: [1, 2, 3, 4],
+    diagnosis: null,
+    people: [{ id: 'p1', name: 'Ana Souza', stage: 'interessado', stageHistory: [{ stage: 'contato', at: 1 }], createdAt: 1, updatedAt: 1 }],
+  });
+  await page.getByRole('button', { name: 'Escolher o próximo ciclo' }).click();
+  await expect(page.getByText('Você chegou ao fim do roteiro. E agora?')).toBeVisible();
+  await expect(page.getByText(`${ids.length}`, { exact: true })).toBeVisible();
+
+  await page.getByRole('radio', { name: /Deu certo: continuar e crescer/ }).click();
+  await page.getByLabel('Meta do ciclo').fill('1');
+  await page.getByLabel('Foco do ciclo').fill('Pedir indicação a todo cliente');
+  await page.getByRole('button', { name: 'Começar o ciclo' }).click();
+
+  const cycle = page.getByRole('region', { name: 'Ciclo atual' });
+  await expect(cycle).toContainText('Ciclo 1 · Crescer');
+  await expect(cycle).toContainText('0 de 1 cliente novo');
+  await expect(cycle).toContainText('Pedir indicação a todo cliente');
+
+  // A Ana vira cliente no Caderno: a meta conta sozinha
+  await cycle.getByRole('button', { name: 'Ver minhas pessoas' }).click();
+  await page.getByRole('button', { name: 'Ana Souza, Interessado' }).click();
+  await page.getByLabel('Etapa de Ana Souza').selectOption('cliente');
+  await page.getByRole('button', { name: 'Início', exact: true }).click();
+  await expect(cycle).toContainText('1 de 1 cliente novo ✦');
+
+  // Meta batida: dá para fechar e escolher o próximo. Trocar de caminho recomeça o roteiro.
+  await cycle.getByRole('button', { name: 'Fechar o ciclo e escolher o próximo' }).click();
+  await expect(page.getByText('Fim do ciclo 1. E agora?')).toBeVisible();
+  await page.getByRole('radio', { name: /Não rolou: trocar de caminho/ }).click();
+  await page.getByRole('button', { name: 'Escolher outro caminho' }).click();
+  await page.getByRole('button', { name: 'Sim, recomeçar o roteiro' }).click();
+  await expect(page.getByText(/este é o seu prumo/)).toBeVisible();
+  await page.getByRole('button', { name: /Voltar para a jornada/ }).click();
+  await expect(page.getByText('Dia 1 de 90')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Abrir tarefa' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  await expect(page.getByText(/Jornada anterior:/)).toBeVisible();
+  await expect(page.getByText('Começou o ciclo: Crescer')).toBeVisible();
 });

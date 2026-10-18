@@ -9,10 +9,18 @@ import {
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { PersonalTasks } from '../components/PersonalTasks';
+import { RoutinesCard } from '../components/Routines';
+import { weekStatus } from '../../domain/pacing';
+import type { TaskItem } from '../../data/prumoData';
 
 export const RoadmapTab: React.FC = () => {
-  const { tasks, personalAnchor, actions } = useApp();
-  const [activeFilterPhase, setActiveFilterPhase] = useState<'todas' | 'fundacao' | 'marketing' | 'lancamento'>('todas');
+  const { tasks, personalAnchor, currentWeek, actions } = useApp();
+  const [chapterFilter, setChapterFilter] = useState<number | 'todos'>('todos');
+  // Capítulos vêm das próprias tarefas (o roteiro pode crescer sem mexer aqui)
+  const chapters = Array.from(new Map(tasks.map((t) => [t.chapterId, t.chapterTitle])).entries()).sort((a, b) => a[0] - b[0]);
+  const shown = tasks.filter((t) => chapterFilter === 'todos' || t.chapterId === chapterFilter);
+  // Agrupa por semana sugerida (etapa 42): só sugere, dá para adiantar
+  const weeks = Array.from(new Set(shown.map((t) => t.week ?? 1))).sort((a, b) => a - b);
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const totalCount = tasks.length;
 
@@ -36,116 +44,112 @@ export const RoadmapTab: React.FC = () => {
           </span>
         </div>
 
-        {/* Filtros por Capítulos */}
+        {/* Rotinas do capítulo: o que se repete toda semana */}
+        <div className="mb-4">
+          <RoutinesCard title="Rotinas" />
+        </div>
+
+        {/* Filtros por capítulo */}
         <div className="flex gap-1 mb-3 overflow-x-auto pb-1 text-[13px]">
-          {[
-            { id: 'todas', label: 'Todos' },
-            { id: 'fundacao', label: 'Cap. 1: Ideia clara' },
-            { id: 'marketing', label: 'Cap. 2: Mostrar' },
-            { id: 'lancamento', label: 'Cap. 3: Vender' }
-          ].map(f => (
+          {[['todos', 'Todos'] as const, ...chapters.map(([id, title]) => [id, title.replace(/^Capítulo (\d+):\s*/, 'Cap. $1: ')] as const)].map(([id, label]) => (
             <button
-              key={f.id}
+              key={id}
               onClick={() => {
                 soundEffects.playSoftTap();
-                setActiveFilterPhase(f.id as any);
+                setChapterFilter(id);
               }}
               className={`px-3 py-1 rounded-full whitespace-nowrap transition-colors cursor-pointer ${
-                activeFilterPhase === f.id
-                  ? 'bg-primary text-on-primary font-semibold'
-                  : 'bg-surface border border-line text-muted'
+                chapterFilter === id ? 'bg-primary text-on-primary font-semibold' : 'bg-surface border border-line text-muted'
               }`}
             >
-              {f.label}
+              {label}
             </button>
           ))}
         </div>
 
-        {/* Lista de Tarefas por Capítulos com Ilustrações-Âncora */}
-        <div className="space-y-2.5 max-h-[440px] overflow-y-auto pr-1">
-          {tasks
-            .filter(t => activeFilterPhase === 'todas' || t.phaseId === activeFilterPhase)
-            .map(task => {
-              const isCompleted = task.status === 'completed';
-              return (
-                <div
-                  key={task.id}
-                  className={`p-3 rounded-xl border transition-all ${
-                    task.isLocked 
-                      ? 'bg-surface-2 border-line opacity-75' 
-                      : isCompleted 
-                        ? 'bg-success-soft/50 border-success/30' 
-                        : 'bg-surface border-line hover:border-primary'
-                  }`}
-                >
-                  <div className="flex items-start gap-2.5">
-                    {task.isLocked ? (
-                      <Lock className="w-4 h-4 text-muted shrink-0 mt-1" />
-                    ) : (
-                      <button
-                        onClick={() => actions.toggleTaskStatus(task.id)}
-                        className="mt-0.5 text-primary cursor-pointer"
-                      >
-                        {isCompleted ? (
-                          <CheckCircle2 className="w-5 h-5 text-success" />
-                        ) : (
-                          <Circle className="w-5 h-5 text-muted" />
-                        )}
-                      </button>
-                    )}
-
-                    <div 
-                      onClick={() => {
-                        soundEffects.playSoftTap();
-                        if (task.isLocked) {
-                          actions.go('paywall');
-                        } else {
-                          actions.openTask(task.id);
-                          actions.go('task_detail');
-                        }
-                      }}
-                      className="flex-1 cursor-pointer min-w-0"
-                    >
-
-                      <div className="flex items-center justify-between gap-1">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <span className="text-sm">{task.anchorIllustration.symbol}</span>
-                          <h4 className={`text-sm font-bold truncate ${isCompleted ? 'line-through text-muted' : 'text-ink'}`}>
-                            {task.title}
-                          </h4>
-                        </div>
-                        {task.isLocked ? (
-                          <span className="text-xs bg-gold-soft text-gold-ink px-1.5 py-0.2 rounded font-medium shrink-0">
-                            Cap. 2
-                          </span>
-                        ) : (
-                          <span className="text-xs bg-primary-soft text-primary px-1.5 py-0.2 rounded font-medium shrink-0">
-                            {task.anchorIllustration.badge}
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="text-[13px] text-muted line-clamp-1 mt-0.5">
-                        {task.description}
-                      </p>
-
-                      <div className="flex items-center justify-between mt-2 text-xs text-muted">
-                        <span>⏱ {task.durationMinutes} min · {task.chapterTitle.split(':')[0]}</span>
-                        {task.audioCoach && (
-                          <span className="text-primary font-semibold flex items-center gap-1">
-                            <Headphones className="w-3 h-3" /> Áudio
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+        {/* Passos do roteiro, por semana sugerida */}
+        <div className="space-y-4">
+          {weeks.map((week) => {
+            const status = weekStatus(week, currentWeek);
+            return (
+              <section key={week} aria-label={`Semana ${week}`} className="space-y-2">
+                <h3 className="flex items-baseline justify-between text-xs font-bold uppercase tracking-wider">
+                  <span className={status === 'agora' ? 'text-primary' : 'text-muted'}>Semana {week}</span>
+                  <span className={`normal-case tracking-normal font-semibold ${status === 'agora' ? 'text-primary' : 'text-muted font-normal'}`}>
+                    {status === 'agora' ? '● esta semana' : status === 'adiantar' ? 'dá pra adiantar' : ''}
+                  </span>
+                </h3>
+                {shown
+                  .filter((t) => (t.week ?? 1) === week)
+                  .map((task) => <TaskRow key={task.id} task={task} />)}
+              </section>
+            );
+          })}
         </div>
 
         <div className="mt-4">
           <PersonalTasks title="Minha lista · fora da jornada" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** Um passo do roteiro na lista */
+const TaskRow: React.FC<{ task: TaskItem }> = ({ task }) => {
+  const { actions } = useApp();
+  const isCompleted = task.status === 'completed';
+  return (
+    <div
+      className={`p-3 rounded-xl border transition-all ${
+        task.isLocked ? 'bg-surface-2 border-line opacity-75' : isCompleted ? 'bg-success-soft/50 border-success/30' : 'bg-surface border-line hover:border-primary'
+      }`}
+    >
+      <div className="flex items-start gap-2.5">
+        {task.isLocked ? (
+          <Lock className="w-4 h-4 text-muted shrink-0 mt-1" />
+        ) : (
+          <button
+            onClick={() => actions.toggleTaskStatus(task.id)}
+            aria-label={`${task.title}: ${isCompleted ? 'concluída' : 'marcar como concluída'}`}
+            className="mt-0.5 text-primary cursor-pointer"
+          >
+            {isCompleted ? <CheckCircle2 className="w-5 h-5 text-success" /> : <Circle className="w-5 h-5 text-muted" />}
+          </button>
+        )}
+
+        <div
+          onClick={() => {
+            soundEffects.playSoftTap();
+            if (task.isLocked) {
+              actions.go('paywall');
+            } else {
+              actions.openTask(task.id);
+              actions.go('task_detail');
+            }
+          }}
+          className="flex-1 cursor-pointer min-w-0"
+        >
+          <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="text-sm">{task.anchorIllustration.symbol}</span>
+              <h4 className={`text-sm font-bold truncate ${isCompleted ? 'line-through text-muted' : 'text-ink'}`}>{task.title}</h4>
+            </div>
+            <span className="text-xs bg-primary-soft text-primary px-1.5 py-0.2 rounded font-medium shrink-0">{task.anchorIllustration.badge}</span>
+          </div>
+
+          <p className="text-[13px] text-muted line-clamp-1 mt-0.5">{task.description}</p>
+
+          <div className="flex items-center justify-between mt-2 text-xs text-muted">
+            <span>
+              ⏱ {task.durationMinutes} min · {task.chapterTitle.split(':')[0]}
+            </span>
+            {task.audioCoach && (
+              <span className="text-primary font-semibold flex items-center gap-1">
+                <Headphones className="w-3 h-3" /> Áudio
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
