@@ -118,7 +118,7 @@ export function buildPlanTasks(plan: PlanInput | null): TaskItem[] {
       case 't6':
         return {
           ...task,
-          title: 'Fazer o teste da sua hipótese',
+          title: 'Fazer o teste da sua aposta',
           description: 'A hora de descobrir se as pessoas pagam pelo que você criou.',
           whatToDo: `${plan.test} Seja honesto: diga que é uma versão de teste com condição especial.`,
           howToKnowItIsGood: ['2 de 5 pessoas disseram sim (ou pagaram) em até 14 dias', 'Você anotou o que fez as outras dizerem não'],

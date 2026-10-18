@@ -56,7 +56,7 @@ export async function commitAndSeal(page: Page) {
   const reply = page.getByLabel('Resposta do seu eu de daqui a 90 dias');
   await reply.fill((await reply.inputValue()) + 'Deu certo. Mostrei para 5 pessoas e 2 compraram. Nos dias cansados fiz só 5 minutos.');
   await page.getByRole('button', { name: 'Selar as cartas' }).click();
-  await page.getByRole('button', { name: /Entrar na Jornada/ }).click();
+  await page.getByRole('button', { name: /Começar a jornada/ }).click();
   await expect(page.getByText(/^Olá, /)).toBeVisible();
 }
 

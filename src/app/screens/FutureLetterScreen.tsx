@@ -185,7 +185,7 @@ export const FutureLetterScreen: React.FC = () => {
           </button>
         ) : (
           <button onClick={enterJourney} className={primaryButton}>
-            <span>Entrar na Jornada (Capítulo 1)</span>
+            <span>Começar a jornada</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         )}

@@ -81,7 +81,7 @@ Fechamento: [etapa 12](etapas/12-fim-da-fase-1.md)
 Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
 - [x] A: correções rápidas (âncora inteira, Salvar, texto livre, botão de segurar, "Pra hoje", ritmo mais calmo, voz desligada)
 - [x] B1: apresentação inicial, blocos surgindo um por vez, telas de resultado/compromisso/carta, 90 dias e "Se travar, eu…" ([etapa 20](etapas/20-linguagem-parte-1.md))
-- [ ] B2: revisão dos textos restantes pelo [guia de voz](guia-de-voz.md)
+- [x] B2: revisão dos textos restantes pelo [guia de voz](guia-de-voz.md) + telas que não rolavam ([etapa 21](etapas/21-linguagem-parte-2.md))
 - [ ] C: 3 prumos diferentes + "criar o meu" (depois da 2.4)
 - [ ] D: citações de livros famosos, frases rotativas, lembretes no dia certo
 - [ ] E: ilustração, música do splash, comemoração e sons delicados

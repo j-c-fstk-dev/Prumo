@@ -29,11 +29,11 @@ export interface AnamneseSection {
 export const ANAMNESE_SECTIONS: AnamneseSection[] = [
   {
     id: 1,
-    title: 'Habilidades',
+    title: 'O que você faz bem',
     iconName: 'Wrench',
     valueSignal: {
-      title: 'Mapeando sua facilidade natural',
-      subtitle: 'Começar pelo que você já faz bem e pelo que já te interessa deixa o primeiro passo mais leve, e ajuda a continuar quando ficar difícil.',
+      title: 'Vamos começar pelo que você já sabe fazer',
+      subtitle: 'Começar pelo que já é natural pra você deixa o primeiro passo mais leve. E ajuda a não desistir quando ficar difícil.',
       icon: '✨'
     },
     questions: [
@@ -41,21 +41,21 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q1_help',
         sectionId: 1,
         sectionName: 'Habilidades',
-        question: 'O que as pessoas costumam pedir a sua ajuda para resolver?',
-        subtext: 'Escolha até 3 opções que mais combinam com seu dia a dia.',
+        question: 'Com o que as pessoas costumam te pedir ajuda?',
+        subtext: 'Escolha até 3.',
         type: 'multiple',
         maxChoices: 3,
         options: [
-          { id: 'conselhos', label: 'Conselhos de vida & carreira', icon: '💬' },
-          { id: 'design', label: 'Design e estética visual', icon: '🎨' },
+          { id: 'conselhos', label: 'Conselhos sobre vida e trabalho', icon: '💬' },
+          { id: 'design', label: 'Deixar coisas bonitas (design, fotos, artes)', icon: '🎨' },
           { id: 'planilhas', label: 'Planilhas e organização', icon: '📊' },
           { id: 'textos', label: 'Escrita e revisão de textos', icon: '✍️' },
           { id: 'ensinar', label: 'Explicar assuntos difíceis', icon: '💡' },
           { id: 'vendas', label: 'Negociar e vender', icon: '🤝' },
-          { id: 'tecnologia', label: 'Resolver problemas no computador/celular', icon: '💻' },
+          { id: 'tecnologia', label: 'Resolver problemas no celular ou computador', icon: '💻' },
           { id: 'saude', label: 'Treino, alimentação e hábitos', icon: '🏃' }
         ],
-        reflectionPrompt: 'Com suas palavras: que problema você gosta de descomplicar para alguém? Vale algo que não está na lista.',
+        reflectionPrompt: 'Com suas palavras: com o que você gosta de ajudar? Vale algo que não está na lista.',
         reflectionPlaceholder: 'Ex: Adoro ajudar amigos a organizarem rotinas caóticas de trabalho...',
         reflectionPurpose: 'Usamos isso para sugerir seu nicho (você confirma) e escrever sua hipótese.'
       },
@@ -63,14 +63,14 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q1_preference',
         sectionId: 1,
         sectionName: 'Habilidades',
-        question: 'No seu íntimo, qual papel você mais gosta de exercer?',
-        subtext: 'Selecione a atividade em que o tempo passa mais rápido.',
+        question: 'Do que você mais gosta?',
+        subtext: 'Pense no que você faz e nem vê o tempo passar.',
         type: 'single',
         options: [
           { id: 'criar', label: 'Criar coisas novas do zero', icon: '✨' },
           { id: 'ensinar', label: 'Ensinar e guiar outras pessoas', icon: '🎓' },
-          { id: 'organizar', label: 'Organizar processos e estruturar rotinas', icon: '📋' },
-          { id: 'conectar', label: 'Conectar pessoas e vender ideias', icon: '🔗' }
+          { id: 'organizar', label: 'Organizar e deixar as coisas em ordem', icon: '📋' },
+          { id: 'conectar', label: 'Conversar, conectar pessoas e convencer', icon: '🔗' }
         ],
         reflectionPrompt: 'Com suas palavras: o que você faz em que nem vê o tempo passar?',
         reflectionPlaceholder: 'Ex: Fico horas montando apresentações bonitas para o trabalho...',
@@ -80,11 +80,11 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
   },
   {
     id: 2,
-    title: 'Interesses e Propósito',
+    title: 'O que você curte',
     iconName: 'Compass',
     valueSignal: {
-      title: 'Identificando sua energia sustentável',
-      subtitle: 'Interesse se fortalece fazendo. Unir o plano ao que você já gosta ajuda nos dias em que a vontade falta.',
+      title: 'Agora, o que te dá vontade',
+      subtitle: 'Juntar o plano com o que você já gosta ajuda muito nos dias sem vontade.',
       icon: '🧭'
     },
     questions: [
@@ -92,16 +92,16 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q2_themes',
         sectionId: 2,
         sectionName: 'Interesses',
-        question: 'Que temas você consome por puro prazer?',
-        subtext: 'Conteúdo que você lê, assiste ou ouve até nos finais de semana.',
+        question: 'Sobre o que você gosta de ler, ver ou ouvir?',
+        subtext: 'Aquilo que você consome até no fim de semana. Escolha até 2.',
         type: 'multiple',
         maxChoices: 2,
         options: [
           { id: 'produtividade', label: 'Produtividade e foco pessoal', icon: '⏱️' },
-          { id: 'negocios', label: 'Empreendedorismo e histórias de negócios', icon: '💼' },
+          { id: 'negocios', label: 'Negócios e histórias de quem empreende', icon: '💼' },
           { id: 'financas', label: 'Finanças pessoais e investimentos', icon: '💰' },
           { id: 'desenvolvimento', label: 'Psicologia e autoconhecimento', icon: '🧠' },
-          { id: 'comunicacao', label: 'Marketing, mídias e storytelling', icon: '📢' },
+          { id: 'comunicacao', label: 'Marketing, redes sociais e comunicação', icon: '📢' },
           { id: 'artes', label: 'Artes, criação e design', icon: '🖌️' }
         ],
         reflectionPrompt: 'Algum outro tema que você consome por prazer?',
@@ -112,13 +112,13 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q2_community',
         sectionId: 2,
         sectionName: 'Interesses',
-        question: 'Como você prefere atuar no digital?',
-        subtext: 'Uma escolha honesta sobre a dinâmica de trabalho que você aguenta.',
+        question: 'Como você prefere trabalhar?',
+        subtext: 'Seja sincero: o que você aguenta no dia a dia?',
         type: 'single',
         options: [
-          { id: 'solo', label: 'Bastidores / Criar produtos assíncronos', icon: '👤' },
-          { id: 'comunidade', label: 'Direto com pessoas em comunidade ou mentorias', icon: '👥' },
-          { id: 'misto', label: 'Um modelo equilibrado com pouco contato 1 a 1', icon: '⚖️' }
+          { id: 'solo', label: 'Mais nos bastidores, criando no meu tempo', icon: '👤' },
+          { id: 'comunidade', label: 'Junto das pessoas, conversando e atendendo', icon: '👥' },
+          { id: 'misto', label: 'Um pouco de cada', icon: '⚖️' }
         ],
         reflectionPrompt: 'Com suas palavras: como seria um dia de trabalho bom para você?',
         reflectionPlaceholder: 'Ex: Gosto de conversar, mas preciso de tempo sozinho para criar...',
@@ -128,11 +128,11 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
   },
   {
     id: 3,
-    title: 'Disponibilidade e Recursos',
+    title: 'Seu tempo',
     iconName: 'Clock',
     valueSignal: {
-      title: 'Entendendo seu tempo real',
-      subtitle: 'Isso muda tudo no roteiro: desenhamos passos que cabem na sua vida real, sem queimar a largada.',
+      title: 'Agora, sobre o seu tempo',
+      subtitle: 'Os passos vão caber na sua vida de verdade. Nada de começar com tudo e cansar na primeira semana.',
       icon: '⏳'
     },
     questions: [
@@ -140,13 +140,13 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q3_hours',
         sectionId: 3,
         sectionName: 'Disponibilidade',
-        question: 'Quantas horas por semana você realmente tem para se dedicar?',
-        subtext: 'Seja realista: contar com fins de semana e noites livres.',
+        question: 'Quantas horas por semana você tem, de verdade?',
+        subtext: 'Conte as noites e o fim de semana. Melhor pouco e real do que muito no papel.',
         type: 'single',
         options: [
-          { id: 'pouco', label: '3 a 5 horas/semana (cerca de 1h por noite)', icon: '🌙' },
-          { id: 'medio', label: '6 a 12 horas/semana (noites + sábado)', icon: '⚡' },
-          { id: 'muito', label: '15+ horas/semana (meio período ou tempo total)', icon: '🚀' }
+          { id: 'pouco', label: '3 a 5 horas (mais ou menos 1h por noite)', icon: '🌙' },
+          { id: 'medio', label: '6 a 12 horas (noites e sábado)', icon: '⚡' },
+          { id: 'muito', label: '15 horas ou mais (meio período ou mais)', icon: '🚀' }
         ],
         reflectionPrompt: 'Com suas palavras: o que mais rouba seu tempo na semana?',
         reflectionPlaceholder: 'Ex: Horas extras no trabalho e cansaço mental depois do expediente...',
@@ -156,11 +156,11 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q3_investment',
         sectionId: 3,
         sectionName: 'Disponibilidade',
-        question: 'Se o primeiro teste não der certo, quanto você aceita ter investido sem se arrepender?',
-        subtext: 'Decida pelo que você pode perder, não pelo que espera ganhar. Dá para começar com R$ 0.',
+        question: 'Quanto dinheiro você topa arriscar no começo?',
+        subtext: 'Pense no que você pode perder sem se arrepender, se o teste não der certo. Dá pra começar com R$ 0.',
         type: 'single',
         options: [
-          { id: 'zero', label: 'R$ 0: quero testar só com ferramentas gratuitas', icon: '🆓' },
+          { id: 'zero', label: 'R$ 0: só com coisas gratuitas', icon: '🆓' },
           { id: 'ate_200', label: 'Até R$ 200, sem me arrepender', icon: '🌱' },
           { id: 'mais_500', label: 'R$ 500 ou mais, se for preciso', icon: '💼' }
         ]
@@ -169,11 +169,11 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
   },
   {
     id: 4,
-    title: 'Objetivos',
+    title: 'Sua meta',
     iconName: 'Target',
     valueSignal: {
-      title: 'Definindo sua vitória inicial',
-      subtitle: 'Um marco claro e palpável traz alívio e valida seu esforço logo nos primeiros passos.',
+      title: 'Qual vai ser a sua primeira vitória?',
+      subtitle: 'Uma meta clara e pequena dá alívio e mostra logo que o esforço está valendo.',
       icon: '🎯'
     },
     questions: [
@@ -181,37 +181,37 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q4_goal',
         sectionId: 4,
         sectionName: 'Objetivos',
-        question: 'Qual é o seu marco financeiro inicial?',
-        subtext: 'A meta que fará você comemorar e validar seu prumo.',
+        question: 'Quanto você quer ganhar no começo?',
+        subtext: 'A meta que vai te fazer comemorar. Não é promessa: é aonde você quer chegar.',
         type: 'single',
         options: [
-          { id: 'primeiro_real', label: 'Primeiros R$ 500 a R$ 1.000 / mês', icon: '🎯' },
-          { id: 'substituir', label: 'R$ 3.000 a R$ 5.000 / mês (substituição parcial)', icon: '📈' },
-          { id: 'escala', label: 'R$ 10.000+ / mês (construir empresa digital)', icon: '🏰' }
+          { id: 'primeiro_real', label: 'Os primeiros R$ 500 a R$ 1.000 por mês', icon: '🎯' },
+          { id: 'substituir', label: 'R$ 3.000 a R$ 5.000 por mês (parte da minha renda)', icon: '📈' },
+          { id: 'escala', label: 'R$ 10.000 ou mais por mês (virar meu negócio)', icon: '🏰' }
         ]
       },
       {
         id: 'q4_timeline',
         sectionId: 4,
         sectionName: 'Objetivos',
-        question: 'Em quanto tempo você precisa do primeiro resultado monetário?',
-        subtext: 'Isso define a velocidade do seu roteiro.',
+        question: 'Em quanto tempo você precisa ganhar o primeiro dinheiro?',
+        subtext: 'Isso muda a velocidade da sua jornada.',
         type: 'single',
         options: [
-          { id: 'rapido', label: '30 a 45 dias (urgência e foco em serviço/validação rápida)', icon: '⚡' },
-          { id: 'medio', label: '60 a 90 dias (ritmo ideal para construir com calma)', icon: '🧭' },
-          { id: 'longo', label: '6 a 12 meses (construção estruturada)', icon: '🧱' }
+          { id: 'rapido', label: '30 a 45 dias (tenho pressa)', icon: '⚡' },
+          { id: 'medio', label: '60 a 90 dias (com calma, mas sem enrolar)', icon: '🧭' },
+          { id: 'longo', label: '6 a 12 meses (sem pressa, quero construir direito)', icon: '🧱' }
         ]
       }
     ]
   },
   {
     id: 5,
-    title: 'Perfil Comportamental',
+    title: 'Seu jeito',
     iconName: 'Brain',
     valueSignal: {
-      title: 'Respeitando sua personalidade',
-      subtitle: 'Não existe fórmula única: dá para construir algo sério e respeitado sem aparecer na câmera.',
+      title: 'Agora, um pouco sobre o seu jeito',
+      subtitle: 'Não tem fórmula única. Dá pra construir algo sério até sem aparecer em vídeo.',
       icon: '🛡️'
     },
     questions: [
@@ -219,13 +219,13 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q5_exposure',
         sectionId: 5,
         sectionName: 'Perfil',
-        question: 'Quão confortável você se sente aparecendo (câmera, voz, stories)?',
-        subtext: 'Não existe certo ou errado: dá para começar sem aparecer.',
+        question: 'Como você se sente aparecendo (vídeo, voz, stories)?',
+        subtext: 'Não tem certo nem errado: dá pra começar sem aparecer.',
         type: 'single',
         options: [
-          { id: 'sem_camera', label: 'Zero câmera: prefiro texto, áudio ou bastidores', icon: '🙈' },
-          { id: 'moderado', label: 'Apareço se for necessário, mas sem forçar', icon: '🎙️' },
-          { id: 'confortavel', label: 'Super tranquilo: gosto de falar em vídeo', icon: '📹' }
+          { id: 'sem_camera', label: 'Nada de câmera: prefiro texto ou bastidores', icon: '🙈' },
+          { id: 'moderado', label: 'Apareço se precisar, sem forçar', icon: '🎙️' },
+          { id: 'confortavel', label: 'De boa: gosto de falar em vídeo', icon: '📹' }
         ],
         reflectionPrompt: 'Com suas palavras: como você se sente aparecendo para os outros?',
         reflectionPlaceholder: 'Ex: Gravo áudio de boa, mas vídeo me trava...',
@@ -235,12 +235,12 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q5_rejection',
         sectionId: 5,
         sectionName: 'Perfil',
-        question: 'Como você lida com ouvir "não" ou ter poucas visualizações no início?',
-        subtext: 'Ajuda a escolher entre abordagens diretas (1 a 1) ou conteúdo orgânico.',
+        question: 'Como você fica quando ouve um "não" ou ninguém curte o post?',
+        subtext: 'Isso ajuda a escolher entre falar direto com as pessoas ou postar conteúdo.',
         type: 'single',
         options: [
-          { id: 'sensivel', label: 'Fico desanimado com facilidade; preciso de passos guiados', icon: '🛡️' },
-          { id: 'resiliente', label: 'Entendo que faz parte do processo de aprendizado', icon: '🌱' }
+          { id: 'sensivel', label: 'Desanimo fácil, preciso de passos bem guiados', icon: '🛡️' },
+          { id: 'resiliente', label: 'Chateia, mas sei que faz parte', icon: '🌱' }
         ],
         reflectionPrompt: 'Com suas palavras: o que acontece com você quando ouve um "não"?',
         reflectionPlaceholder: 'Ex: Fico chateado no dia, mas no outro tento de novo...',
@@ -250,8 +250,8 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q5_obstacle',
         sectionId: 5,
         sectionName: 'Perfil',
-        question: 'O que mais provavelmente vai te atrapalhar no caminho?',
-        subtext: 'Prever o obstáculo e já ter um plano B aumenta a chance de seguir em frente.',
+        question: 'O que tem mais chance de te atrapalhar?',
+        subtext: 'Saber disso agora ajuda: a gente já combina o que fazer quando acontecer.',
         type: 'single',
         options: [
           { id: 'tempo', label: 'Falta de tempo ou cansaço no fim do dia', icon: '🔋' },
@@ -261,17 +261,17 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         ],
         reflectionPrompt: 'Com suas palavras: o que costuma te fazer parar?',
         reflectionPlaceholder: 'Ex: Começo animado, mas na segunda semana a rotina me engole...',
-        reflectionPurpose: 'Usamos isso para montar seu plano B e no coach.'
+        reflectionPurpose: 'Usamos isso no seu "Se travar, eu…" e no coach.'
       }
     ]
   },
   {
     id: 6,
-    title: 'Experiência Digital',
+    title: 'Suas ferramentas',
     iconName: 'Smartphone',
     valueSignal: {
-      title: 'Aproveitando o que você já domina',
-      subtitle: 'Usamos as ferramentas do seu dia a dia para você não perder tempo com tecnologia complexa.',
+      title: 'Vamos usar o que você já conhece',
+      subtitle: 'Nada de aprender um monte de programa novo. A gente parte do que você já usa.',
       icon: '📱'
     },
     questions: [
@@ -279,15 +279,15 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q6_tools',
         sectionId: 6,
         sectionName: 'Experiência',
-        question: 'Quais ferramentas você já usa com alguma facilidade?',
-        subtext: 'Marque todas as que você já abriu ou mexeu.',
+        question: 'O que você já usa sem sofrer?',
+        subtext: 'Marque tudo o que você já mexeu, mesmo que pouco.',
         type: 'multiple',
         options: [
           { id: 'instagram', label: 'Instagram / Redes Sociais', icon: '📱' },
           { id: 'canva', label: 'Canva (criação de artes)', icon: '🎨' },
           { id: 'notion', label: 'Notion / Docs / Planilhas', icon: '📝' },
           { id: 'whatsapp_biz', label: 'WhatsApp Business', icon: '💬' },
-          { id: 'nenhuma', label: 'Ainda não mexo com ferramentas digitais', icon: '🌱' }
+          { id: 'nenhuma', label: 'Ainda não uso quase nada disso', icon: '🌱' }
         ],
         reflectionPrompt: 'Usa outra ferramenta? Conte aqui.',
         reflectionPlaceholder: 'Ex: TikTok, YouTube, Google Agenda...',
@@ -297,11 +297,11 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
   },
   {
     id: 7,
-    title: 'Identidade & Eu Futuro',
+    title: 'Você daqui a 90 dias',
     iconName: 'Sparkles',
     valueSignal: {
-      title: 'Sua âncora pessoal de compromisso',
-      subtitle: 'A motivação oscila, mas a identidade permanece. Aqui você define quem você escolhe se tornar.',
+      title: 'Por último: a sua âncora',
+      subtitle: 'A vontade vai e vem. Uma frase sobre quem você quer ser segura a onda nos dias difíceis.',
       icon: '🌿'
     },
     questions: [
@@ -309,14 +309,14 @@ export const ANAMNESE_SECTIONS: AnamneseSection[] = [
         id: 'q7_pride',
         sectionId: 7,
         sectionName: 'Identidade',
-        question: 'O que te daria orgulho de dizer "eu faço isso" daqui a 90 dias?',
-        subtext: 'Essa frase será a sua âncora emocional fixa no topo de todo o seu roteiro.',
+        question: 'Daqui a 90 dias, do que você quer se orgulhar?',
+        subtext: 'Essa frase vira a sua âncora: ela fica no topo do app pra te lembrar por que você começou.',
         type: 'single',
         options: [
-          { id: 'autor_metodo', label: 'Criei e validei meu próprio mini-produto digital do zero', icon: '🌱' },
-          { id: 'primeira_renda', label: 'Recebi meus primeiros pagamentos com a consciência tranquila', icon: '💎' },
-          { id: 'rotina_livre', label: 'Construí uma rotina criativa sem esgotamento nem ansiedade', icon: '🕊️' },
-          { id: 'impacto_real', label: 'Gerei um alívio verdadeiro e tangível para 3+ pessoas reais', icon: '🤝' }
+          { id: 'autor_metodo', label: 'Criei do zero algo meu e vi que funciona', icon: '🌱' },
+          { id: 'primeira_renda', label: 'Recebi meus primeiros pagamentos, de forma honesta', icon: '💎' },
+          { id: 'rotina_livre', label: 'Criei uma rotina leve, sem me esgotar', icon: '🕊️' },
+          { id: 'impacto_real', label: 'Ajudei de verdade pelo menos 3 pessoas', icon: '🤝' }
         ],
         reflectionPrompt: 'Com suas palavras, complete: "Daqui a 90 dias, eu..."',
         reflectionPlaceholder: 'Ex: ...recebi meus primeiros pagamentos e confio no meu próprio jeito de trabalhar.',
@@ -362,7 +362,7 @@ export const DEFAULT_DIAGNOSIS: DiagnosisProfile = {
   timeline: '60 dias até a 1ª validação',
   personalAnchor: 'Criei e validei meu próprio mini-produto digital do zero, com rotina serena e sem burnout.',
   futureSelfLetter: 'Oi, sou você daqui a 90 dias. Escrevo para te lembrar do dia em que você segurou a tela e assumiu seu prumo. Naquele momento você não sabia bem por onde começar, mas decidiu dar um passo pequeno por vez. Hoje nosso mini-curso está validado, ajudamos 3 pessoas de verdade e aquela sensação de paralisia ficou para trás. Continue firme, seu prumo é real.',
-  chapterTitle: 'Capítulo 1: Onde você encontra sua promessa',
+  chapterTitle: 'Capítulo 1: Deixar a ideia clara',
   justification: 'Você indicou facilidade para ensinar, tempo moderado (1h/dia) e prefere formatos práticos. Por isso sugerimos um mini-curso gravado com modelo pronto: você cria uma vez, valida com 3 pessoas reais e não se torna refém de horários de atendimento.',
   radarScores: {
     skills: 85,
@@ -416,12 +416,12 @@ export const INITIAL_TASKS: TaskItem[] = [
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
-    chapterTitle: 'Capítulo 1: Onde você encontra sua promessa',
-    title: 'Definir sua promessa em 1 frase',
-    description: 'Escreva a promessa exata do que o seu produto resolve para o cliente.',
+    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
+    title: 'Dizer em 1 frase o que você resolve',
+    description: 'Uma frase simples: o que você resolve, e pra quem.',
     durationMinutes: 15,
     status: 'completed',
-    whatToDo: 'Complete a fórmula: "Eu ajudo [Público] a alcançar [Resultado desejado] mesmo que [Maior objeção/dificuldade]". Evite jargões complexos.',
+    whatToDo: 'Complete a frase: "Eu ajudo [quem] a [conseguir o quê], mesmo que [a maior dificuldade dessa pessoa]". Use palavras simples, do jeito que você falaria com um amigo.',
     howToKnowItIsGood: [
       'Qualquer pessoa da sua família consegue entender ao ouvir',
       'Resolve exatamente 1 dor central, não 5 coisas diferentes',
@@ -453,9 +453,9 @@ export const INITIAL_TASKS: TaskItem[] = [
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
-    chapterTitle: 'Capítulo 1: Onde você encontra sua promessa',
-    title: 'Criar sua versão mínima entregável',
-    description: 'O menor entregável possível para testar o interesse de alguém real.',
+    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
+    title: 'Criar a versão mais simples do que você vai oferecer',
+    description: 'Só o básico, pra testar se alguém se interessa.',
     durationMinutes: 20,
     status: 'pending',
     whatToDo: 'Pegue o tema que você mais domina e monte o menor formato possível: um checklist em PDF, um documento bem estruturado ou um vídeo direto de 10 minutos.',
@@ -490,9 +490,9 @@ export const INITIAL_TASKS: TaskItem[] = [
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
-    chapterTitle: 'Capítulo 1: Onde você encontra sua promessa',
-    title: 'Validar com 3 pessoas reais',
-    description: 'Converse com 3 pessoas do perfil para receber feedback honesto.',
+    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
+    title: 'Mostrar pra 3 pessoas e ouvir o que acham',
+    description: 'Converse com 3 pessoas que têm esse problema e peça uma opinião sincera.',
     durationMinutes: 30,
     status: 'pending',
     whatToDo: 'Mostre sua versão mínima (o desenho do serviço, o roteiro da sessão, o esboço do guia ou a aula 1) para 3 pessoas que já expressaram dificuldade no tema. Faça duas perguntas: "O que ficou confuso?" e "Isso resolveria seu problema?".',
@@ -525,9 +525,9 @@ export const INITIAL_TASKS: TaskItem[] = [
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
-    chapterTitle: 'Capítulo 1: Onde você encontra sua promessa',
-    title: 'Ajustar o preço e meio de pagamento',
-    description: 'Definir o valor de entrada e link de cobrança seguro.',
+    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
+    title: 'Escolher o preço de teste e como receber',
+    description: 'Quanto cobrar no teste e como a pessoa vai te pagar.',
     durationMinutes: 15,
     status: 'pending',
     whatToDo: 'Defina o preço inicial de validação (ex: R$ 27 a R$ 47) e escolha como vai receber. O Pix do seu banco já basta no teste.',
@@ -560,12 +560,12 @@ export const INITIAL_TASKS: TaskItem[] = [
     phaseId: 'marketing',
     phaseName: 'Marketing',
     chapterId: 2,
-    chapterTitle: 'Capítulo 2: Onde sua ideia ganha corpo e primeiro contato',
-    title: 'Publicar 3 postagens de dor real no Instagram',
-    description: 'Conteúdo focado nos erros que as pessoas cometem antes de ter seu produto.',
+    chapterTitle: 'Capítulo 2: Mostrar pra quem precisa',
+    title: 'Fazer 3 posts no Instagram sobre o problema que você resolve',
+    description: 'Posts que mostram que você entende o que essas pessoas passam.',
     durationMinutes: 40,
     status: 'pending',
-    whatToDo: 'Crie 3 posts em carrossel ou reels curtos abordando: 1) o erro comum, 2) o mito do nicho, 3) a solução simples.',
+    whatToDo: 'Faça 3 posts (carrossel ou vídeo curto): 1) um erro comum que essas pessoas cometem, 2) uma ideia errada que muita gente acredita, 3) uma solução simples.',
     howToKnowItIsGood: [
       'Pelo menos 1 pessoa respondeu com "nossa, eu passo por isso!"'
     ],
@@ -594,12 +594,12 @@ export const INITIAL_TASKS: TaskItem[] = [
     phaseId: 'marketing',
     phaseName: 'Marketing',
     chapterId: 2,
-    chapterTitle: 'Capítulo 2: Onde sua ideia ganha corpo e primeiro contato',
-    title: 'Convidar 10 pessoas para conhecer o produto',
-    description: 'Abordagem consultiva e direta com quem interagiu.',
+    chapterTitle: 'Capítulo 2: Mostrar pra quem precisa',
+    title: 'Convidar 10 pessoas pra conhecer o que você criou',
+    description: 'Conversar com quem já demonstrou interesse.',
     durationMinutes: 30,
     status: 'pending',
-    whatToDo: 'Puxe conversa com quem curtiu, comentou ou já pediu conselhos, oferecendo a solução com condição especial de validação.',
+    whatToDo: 'Puxe conversa com quem curtiu, comentou ou já te pediu ajuda, e ofereça com uma condição especial de teste.',
     howToKnowItIsGood: [
       'Conversas respeitosas que geraram perguntas sobre como comprar'
     ],
@@ -629,12 +629,12 @@ export const INITIAL_TASKS: TaskItem[] = [
     phaseId: 'lancamento',
     phaseName: 'Lançamento',
     chapterId: 3,
-    chapterTitle: 'Capítulo 3: Onde o valor se torna realidade e primeiro retorno',
-    title: 'Fazer o primeiro dia de vendas e coletar depoimentos',
-    description: 'Abertura oficial com prazo e coleta dos primeiros resultados.',
+    chapterTitle: 'Capítulo 3: As primeiras vendas',
+    title: 'Abrir as vendas e pedir depoimentos',
+    description: 'Avise que está vendendo, com prazo, e peça a opinião de quem comprou.',
     durationMinutes: 45,
     status: 'pending',
-    whatToDo: 'Anuncie a abertura com bônus para os 5 primeiros compradores e acompanhe de perto.',
+    whatToDo: 'Conte que abriu as vendas, com um bônus pros 5 primeiros, e acompanhe cada pessoa de perto.',
     howToKnowItIsGood: [
       'Pelo menos 1 venda realizada e feedback positivo registrado'
     ],

@@ -39,10 +39,10 @@ export const RoadmapTab: React.FC = () => {
         {/* Filtros por Capítulos */}
         <div className="flex gap-1 mb-3 overflow-x-auto pb-1 text-[13px]">
           {[
-            { id: 'todas', label: 'Todos os Capítulos' },
-            { id: 'fundacao', label: 'Cap. 1: Promessa' },
-            { id: 'marketing', label: 'Cap. 2: Contato' },
-            { id: 'lancamento', label: 'Cap. 3: Retorno' }
+            { id: 'todas', label: 'Todos' },
+            { id: 'fundacao', label: 'Cap. 1: Ideia clara' },
+            { id: 'marketing', label: 'Cap. 2: Mostrar' },
+            { id: 'lancamento', label: 'Cap. 3: Vender' }
           ].map(f => (
             <button
               key={f.id}

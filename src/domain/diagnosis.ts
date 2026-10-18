@@ -258,10 +258,10 @@ function channelFor(a: Answers): { channel: string; channelDescription: string }
   return {
     channel: `Sua rede de contatos (WhatsApp) + ${second}`,
     channelDescription:
-      'Comece por quem já te conhece: é o menor atrito para as primeiras conversas e vendas de teste. ' +
+      'Comece por quem já te conhece: é o jeito mais fácil de ter as primeiras conversas e vendas de teste. ' +
       (second === 'Instagram'
         ? 'Depois, use o Instagram para mostrar bastidores e atrair desconhecidos.'
-        : 'Depois, participe de grupos onde seu público já tira dúvidas, sem precisar aparecer em vídeo.') +
+        : 'Depois, entre em grupos onde essas pessoas já tiram dúvidas, sem precisar aparecer em vídeo.') +
       (has(a, 'q3_investment', 'mais_500') ? ' Anúncios pagos só depois que o teste der certo.' : ''),
   };
 }
@@ -310,23 +310,23 @@ export function calculateDiagnosis(a: Answers, personalAnchor: string, reflectio
 
   const warnings: string[] = [];
   if (one(a, 'q3_hours') === 'pouco' && one(a, 'q4_timeline') === 'rapido') {
-    warnings.push('Prazo curto para 3 a 5 h por semana: mantenha o produto pequeno e foque nas vendas de teste.');
+    warnings.push('Prazo curto pra quem tem 3 a 5 horas por semana. Dica: comece com algo bem pequeno e foque em vender pra testar.');
   }
   if (one(a, 'q4_goal') === 'escala') {
-    warnings.push('R$ 10 mil por mês é um objetivo de longo prazo. Este plano mira a primeira validação, o degrau que vem antes.');
+    warnings.push('R$ 10 mil por mês é meta de longo prazo. Esta jornada mira o primeiro degrau: provar que alguém paga pela sua ideia.');
   }
   if (rankedNiches[0].score === 0) {
-    warnings.push('Suas respostas não apontaram um tema claro. Este nicho é um ponto de partida: troque por uma alternativa se não fizer sentido.');
+    warnings.push('Suas respostas não apontaram um tema claro. Este caminho é só um ponto de partida: troque por uma alternativa se não fizer sentido.');
   }
 
   const justification =
     `Você contou que as pessoas te pedem ajuda com ${skills.join(', ') || 'várias coisas'}` +
     (themes.length ? ` e que gosta de ${themes.join(' e ')}` : '') +
-    `. Unir o que você já faz bem com o que te interessa aumenta a chance de você continuar quando ficar difícil. ` +
-    `Com ${hours || 'o tempo que você tem'} e ${exposure ? `a preferência "${exposure}"` : 'seu jeito de aparecer'}, ` +
-    `o formato de menor atrito é: ${lower(product.name(niche.topic))}. ` +
-    (quote(reflections.q1_help) ? `Nas suas palavras, você gosta de descomplicar: "${quote(reflections.q1_help)}". ` : '') +
-    `Isto é uma hipótese: o teste do Capítulo 2 vai confirmar ou ajustar o rumo.`;
+    `. Juntar o que você já faz bem com o que você curte ajuda a continuar quando ficar difícil. ` +
+    `Com ${hours ? `${hours} por semana` : 'o tempo que você tem'} e ${exposure ? `o seu jeito ("${exposure}")` : 'o seu jeito de aparecer'}, ` +
+    `o começo mais leve é: ${lower(product.name(niche.topic))}. ` +
+    (quote(reflections.q1_help) ? `Nas suas palavras, você gosta de ajudar com: "${quote(reflections.q1_help)}". ` : '') +
+    `Mas é uma aposta: o teste do Capítulo 2 vai mostrar se é por aqui ou se vale ajustar.`;
 
   const plan = PLAN_B[one(a, 'q5_obstacle') ?? ''] ?? PLAN_B.tempo;
 
@@ -353,14 +353,14 @@ export function calculateDiagnosis(a: Answers, personalAnchor: string, reflectio
     justification,
     personalAnchor,
     pain: niche.pain,
-    hypothesis: `${niche.audience} pagam por "${lower(product.name(niche.topic))}" para resolver ${niche.pain}.`,
+    hypothesis: `${niche.audience} pagam por "${lower(product.name(niche.topic))}" pra resolver ${niche.pain}.`,
     test: product.test,
     successSignal: '2 de 5 pessoas dizem sim (ou pagam) em até 14 dias.',
     calcSteps: [
-      skills.length ? `Cruzando sua facilidade com ${skills[0]}` : 'Cruzando suas habilidades principais',
-      hours ? `Considerando seu tempo real: ${hours}` : 'Analisando sua disponibilidade real',
-      `Encontrando o nicho de menor atrito: ${lower(niche.topic)}`,
-      'Estruturando o roteiro em 3 capítulos',
+      skills.length ? `Cruzando sua facilidade com ${skills[0]}` : 'Olhando o que você faz bem',
+      hours ? `Considerando seu tempo real: ${hours}` : 'Olhando o tempo que você tem',
+      `Procurando o caminho mais leve: ${lower(niche.topic)}`,
+      'Montando sua jornada em 3 capítulos',
     ],
     warnings,
     obstacle: plan.obstacle,

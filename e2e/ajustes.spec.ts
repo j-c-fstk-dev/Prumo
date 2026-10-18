@@ -17,7 +17,7 @@ test('escrita própria: sugestão vira resposta na escolha única e o botão Sal
   await page.getByRole('button', { name: 'Continuar' }).click();
 
   // 2ª pergunta (papel preferido): agora aceita texto
-  await expect(page.getByText('qual papel você mais gosta de exercer?')).toBeVisible();
+  await expect(page.getByText('Do que você mais gosta?')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Continuar' })).toBeDisabled();
   await page.getByRole('button', { name: /Detalhar com suas próprias palavras/ }).click();
   await page.locator('textarea').fill('Fico horas montando apresentações bonitas');

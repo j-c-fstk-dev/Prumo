@@ -22,9 +22,9 @@ export const HomeTab: React.FC = () => {
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
   const CHAPTERS = [
-    { id: 1, label: 'Cap. 1: Sua Promessa', dot: 'bg-primary' },
-    { id: 2, label: 'Cap. 2: Primeiro Contato', dot: 'bg-gold' },
-    { id: 3, label: 'Cap. 3: Primeiro Retorno', dot: 'bg-[#7A5AF8]' },
+    { id: 1, label: 'Cap. 1: Ideia clara', dot: 'bg-primary' },
+    { id: 2, label: 'Cap. 2: Mostrar', dot: 'bg-gold' },
+    { id: 3, label: 'Cap. 3: Vender', dot: 'bg-[#7A5AF8]' },
   ].map((c) => {
     const inChapter = tasks.filter((t) => t.chapterId === c.id);
     const percent = inChapter.length ? Math.round((inChapter.filter((t) => t.status === 'completed').length / inChapter.length) * 100) : 0;
@@ -183,7 +183,7 @@ export const HomeTab: React.FC = () => {
         <Reveal i={6}>
         <div className="p-4 rounded-2xl bg-surface border border-line shadow-xs">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-bold text-ink">Avanço da sua Jornada</span>
+            <span className="text-sm font-bold text-ink">Sua jornada até aqui</span>
             <span className="text-sm font-bold text-primary">{progressPercent}%</span>
           </div>
 
@@ -222,8 +222,8 @@ export const HomeTab: React.FC = () => {
             className="p-3 rounded-xl bg-surface border border-gold-line cursor-pointer hover:border-primary transition-colors"
           >
             <span className="text-lg block mb-1">📜</span>
-            <strong className="text-sm text-ink block">Carta do Futuro</strong>
-            <span className="text-xs text-muted">Reler compromisso</span>
+            <strong className="text-sm text-ink block">Sua carta</strong>
+            <span className="text-xs text-muted">Reler o combinado</span>
           </div>
           <div 
             onClick={() => {
@@ -234,7 +234,7 @@ export const HomeTab: React.FC = () => {
           >
             <span className="text-lg block mb-1">💬</span>
             <strong className="text-sm text-ink block">Coach Prumo</strong>
-            <span className="text-xs text-muted">Tirar dúvidas</span>
+            <span className="text-xs text-muted">Travou? Fala comigo</span>
           </div>
         </div>
         </Reveal>
@@ -256,7 +256,7 @@ export const HomeTab: React.FC = () => {
       <Reveal i={9}>
       <div className="p-3 rounded-xl bg-gold-soft border border-gold-line/60 text-sm text-gold-ink mt-3 flex items-start gap-2">
         <Flame className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-        <span><strong>Lembrete gentil:</strong> O progresso é uma história sendo escrita, não um placar subindo.</span>
+        <span><strong>Lembrete gentil:</strong> Não é corrida. Cada passinho conta, mesmo nos dias mais devagar.</span>
       </div>
       </Reveal>
     </div>

@@ -121,8 +121,8 @@ export interface TimelineInput {
 /** Linha do tempo de conquistas, da mais recente para a mais antiga. */
 export function buildTimeline({ diagnosisAt, letterSealedAt, tasks, completedAt }: TimelineInput): TimelineEvent[] {
   const events: TimelineEvent[] = [];
-  if (diagnosisAt) events.push({ at: diagnosisAt, title: 'Diagnóstico pronto: você encontrou seu norte', kind: 'diagnostico' });
-  if (letterSealedAt) events.push({ at: letterSealedAt, title: 'Cartas ao eu futuro seladas', kind: 'carta' });
+  if (diagnosisAt) events.push({ at: diagnosisAt, title: 'Você encontrou seu caminho', kind: 'diagnostico' });
+  if (letterSealedAt) events.push({ at: letterSealedAt, title: 'Cartas pro seu eu do futuro seladas', kind: 'carta' });
   for (const t of tasks) {
     if (completedAt[t.id]) events.push({ at: completedAt[t.id], title: `Concluiu: ${t.title}`, kind: 'tarefa' });
   }

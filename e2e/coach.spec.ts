@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 test('pede consentimento antes do primeiro uso, explicando o que é enviado', async ({ page }) => {
   await expect(page.getByText('Antes de conversar com o Coach')).toBeVisible();
   await expect(page.getByText(/Ele não é terapia/)).toBeVisible();
-  await expect(page.getByText(/suas reflexões da anamnese, suas cartas/)).toBeVisible();
+  await expect(page.getByText(/o que você escreveu nas perguntas, suas cartas/)).toBeVisible();
   await page.getByRole('button', { name: 'Entendi e quero usar' }).click();
   await expect(page.getByPlaceholder('Escreva sua dúvida...')).toBeVisible();
   // O consentimento fica salvo
