@@ -24,6 +24,38 @@ const KEYWORDS: Record<string, Record<string, string[]>> = {
     comunicacao: ['marketing', 'midia', 'rede social', 'storytelling', 'podcast', 'youtube', 'comunicac', 'jornal'],
     artes: ['arte', 'design', 'musica', 'desenho', 'pintura', 'fotograf', 'cinema', 'artesanat', 'moda', 'croche', 'costura'],
   },
+  q1_preference: {
+    criar: ['criar', 'crio', 'criand', 'criac', 'invent', 'desenh', 'montar', 'apresenta', 'bonit', 'arte', 'escrev', 'produz', 'ideia', 'do zero'],
+    ensinar: ['ensin', 'explic', 'aula', 'ajud', 'orient', 'mentor', 'treina', 'aprend'],
+    organizar: ['organiz', 'planilh', 'process', 'rotina', 'arrum', 'planej', 'list', 'agenda', 'estrutur'],
+    conectar: ['convers', 'vend', 'negoci', 'pessoas', 'apresentar gente', 'network', 'conect', 'indic', 'convenc'],
+  },
+  q2_community: {
+    solo: ['sozinh', 'quiet', 'bastidor', 'sem falar', 'meu tempo', 'introvert', 'concentr', 'silencio'],
+    comunidade: ['convers', 'pessoas', 'grupo', 'comunidade', 'turma', 'conversar', 'extrovert', 'atender'],
+    misto: ['equilibr', 'meio termo', 'um pouco', 'depende', 'mas preciso', 'as vezes'],
+  },
+  q5_exposure: {
+    sem_camera: ['trav', 'vergonha', 'timid', 'nao gosto', 'odeio', 'nunca', 'medo', 'escondid', 'bastidor'],
+    moderado: ['audio', 'voz', 'as vezes', 'se precisar', 'depende', 'pouco', 'mais ou menos'],
+    confortavel: ['adoro', 'gosto de gravar', 'tranquil', 'de boa', 'facil', 'live', 'video', 'stories'],
+  },
+  q5_rejection: {
+    sensivel: ['desanim', 'chate', 'trist', 'desist', 'magoa', 'abal', 'sofr', 'paraliz', 'travo'],
+    resiliente: ['tento de novo', 'normal', 'aprend', 'faz parte', 'insist', 'sigo', 'continuo', 'supero'],
+  },
+  q5_obstacle: {
+    tempo: ['tempo', 'cansa', 'trabalho', 'filho', 'rotina', 'corrid', 'exaust', 'sono'],
+    medo: ['medo', 'vergonha', 'julg', 'critica', 'oferec', 'inseg', 'ansied'],
+    perfeccionismo: ['perfei', 'perfeccion', 'detalh', 'pronto', 'nunca esta bom', 'revis'],
+    dispersao: ['distra', 'ideia', 'disper', 'foco', 'termin', 'comeco e', 'paro no meio', 'procrastin'],
+  },
+  q6_tools: {
+    instagram: ['instagram', 'insta', 'tiktok', 'facebook', 'rede social', 'redes sociais', 'youtube', 'stories', 'reels'],
+    canva: ['canva', 'capcut', 'photoshop', 'figma', 'edicao', 'editar video', 'editar foto'],
+    notion: ['notion', 'docs', 'planilh', 'excel', 'sheets', 'word', 'trello', 'agenda', 'drive'],
+    whatsapp_biz: ['whatsapp', 'zap', 'telegram'],
+  },
 };
 
 /** Minúsculas, sem acentos e sem pontuação, para comparar com segurança. */

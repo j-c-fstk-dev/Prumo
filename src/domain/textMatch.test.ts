@@ -38,9 +38,19 @@ describe('suggestOptions', () => {
     expect(suggestOptions('q2_themes', 'Adoro podcasts de investimentos')).toEqual(['financas', 'comunicacao']);
   });
 
-  it('só as perguntas de habilidade e interesse aceitam sugestão', () => {
+  it('entende o texto também nas perguntas de escolha única', () => {
+    expect(suggestOptions('q1_preference', 'Fico horas montando apresentações bonitas')).toEqual(['criar']);
+    expect(suggestOptions('q5_exposure', 'Gravo áudio de boa, mas vídeo me trava')[0]).toBeDefined();
+    expect(suggestOptions('q5_rejection', 'fico chateado mas no outro dia tento de novo')).toContain('resiliente');
+    expect(suggestOptions('q5_obstacle', 'o cansaço depois do trabalho')).toEqual(['tempo']);
+    expect(suggestOptions('q6_tools', 'uso muito o tiktok')).toEqual(['instagram']);
+    expect(suggestOptions('q1_preference', 'brinco com as crianças')).toEqual([]);
+  });
+
+  it('perguntas de número ou da âncora não têm sugestão', () => {
     expect(supportsTextMatch('q1_help')).toBe(true);
     expect(supportsTextMatch('q2_themes')).toBe(true);
+    expect(supportsTextMatch('q3_hours')).toBe(false);
     expect(supportsTextMatch('q7_pride')).toBe(false);
     expect(suggestOptions('q7_pride', 'planilhas')).toEqual([]);
   });

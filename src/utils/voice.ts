@@ -6,6 +6,12 @@
  * Lá, trocar por um plugin nativo de text-to-speech mantendo esta mesma interface.
  */
 
+/**
+ * Voz desligada após o teste com usuários (etapa 19): a voz sintética soa ruim na maioria dos
+ * celulares. As palavras de encorajamento aparecem como texto. Para religar: true.
+ */
+export const VOICE_ENABLED = false;
+
 const RATE = 0.95;
 /** Ritmo médio de fala em português (palavras por minuto) já ajustado pela velocidade */
 const WORDS_PER_MINUTE = 150 * RATE;

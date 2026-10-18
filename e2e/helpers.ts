@@ -45,7 +45,7 @@ export async function onboard(page: Page, name = 'Jo', opts: { confirmText?: str
 /** Do resultado até a home: ritual de segurar, carta 1, resposta própria e selo */
 export async function commitAndSeal(page: Page) {
   await page.getByRole('button', { name: /Assumir meu Prumo/ }).click();
-  const hold = page.getByRole('button', { name: /Segurar/ });
+  const hold = page.getByRole('button', { name: /Segure aqui/ });
   const box = (await hold.boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();

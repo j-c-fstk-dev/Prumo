@@ -29,9 +29,9 @@ export const RoadmapTab: React.FC = () => {
         </div>
 
         {/* Âncora Emocional Fixa */}
-        <div className="p-2.5 rounded-xl bg-gold-soft/80 border border-gold-line mb-3 text-sm flex items-center gap-2">
-          <Bookmark className="w-3.5 h-3.5 text-gold-text shrink-0" />
-          <span className="text-[13px] text-ink font-serif italic truncate">
+        <div className="p-2.5 rounded-xl bg-gold-soft/80 border border-gold-line mb-3 text-sm flex items-start gap-2">
+          <Bookmark className="w-3.5 h-3.5 text-gold-text shrink-0 mt-1" aria-hidden="true" />
+          <span className="text-sm text-ink font-serif italic leading-snug break-words min-w-0">
             "{personalAnchor}"
           </span>
         </div>
@@ -145,7 +145,7 @@ export const RoadmapTab: React.FC = () => {
         </div>
 
         <div className="mt-4">
-          <PersonalTasks title="Minhas tarefas (fora do plano)" />
+          <PersonalTasks title="Minha lista · fora da jornada" />
         </div>
       </div>
     </div>

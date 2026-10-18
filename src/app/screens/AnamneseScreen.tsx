@@ -13,16 +13,26 @@ export const AnamneseScreen: React.FC = () => {
   const currentSection = ANAMNESE_SECTIONS[sectionIndex];
   const currentQuestion = currentSection?.questions[questionIndex];
   const [showReflectionInput, setShowReflectionInput] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   // Cada pergunta começa com o campo recolhido, a não ser que a pessoa já tenha escrito algo
-  useEffect(
-    () => setShowReflectionInput(!!(currentQuestion && reflections[currentQuestion.id])),
-    [sectionIndex, questionIndex],
-  );
+  useEffect(() => {
+    setShowReflectionInput(false);
+    setJustSaved(false);
+  }, [sectionIndex, questionIndex]);
   if (!currentQuestion) return null;
 
   const qid = currentQuestion.id;
   const optionLabel = (id: string) => currentQuestion.options.find((o) => o.id === id)?.label ?? id;
   const confirmed = textOptions.confirmed[qid] ?? [];
+  const savedText = (reflections[qid] ?? '').trim();
+  const isSingle = currentQuestion.type === 'single';
+  // Pergunta de escolha única: confirmar a sugestão vira a própria resposta
+  const acceptSuggestion = (id: string) =>
+    isSingle ? actions.selectOption(qid, id, false) : actions.confirmTextOption(qid, id);
+  const saveReflection = () => {
+    setShowReflectionInput(false);
+    setJustSaved(true);
+  };
   // Sugestões locais a partir do texto: só contam no diagnóstico se a pessoa confirmar
   const suggestions = suggestOptions(qid, reflections[qid] ?? '', [
     ...(answers[qid] ?? []),
@@ -120,10 +130,17 @@ export const AnamneseScreen: React.FC = () => {
                   <span>✍️</span>
                   <span>Detalhar com suas próprias palavras</span>
                 </span>
-                <span className="text-xs text-gold-ink underline font-medium">
-                  {showReflectionInput ? 'Ocultar' : 'Escrever'}
-                </span>
+                {!showReflectionInput && (
+                  <span className="text-xs text-gold-ink underline font-medium">{savedText ? 'Editar' : 'Escrever'}</span>
+                )}
               </button>
+
+              {!showReflectionInput && savedText && (
+                <p className="mt-1.5 text-[13px] text-ink leading-snug">
+                  <span className="text-primary font-semibold">{justSaved ? 'Salvo ✓ ' : '✓ '}</span>
+                  <span className="italic">"{savedText.length > 90 ? `${savedText.slice(0, 90)}…` : savedText}"</span>
+                </p>
+              )}
 
               {showReflectionInput && (
                 <div className="mt-2 space-y-1.5 animate-fadeIn">
@@ -146,7 +163,7 @@ export const AnamneseScreen: React.FC = () => {
                       <span className="flex gap-1 shrink-0">
                         <button
                           type="button"
-                          onClick={() => actions.confirmTextOption(qid, id)}
+                          onClick={() => acceptSuggestion(id)}
                           className="px-2 py-0.5 rounded-md bg-primary text-on-primary text-[13px] font-semibold cursor-pointer"
                         >
                           Sim
@@ -173,6 +190,14 @@ export const AnamneseScreen: React.FC = () => {
                       {currentQuestion.reflectionPurpose} Fica salvo só no seu celular. Evite escrever dados de saúde ou outros dados sensíveis.
                     </p>
                   )}
+
+                  <button
+                    type="button"
+                    onClick={saveReflection}
+                    className="w-full min-h-10 rounded-lg bg-primary hover:bg-primary-hover text-on-primary text-sm font-semibold cursor-pointer active:scale-[0.98] transition-transform"
+                  >
+                    Salvar
+                  </button>
                 </div>
               )}
             </div>
