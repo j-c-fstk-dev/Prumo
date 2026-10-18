@@ -96,7 +96,7 @@ export const ProfileTab: React.FC = () => {
             }}
             className="p-3 bg-surface border border-line rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-2"
           >
-            <span>Ver Diagnóstico Completo</span>
+            <span>Ver meu resultado completo</span>
             <ChevronRight className="w-4 h-4 text-muted" />
           </div>
           <div 
@@ -107,7 +107,7 @@ export const ProfileTab: React.FC = () => {
             }}
             className="p-3 bg-surface border border-line rounded-xl flex items-center justify-between cursor-pointer hover:bg-surface-2"
           >
-            <span>Refazer a anamnese</span>
+            <span>Refazer as perguntas</span>
             <ChevronRight className="w-4 h-4 text-muted" />
           </div>
           <div

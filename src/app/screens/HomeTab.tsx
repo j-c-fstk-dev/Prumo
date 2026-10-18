@@ -14,6 +14,7 @@ import { Constellation } from '../../components/brand/Constellation';
 import { PersonalTasks } from '../components/PersonalTasks';
 import { DailyRhythm } from '../components/DailyRhythm';
 import { DailyInspiration } from '../components/QuoteCard';
+import { Reveal } from '../components/Reveal';
 
 export const HomeTab: React.FC = () => {
   const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, actions } = useApp();
@@ -21,9 +22,9 @@ export const HomeTab: React.FC = () => {
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
   const CHAPTERS = [
-    { id: 1, label: 'Cap. 1: Sua Promessa', dot: 'bg-primary' },
-    { id: 2, label: 'Cap. 2: Primeiro Contato', dot: 'bg-gold' },
-    { id: 3, label: 'Cap. 3: Primeiro Retorno', dot: 'bg-[#7A5AF8]' },
+    { id: 1, label: 'Cap. 1: Ideia clara', dot: 'bg-primary' },
+    { id: 2, label: 'Cap. 2: Mostrar', dot: 'bg-gold' },
+    { id: 3, label: 'Cap. 3: Vender', dot: 'bg-[#7A5AF8]' },
   ].map((c) => {
     const inChapter = tasks.filter((t) => t.chapterId === c.id);
     const percent = inChapter.length ? Math.round((inChapter.filter((t) => t.status === 'completed').length / inChapter.length) * 100) : 0;
@@ -34,6 +35,7 @@ export const HomeTab: React.FC = () => {
     <div key="tab-home" className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-tab-fade">
       <div className="space-y-3.5">
         {/* Header com Boas-Vindas */}
+        <Reveal i={0}>
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-ink">
@@ -47,13 +49,17 @@ export const HomeTab: React.FC = () => {
             <Compass className="w-5 h-5" />
           </div>
         </div>
+        </Reveal>
 
         {/* Ritmo diário: check-in, sequência gentil, remendo e boas-vindas de volta */}
 
+        <Reveal i={1}>
         <DailyRhythm />
+        </Reveal>
 
 
         {/* ÂNCORA EMOCIONAL FIXA DO EU FUTURO */}
+        <Reveal i={2}>
         <div className="p-3 rounded-xl bg-gold-soft/80 border border-gold-line/90 shadow-2xs flex items-start gap-2.5">
           <Bookmark className="w-4 h-4 text-gold-text shrink-0 mt-0.5" aria-hidden="true" />
           <div className="flex-1 min-w-0">
@@ -65,8 +71,10 @@ export const HomeTab: React.FC = () => {
             </p>
           </div>
         </div>
+        </Reveal>
 
         {/* CONSTELAÇÃO DO CAPÍTULO: cada tarefa concluída acende uma estrela */}
+        <Reveal i={3}>
         <Constellation
           name={nextStepTask.chapterTitle.replace(/^Capítulo \d+:\s*/, '')}
           stars={tasks
@@ -74,8 +82,10 @@ export const HomeTab: React.FC = () => {
             .map(t => ({ id: t.id, title: t.title, done: t.status === 'completed' }))}
           seed={nextStepTask.chapterId * 13}
         />
+        </Reveal>
 
         {/* CARTÃO DO PRÓXIMO PASSO (Com Ilustração-Âncora e Áudio Coach) */}
+        <Reveal i={4}>
         <div className="p-4 rounded-2xl bg-primary-soft border border-primary/30 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
@@ -160,16 +170,20 @@ export const HomeTab: React.FC = () => {
             </button>
           </div>
         </div>
+        </Reveal>
 
         {/* Tarefas pessoais: o app também serve para o dia a dia fora do plano */}
 
+        <Reveal i={5}>
         <PersonalTasks title="Pra hoje · fora da jornada" />
+        </Reveal>
 
 
         {/* Card de Progresso da História em Capítulos */}
+        <Reveal i={6}>
         <div className="p-4 rounded-2xl bg-surface border border-line shadow-xs">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-bold text-ink">Avanço da sua Jornada</span>
+            <span className="text-sm font-bold text-ink">Sua jornada até aqui</span>
             <span className="text-sm font-bold text-primary">{progressPercent}%</span>
           </div>
 
@@ -195,8 +209,10 @@ export const HomeTab: React.FC = () => {
             ))}
           </div>
         </div>
+        </Reveal>
 
         {/* Atalhos Rápidos */}
+        <Reveal i={7}>
         <div className="grid grid-cols-2 gap-2.5">
           <div 
             onClick={() => {
@@ -206,8 +222,8 @@ export const HomeTab: React.FC = () => {
             className="p-3 rounded-xl bg-surface border border-gold-line cursor-pointer hover:border-primary transition-colors"
           >
             <span className="text-lg block mb-1">📜</span>
-            <strong className="text-sm text-ink block">Carta do Futuro</strong>
-            <span className="text-xs text-muted">Reler compromisso</span>
+            <strong className="text-sm text-ink block">Sua carta</strong>
+            <span className="text-xs text-muted">Reler o combinado</span>
           </div>
           <div 
             onClick={() => {
@@ -218,26 +234,31 @@ export const HomeTab: React.FC = () => {
           >
             <span className="text-lg block mb-1">💬</span>
             <strong className="text-sm text-ink block">Coach Prumo</strong>
-            <span className="text-xs text-muted">Tirar dúvidas</span>
+            <span className="text-xs text-muted">Travou? Fala comigo</span>
           </div>
         </div>
+        </Reveal>
 
       </div>
 
       {/* Citação verificada ou achado de pesquisa, um por dia (docs/pesquisa/05) */}
 
+      <Reveal i={8}>
       <div className="mt-3">
 
         <DailyInspiration />
 
       </div>
+      </Reveal>
 
 
       {/* Dica de Presença */}
+      <Reveal i={9}>
       <div className="p-3 rounded-xl bg-gold-soft border border-gold-line/60 text-sm text-gold-ink mt-3 flex items-start gap-2">
         <Flame className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-        <span><strong>Lembrete gentil:</strong> O progresso é uma história sendo escrita, não um placar subindo.</span>
+        <span><strong>Lembrete gentil:</strong> Não é corrida. Cada passinho conta, mesmo nos dias mais devagar.</span>
       </div>
+      </Reveal>
     </div>
   );
 };

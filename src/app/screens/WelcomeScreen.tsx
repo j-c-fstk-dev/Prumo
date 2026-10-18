@@ -7,7 +7,7 @@ export const WelcomeScreen: React.FC = () => {
   const { actions } = useApp();
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 text-center select-none animate-fadeIn">
+    <div className="flex-1 flex flex-col justify-between p-6 text-center select-none overflow-y-auto animate-fadeIn">
       <div className="flex-1 flex flex-col items-center justify-center space-y-6">
         {/* Logo da Bússola */}
         <div className="w-24 h-24 rounded-full bg-primary-soft flex items-center justify-center text-primary shadow-sm">
@@ -16,10 +16,10 @@ export const WelcomeScreen: React.FC = () => {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-bold font-display text-ink tracking-tight">
-            Descubra seu caminho no digital.
+            Ache o seu caminho no digital.
           </h1>
           <p className="text-base text-muted max-w-[260px] mx-auto leading-relaxed">
-            Em 15 minutos, você sabe o que criar, para quem e como começar. Sem paralisia.
+            Em uns 15 minutos você descobre o que oferecer, pra quem e por onde começar. Sem complicação.
           </p>
         </div>
       </div>

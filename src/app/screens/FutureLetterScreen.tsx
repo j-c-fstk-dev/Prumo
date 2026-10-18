@@ -55,11 +55,11 @@ export const FutureLetterScreen: React.FC = () => {
         <div className="space-y-3 pt-1">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary text-[13px] font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Compromisso assinado · Carta 1 de 2</span>
+            <span>Carta 1 de 2</span>
           </div>
           <h2 className="text-xl font-bold font-display text-ink leading-tight">Escreva para você daqui a 90 dias</h2>
           <p className="text-sm text-muted leading-relaxed">
-            Deixamos um rascunho com o seu plano. Mude o que quiser: quanto mais tiver o seu jeito de falar, melhor.
+            Uma carta pra você ler daqui a 3 meses. Já deixamos um rascunho: mude o que quiser. Quanto mais tiver o seu jeito de falar, melhor.
           </p>
           <textarea
             rows={12}
@@ -105,8 +105,8 @@ export const FutureLetterScreen: React.FC = () => {
           </div>
           <h2 className="text-xl font-bold font-display text-ink leading-tight">Responda como o seu eu de 90 dias</h2>
           <p className="text-sm text-muted leading-relaxed">
-            Imagine que deu certo. O que você fez? Como se sentiu nos dias difíceis? O que diria para quem está começando hoje?
-            Esta parte é só sua: escrever a resposta é o que mais fortalece o compromisso.
+            Agora imagine que deu certo. O que você fez? Como foram os dias difíceis? O que diria pra você de hoje?
+            Essa parte é só sua: escrever essa resposta é o que mais ajuda a manter o combinado.
           </p>
           <textarea
             rows={10}
@@ -185,7 +185,7 @@ export const FutureLetterScreen: React.FC = () => {
           </button>
         ) : (
           <button onClick={enterJourney} className={primaryButton}>
-            <span>Entrar na Jornada (Capítulo 1)</span>
+            <span>Começar a jornada</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         )}

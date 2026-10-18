@@ -17,6 +17,7 @@ import { WhenPicker } from '../components/WhenPicker';
 import { ToolSuggestions } from '../components/ToolSuggestions';
 import { ExecutionKit } from '../components/ExecutionKit';
 import { QuoteByTheme } from '../components/QuoteCard';
+import { Reveal } from '../components/Reveal';
 import type { TemaCitacao } from '../../data/citacoes';
 
 /** Citação para as tarefas em que a trava mais aparece */
@@ -175,34 +176,7 @@ export const TaskDetailScreen: React.FC = () => {
         )}
 
 
-        {/* Intenção de implementação: o recurso com mais evidência (docs/pesquisa/02) */}
-
-
-        <div className="p-3.5 rounded-xl bg-surface border border-primary/30">
-
-
-          <strong className="text-sm text-ink block mb-2">Quando vou fazer:</strong>
-
-
-          <WhenPicker
-
-
-            value={selectedTask.when}
-
-
-            onChange={(when) => actions.setPlanTaskWhen(selectedTask.id, when)}
-
-
-            timeThieves={reflections.q3_hours}
-
-
-          />
-
-
-        </div>
-
-
-
+        <Reveal i={1}>
         {/* O Que Fazer */}
         <div className="p-3.5 rounded-xl bg-surface border border-line">
           <strong className="text-sm text-ink block mb-1">O que fazer:</strong>
@@ -210,7 +184,9 @@ export const TaskDetailScreen: React.FC = () => {
             {selectedTask.whatToDo}
           </p>
         </div>
+        </Reveal>
 
+        <Reveal i={2}>
         {/* Como saber que ficou bom */}
         <div className="p-3.5 rounded-xl bg-primary-soft/60 border border-primary/20">
           <strong className="text-sm text-primary block mb-1.5">Como saber que ficou bom:</strong>
@@ -223,17 +199,34 @@ export const TaskDetailScreen: React.FC = () => {
             ))}
           </ul>
         </div>
+        </Reveal>
 
-        {QUOTE_BY_TASK[selectedTask.id] && <QuoteByTheme tema={QUOTE_BY_TASK[selectedTask.id]} />}
+        <Reveal i={3}>
+        {/* Intenção de implementação: o recurso com mais evidência (docs/pesquisa/02) */}
+        <div className="p-3.5 rounded-xl bg-surface border border-primary/30">
+          <strong className="text-sm text-ink block mb-2">Quando vou fazer:</strong>
+          <WhenPicker
+            value={selectedTask.when}
+            onChange={(when) => actions.setPlanTaskWhen(selectedTask.id, when)}
+            timeThieves={reflections.q3_hours}
+          />
+        </div>
+        </Reveal>
+
+        <Reveal i={4}>{QUOTE_BY_TASK[selectedTask.id] && <QuoteByTheme tema={QUOTE_BY_TASK[selectedTask.id]} />}</Reveal>
 
 
         {/* Ferramentas por categoria + exemplos curados, sem preços (docs/etapas/14) */}
 
-        <ToolSuggestions categories={selectedTask.toolCategories} />
+        <Reveal i={5}>
+          <ToolSuggestions categories={selectedTask.toolCategories} />
+        </Reveal>
 
 
         {/* Kit de execução: modelos prontos com o plano da pessoa */}
-        <ExecutionKit taskId={selectedTask.id} chapterId={selectedTask.chapterId} />
+        <Reveal i={6}>
+          <ExecutionKit taskId={selectedTask.id} chapterId={selectedTask.chapterId} />
+        </Reveal>
       </div>
 
       {/* Botões de Ação */}
@@ -262,7 +255,7 @@ export const TaskDetailScreen: React.FC = () => {
           className="w-full py-2 text-sm font-semibold text-primary text-center flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <MessageSquare className="w-3.5 h-3.5" />
-          <span>Preciso de ajuda nisso (Abrir Coach)</span>
+          <span>Travei aqui: falar com o coach</span>
         </button>
       </div>
     </div>

@@ -17,7 +17,7 @@ test('escrita própria: sugestão vira resposta na escolha única e o botão Sal
   await page.getByRole('button', { name: 'Continuar' }).click();
 
   // 2ª pergunta (papel preferido): agora aceita texto
-  await expect(page.getByText('qual papel você mais gosta de exercer?')).toBeVisible();
+  await expect(page.getByText('Do que você mais gosta?')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Continuar' })).toBeDisabled();
   await page.getByRole('button', { name: /Detalhar com suas próprias palavras/ }).click();
   await page.locator('textarea').fill('Fico horas montando apresentações bonitas');
@@ -33,7 +33,7 @@ test('escrita própria: sugestão vira resposta na escolha única e o botão Sal
 test('âncora aparece inteira e o botão de assumir explica como segurar', async ({ page }) => {
   await onboard(page);
 
-  await page.getByRole('button', { name: /Assumir meu Prumo/ }).click();
+  await page.getByRole('button', { name: /Assumir meu prumo/ }).click();
   const hold = page.getByRole('button', { name: /Segure aqui/ });
   await expect(page.getByText(/segure o dedo/)).toBeVisible();
   await hold.click(); // toque rápido não sela
@@ -45,4 +45,32 @@ test('âncora aparece inteira e o botão de assumir explica como segurar', async
   await expect(anchor).toBeVisible();
   const cut = await anchor.evaluate((el) => el.scrollWidth > el.clientWidth || getComputedStyle(el).textOverflow === 'ellipsis');
   expect(cut).toBe(false);
+});
+
+test('apresentação inicial explica o que é prumo, a constelação e a jornada', async ({ page }) => {
+  await openApp(page);
+  await page.getByRole('button', { name: 'Começar diagnóstico' }).click();
+  await page.getByPlaceholder('Seu nome').fill('Jo');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+
+  await expect(page.getByText('Mas afinal, o que é prumo?')).toBeVisible();
+  await page.getByRole('button', { name: 'Próximo' }).click();
+  await expect(page.getByText('Cada passo acende uma estrela')).toBeVisible();
+  await page.getByRole('button', { name: 'Próximo' }).click();
+  await expect(page.getByText('Como funciona')).toBeVisible();
+  await page.getByRole('button', { name: 'Próximo' }).click();
+  await expect(page.getByText('E isso é só o começo')).toBeVisible();
+  await page.getByRole('button', { name: 'Bora começar' }).click();
+  await expect(page.getByRole('button', { name: 'Entendido, vamos lá' })).toBeVisible();
+});
+
+test('em tela baixa, o compromisso rola até o botão de segurar', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 600 });
+  await onboard(page);
+  await page.getByRole('button', { name: /Assumir meu prumo/ }).click();
+  const hold = page.getByRole('button', { name: /Segure aqui/ });
+  // Rola como uma pessoa (roda do mouse), não por código: tela travada não rola assim
+  await page.mouse.move(195, 300);
+  for (let i = 0; i < 10; i++) await page.mouse.wheel(0, 300);
+  await expect(hold).toBeInViewport({ ratio: 1 });
 });

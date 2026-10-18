@@ -19,7 +19,7 @@ export const ValueSignalScreen: React.FC = () => {
   return (
     <div 
       key={`value-signal-${currentSection.id}`}
-      className="flex-1 flex flex-col justify-between p-6 select-none animate-scale-in bg-gradient-to-b from-canvas to-gold-soft"
+      className="flex-1 flex flex-col justify-between p-6 select-none overflow-y-auto animate-scale-in bg-gradient-to-b from-canvas to-gold-soft"
     >
       <div className="flex-1 flex flex-col items-center justify-center text-center">
         <div className="w-16 h-16 rounded-2xl bg-primary-soft text-primary flex items-center justify-center text-3xl mb-5 shadow-xs transition-transform hover:scale-105">

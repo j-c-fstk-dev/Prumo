@@ -7,6 +7,7 @@ import confetti from 'canvas-confetti';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { QuoteByTheme } from '../components/QuoteCard';
+import { Reveal } from '../components/Reveal';
 
 export const CommitmentScreen: React.FC = () => {
   const { personalAnchor, diagnosis, actions } = useApp();
@@ -61,11 +62,12 @@ export const CommitmentScreen: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 select-none animate-scale-in bg-gradient-to-b from-canvas via-gold-soft to-gold-soft text-center">
+    <div className="flex-1 flex flex-col justify-between p-6 select-none overflow-y-auto animate-scale-in bg-gradient-to-b from-canvas via-gold-soft to-gold-soft text-center">
       <div className="pt-2">
+        <Reveal i={0}>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-soft text-gold-ink text-[13px] font-semibold mb-4">
           <ShieldCheck className="w-3.5 h-3.5 text-gold-text" />
-          <span>Pacto de Compromisso Consciente</span>
+          <span>Seu compromisso</span>
         </div>
 
         <div className="w-16 h-16 rounded-full bg-surface border border-gold-line shadow-sm flex items-center justify-center mx-auto mb-3 text-primary">
@@ -73,38 +75,54 @@ export const CommitmentScreen: React.FC = () => {
         </div>
 
         <h2 className="text-2xl font-bold font-serif text-ink leading-tight mb-2">
-          Assumir seu Prumo
+          Assumir seu prumo
         </h2>
 
-        <p className="text-sm text-muted leading-relaxed max-w-[280px] mx-auto mb-4">
-          Mudar de direção não é riscar tarefas: é um compromisso consciente com quem você escolhe se tornar daqui a 90 dias.
+        <p className="text-sm text-muted leading-relaxed max-w-[290px] mx-auto mb-1">
+          É um combinado com você: seguir esse caminho pelos próximos <strong className="text-ink">90 dias</strong> (3 meses).
         </p>
+        <p className="text-[13px] text-muted leading-relaxed max-w-[290px] mx-auto mb-4">
+          Por que 90 dias? É tempo pra testar sua ideia algumas vezes, ajustar o que não funcionar e ver os primeiros
+          resultados. É uma escolha do Prumo, não uma regra científica.
+        </p>
+        </Reveal>
 
         {/* Card de Âncora */}
+        <Reveal i={1}>
         <div className="p-3.5 rounded-xl bg-surface/90 border border-gold-line text-left shadow-2xs mb-2">
           <span className="text-xs font-bold uppercase tracking-wider text-gold-text block mb-1">
-            Sua Promessa para Si Mesmo
+            Sua âncora
           </span>
           <p className="text-sm text-ink font-serif italic">
             "{personalAnchor}"
           </p>
+          <p className="text-xs text-muted mt-1">A frase que vai te lembrar por que você começou.</p>
         </div>
+        </Reveal>
 
         {/* Plano B combinado antes de começar (WOOP: obstáculo previsto + "se… então…") */}
+        <Reveal i={2}>
         <div className="p-3.5 rounded-xl bg-surface/90 border border-primary/25 text-left shadow-2xs mb-2">
           <span className="text-xs font-bold uppercase tracking-wider text-primary block mb-1">
-            Seu plano B
+            Se travar, eu…
           </span>
           <p className="text-sm text-ink leading-relaxed">
-            Se {diagnosis.obstacle}, então {diagnosis.planB}
+            Quando {diagnosis.obstacle}, eu {diagnosis.planB}
+          </p>
+          <p className="text-xs text-muted mt-1.5 leading-snug">
+            Não é plano pra desistir. É o que você já combina agora pra fazer quando a dificuldade aparecer, e isso ajuda
+            muito a não parar no meio do caminho.
           </p>
         </div>
+        </Reveal>
 
-        <QuoteByTheme tema="obstaculo" />
+        <Reveal i={3}>
+          <QuoteByTheme tema="obstaculo" />
+        </Reveal>
       </div>
 
       {/* Botão Tátil de Pressão Contínua (Hold to Sign) */}
-      <div className="py-4 flex flex-col items-center">
+      <Reveal i={4} className="py-4 flex flex-col items-center">
         <div className="relative flex items-center justify-center mb-3">
           {/* Círculo de Progresso SVG */}
           <svg className="w-32 h-32 -rotate-90">
@@ -162,7 +180,7 @@ export const CommitmentScreen: React.FC = () => {
             <span>Aperte e <strong className="text-ink">segure o dedo</strong> no botão por 3 segundos</span>
           )}
         </p>
-      </div>
+      </Reveal>
 
       <div className="pt-2">
         <button

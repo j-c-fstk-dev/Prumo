@@ -10,7 +10,7 @@ export const RegisterScreen: React.FC = () => {
   const { userName, macroGoal, actions } = useApp();
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 select-none animate-fadeIn">
+    <div className="flex-1 flex flex-col justify-between p-6 select-none overflow-y-auto animate-fadeIn">
       <div>
         <button 
           onClick={() => {
@@ -32,7 +32,7 @@ export const RegisterScreen: React.FC = () => {
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-semibold text-ink block mb-1">Como devemos te chamar?</label>
+            <label className="text-sm font-semibold text-ink block mb-1">Como você quer ser chamado(a)?</label>
             <input
               type="text"
               value={userName}
@@ -43,12 +43,12 @@ export const RegisterScreen: React.FC = () => {
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-ink block mb-2">Qual seu objetivo principal hoje?</label>
+            <label className="text-sm font-semibold text-ink block mb-2">O que você mais quer agora?</label>
             <div className="space-y-2">
               {[
                 { id: 'renda_extra', label: '💰 Renda extra (R$ 500 a R$ 2.000/mês)' },
                 { id: 'substituir', label: '🚀 Substituir meu salário atual' },
-                { id: 'proposito', label: '🌱 Propósito e impacto no digital' }
+                { id: 'proposito', label: '🌱 Fazer algo com propósito' }
               ].map((item) => (
                 <div
                   key={item.id}

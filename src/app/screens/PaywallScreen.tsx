@@ -13,7 +13,7 @@ const PREMIUM_BENEFITS = [
 ];
 
 const FREE_FOREVER = [
-  'Diagnóstico completo e o roteiro inteiro, com os 3 capítulos',
+  'O resultado completo e a jornada inteira, com os 3 capítulos',
   'Tarefas pessoais, check-in, constelação e lembretes',
   `Coach de IA: ${FREE_LIMITS.coachMessagesPerWeek} mensagens por semana`,
 ];

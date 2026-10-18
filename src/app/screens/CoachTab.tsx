@@ -31,7 +31,7 @@ const CoachConsent: React.FC<{ onAccept: () => void }> = ({ onAccept }) => (
           tarefa atual.
         </li>
         <li>
-          <strong>Não vai:</strong> suas reflexões da anamnese, suas cartas e suas tarefas pessoais. Elas ficam só no seu celular.
+          <strong>Não vai:</strong> o que você escreveu nas perguntas, suas cartas e suas tarefas pessoais. Elas ficam só no seu celular.
         </li>
         <li>
           O Coach ajuda nas tarefas do plano. <strong>Ele não é terapia</strong> nem substitui profissionais de saúde, direito ou
