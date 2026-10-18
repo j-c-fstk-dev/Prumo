@@ -14,6 +14,7 @@ import { speak, stopSpeaking } from '../../utils/voice';
 import { clearAll, loadValue, saveValue } from './storage';
 import { NOTE_MAX, type Note, type NoteTag, type ProfileFieldId, type ProfileOverrides } from '../../domain/notebook';
 import { cleanPerson, type Person } from '../../domain/people';
+import { requestPersistence } from '../../utils/install';
 
 export type ScreenState =
   | 'splash'
@@ -87,6 +88,10 @@ interface PersistedState {
   taskNotes: Record<string, string>;
   /** Pessoas (mini-CRM, etapa 28): dados de terceiros, só no aparelho e nunca enviados à IA */
   people: Person[];
+  /** Última vez que a pessoa exportou o Caderno (lembrete de backup) */
+  lastExportAt?: number;
+  /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
+  installHintDismissedAt?: number;
   coachMessages: CoachMessage[];
   /** Diagnóstico calculado ao fim da anamnese (null até lá) */
   diagnosis: Diagnosis | null;
@@ -410,7 +415,11 @@ function useAppState() {
       }
     },
 
-    completeOnboarding: () => setData((d) => ({ ...d, onboardingDone: true, startedAt: d.startedAt ?? Date.now() })),
+    completeOnboarding: () => {
+      setData((d) => ({ ...d, onboardingDone: true, startedAt: d.startedAt ?? Date.now() }));
+      // A partir daqui há dados que importam: pede ao navegador para não apagá-los (etapa 30)
+      void requestPersistence();
+    },
 
     saveDiagnosis: (diag: Diagnosis) =>
       setData((d) => ({
@@ -732,6 +741,8 @@ function useAppState() {
           return next;
         }),
       })),
+    markExported: () => setData((d) => ({ ...d, lastExportAt: Date.now() })),
+    dismissInstallHint: () => setData((d) => ({ ...d, installHintDismissedAt: Date.now() })),
     deletePerson: (id: string) => setData((d) => ({ ...d, people: d.people.filter((p) => p.id !== id) })),
 
     /** Apaga tudo do aparelho e volta ao início */

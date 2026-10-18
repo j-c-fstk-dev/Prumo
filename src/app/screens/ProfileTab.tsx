@@ -1,4 +1,5 @@
 import React from 'react';
+import { ProtectDataCard } from '../components/ProtectData';
 import {
   ChevronRight,
   ExternalLink,
@@ -51,6 +52,9 @@ export const ProfileTab: React.FC = () => {
             Conhecer Planos
           </button>
         </div>
+
+        {/* Instalar, proteção do navegador e backup (etapa 30) */}
+        <ProtectDataCard />
 
         {/* Linha do tempo de conquistas (registrar o progresso ajuda a chegar lá: Harkin et al. 2016) */}
 

@@ -97,6 +97,9 @@ Plano em 6 blocos: [etapa 19](etapas/19-ajustes-do-teste.md)
 - [ ] 2. Vendas e resultados: registrar vendas, painel do mês, marcos comemorados
 - [ ] 3. Jornada "Crescer": ciclos mensais, revisão do mês, coach com números (nunca nomes)
 - [ ] 4. Lista de contato do dia: uma pessoa por vez, sem envio em massa
+- [x] Barra nova com a Início no meio + coach escrevendo mensagens para as pessoas sem receber nome/contato ([etapa 29](etapas/29-barra-e-coach-nas-mensagens.md))
+- [x] Proteger os dados: app instalável, armazenamento persistente, convite para instalar e lembrete de backup ([etapa 30](etapas/30-proteger-dados.md))
+- [ ] Fotos no Caderno (comprimidas; vídeo só como link) e exportação em .zip
 - [ ] Backup na nuvem (com conta; junto da Fase 4 e do Premium)
 
 ### Fase 4: Jurídico e empacotamento

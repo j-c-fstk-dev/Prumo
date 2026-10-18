@@ -15,6 +15,7 @@ import { PersonalTasks } from '../components/PersonalTasks';
 import { DailyRhythm } from '../components/DailyRhythm';
 import { DailyInspiration } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
+import { InstallHint } from '../components/ProtectData';
 import { lembreteDoDia } from '../../data/encorajamento';
 
 export const HomeTab: React.FC = () => {
@@ -56,6 +57,11 @@ export const HomeTab: React.FC = () => {
 
         <Reveal i={1}>
         <DailyRhythm />
+        </Reveal>
+
+        {/* Convite para instalar o app (protege os dados no iPhone) */}
+        <Reveal i={2}>
+          <InstallHint />
         </Reveal>
 
 

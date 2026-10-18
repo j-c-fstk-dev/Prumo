@@ -3,11 +3,11 @@ import { Copy, Download, Pencil, Search, Trash2, X } from 'lucide-react';
 import { useApp } from '../state/AppStore';
 import { Reveal } from '../components/Reveal';
 import { PeopleSection } from '../components/PeopleSection';
+import { useNotebookExport } from '../components/useNotebookExport';
 import { STAGES } from '../../domain/people';
 import { soundEffects } from '../../utils/soundEffects';
-import { copyText, shareOrDownload } from '../../utils/share';
+import { copyText } from '../../utils/share';
 import {
-  exportNotebook,
   filterNotes,
   highlightParts,
   NOTE_MAX,
@@ -111,7 +111,7 @@ const NoteCard: React.FC<{ note: Note; onFlash: (m: string) => void }> = ({ note
 
 /** Caderno do projeto (etapa 27): tudo o que a pessoa precisa anotar, sem sair do app */
 export const NotebookTab: React.FC = () => {
-  const { userName, diagnosis, notes, profileOverrides, taskNotes, tasks, nextStepTask, people, actions } = useApp();
+  const { diagnosis, notes, profileOverrides, taskNotes, tasks, nextStepTask, people, lastExportAt, actions } = useApp();
   const [section, setSection] = useState<'notas' | 'pessoas'>('notas');
   const [editingProfile, setEditingProfile] = useState(false);
   const [draft, setDraft] = useState('');
@@ -128,11 +128,13 @@ export const NotebookTab: React.FC = () => {
   const results = searchNotebook(search, { profile, notes, taskNotes: taskNoteList, people });
   const searching = searchOpen && search.trim().length > 0;
 
+  const runExport = useNotebookExport();
   const exportAll = async () => {
-    const text = exportNotebook({ userName, profile, notes, taskNotes: taskNoteList, people });
-    const how = await shareOrDownload(text, 'Caderno do Prumo', 'caderno-prumo.txt');
-    if (how === 'downloaded') flash('Arquivo baixado ✓');
+    if ((await runExport()) === 'downloaded') flash('Arquivo baixado ✓');
   };
+  // Lembrete de backup: tem conteúdo e nunca exportou, ou faz mais de 14 dias
+  const hasContent = notes.length + people.length + taskNoteList.length > 0;
+  const backupDue = hasContent && (!lastExportAt || Date.now() - lastExportAt > 14 * 86_400_000);
 
   return (
     <div key="tab-notebook" className="flex-1 p-5 select-none overflow-y-auto animate-tab-fade space-y-4">
@@ -178,6 +180,11 @@ export const NotebookTab: React.FC = () => {
           </label>
         )}
         {flashMsg && <p className="mt-1 text-[13px] text-primary font-semibold" role="status">{flashMsg}</p>}
+        {backupDue && !searchOpen && (
+          <button onClick={exportAll} className="mt-2 w-full text-left p-2.5 rounded-xl bg-gold-soft border border-gold-line text-[13px] text-gold-ink cursor-pointer">
+            💾 {lastExportAt ? 'Faz mais de 2 semanas que você não guarda uma cópia.' : 'Você ainda não guardou uma cópia do caderno.'} <strong>Toque para exportar.</strong>
+          </button>
+        )}
       </Reveal>
 
       {searching && (
