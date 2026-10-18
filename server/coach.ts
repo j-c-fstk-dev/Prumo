@@ -291,3 +291,80 @@ export async function handleIdea(body: any, env?: LlmEnv, guard?: LiveCallGuard)
     return { status: 200, body: { mode: 'offline' } };
   }
 }
+
+const MESSAGE_STAGES: Record<string, string> = {
+  contato: 'primeiro contato: convidar a pessoa para uma conversa curta, sem vender nada',
+  conversou: 'já conversaram: contar que a primeira versão ficou pronta e oferecer a condição de teste',
+  interessado: 'a pessoa disse sim ou pediu mais: combinar o próximo passo e facilitar a compra',
+  cliente: 'já é cliente: agradecer, perguntar como foi e pedir um depoimento ou indicação',
+  agora_nao: 'disse "agora não": retomar com leveza, sem pressão, contando uma novidade',
+};
+
+/** Tira linhas de rótulo ("Mensagem:") e aspas que alguns modelos colocam em volta */
+export function cleanSuggestion(text: string): string {
+  return text
+    .trim()
+    .replace(/^(mensagem|sugestão|sugestao)\s*:\s*/i, '')
+    .replace(/^["“]([\s\S]*)["”]$/, '$1')
+    .trim()
+    .slice(0, 1200);
+}
+
+/**
+ * Sugestão de mensagem para uma pessoa da lista (etapa 29). A IA NUNCA recebe o nome nem o contato
+ * da pessoa: escreve "[nome]" e o app troca pelo nome no próprio celular.
+ */
+export async function handleMessageSuggestion(
+  body: any,
+  env?: LlmEnv,
+  guard?: LiveCallGuard,
+): Promise<{ status: number; body: Record<string, unknown> }> {
+  const stage = typeof body?.stage === 'string' && body.stage in MESSAGE_STAGES ? body.stage : null;
+  if (!stage) return { status: 400, body: { error: 'Etapa inválida.' } };
+  const context = typeof body?.context === 'string' ? body.context.trim().slice(0, 500) : '';
+  if (context && detectCrisis(context)) {
+    return { status: 200, body: { mode: 'crisis', reply: crisisReply(clip(body?.userContext?.userName, 60)) } };
+  }
+  const llm = getLlmConfig(env);
+  if (!llm) return { status: 200, body: { mode: 'offline' } };
+  if (guard) {
+    try {
+      const verdict = await guard();
+      if (!verdict.allowed) return { status: 200, body: { mode: 'limited' } };
+    } catch (error) {
+      console.error('Erro no limite de uso do coach:', error);
+    }
+  }
+  const u = sanitizeContext(body?.userContext);
+  try {
+    const reply = await generateReply(llm, {
+      system:
+        'Você escreve mensagens curtas de WhatsApp em português do Brasil para quem está começando a vender algo simples. ' +
+        'Tom de amigo: gentil, direto, sem jargão de marketing, sem pressão, sem prometer resultado ou renda. ' +
+        'No máximo 80 palavras, em 2 a 4 parágrafos curtos, no máximo 1 emoji. ' +
+        'Use exatamente [nome] onde vai o nome de quem recebe (você não sabe o nome). ' +
+        'Se precisar de um valor que não foi dado, escreva [valor]. ' +
+        `Assine com: ${u.userName || '[seu nome]'}. ` +
+        'Responda SÓ com o texto da mensagem, sem título nem explicação.',
+      messages: [
+        {
+          role: 'user',
+          content:
+            `O que eu ofereço: ${u.diagnosis.product || 'não informado'}. ` +
+            `Pra quem: ${u.diagnosis.audience || 'não informado'}. ` +
+            `Momento da conversa: ${MESSAGE_STAGES[stage]}.` +
+            (context ? ` Contexto que eu sei: ${context}` : '') +
+            (body?.another ? ' Escreva uma versão diferente da anterior.' : ''),
+        },
+      ],
+      temperature: body?.another ? 0.9 : 0.6,
+      maxTokens: 400,
+    });
+    const text = cleanSuggestion(reply);
+    if (!text) throw new Error('IA devolveu sugestão vazia');
+    return { status: 200, body: { mode: 'live', text } };
+  } catch (error) {
+    console.error('Erro na sugestão de mensagem:', error);
+    return { status: 200, body: { mode: 'offline' } };
+  }
+}

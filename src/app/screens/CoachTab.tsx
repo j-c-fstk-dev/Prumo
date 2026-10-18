@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Compass, Flag, Send, Sparkles } from 'lucide-react';
+import { BookmarkPlus, Check, Compass, Copy, Flag, Send, Sparkles } from 'lucide-react';
+import { copyText } from '../../utils/share';
 import { useApp, type CoachMessage } from '../state/AppStore';
 
 const MAX_MESSAGE = 1000;
@@ -86,6 +87,36 @@ const ReportButton: React.FC<{ msg: CoachMessage; onReport: (reason: (typeof REP
   );
 };
 
+/** Copiar a resposta ou guardar no Caderno (pedido do teste: "às vezes tem coisas relevantes") */
+const CoachMessageActions: React.FC<{ text: string; onSave: () => void }> = ({ text, onSave }) => {
+  const [done, setDone] = useState<'' | 'copied' | 'saved'>('');
+  const show = (d: 'copied' | 'saved') => {
+    setDone(d);
+    setTimeout(() => setDone(''), 1800);
+  };
+  return (
+    <span className="inline-flex items-center gap-2">
+      <button
+        onClick={async () => {
+          if (await copyText(text)) show('copied');
+        }}
+        className="inline-flex items-center gap-1 text-xs text-muted hover:text-ink cursor-pointer min-h-8"
+      >
+        {done === 'copied' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />} {done === 'copied' ? 'Copiado' : 'Copiar'}
+      </button>
+      <button
+        onClick={() => {
+          onSave();
+          show('saved');
+        }}
+        className="inline-flex items-center gap-1 text-xs text-muted hover:text-ink cursor-pointer min-h-8"
+      >
+        {done === 'saved' ? <Check className="w-3 h-3" /> : <BookmarkPlus className="w-3 h-3" />} {done === 'saved' ? 'No caderno' : 'Salvar no caderno'}
+      </button>
+    </span>
+  );
+};
+
 export const CoachTab: React.FC = () => {
   const { userName, nextStepTask, isTyping, coachMessages, coachConsentAt, actions } = useApp();
   const [inputMessage, setInputMessage] = useState('');
@@ -160,8 +191,11 @@ export const CoachTab: React.FC = () => {
                 <span className="block text-xs text-gold-ink mt-1.5">Limite de conversas com a IA por hoje.</span>
               )}
               <span className={`flex items-center justify-between gap-2 text-xs mt-1 ${msg.sender === 'user' ? 'text-on-primary/70 justify-end' : 'text-muted'}`}>
-                {msg.sender === 'coach' && msg.mode === 'live' && i < coachMessages.length && (
-                  <ReportButton msg={msg} onReport={(reason) => actions.reportCoachMessage(i, reason)} />
+                {msg.sender === 'coach' && i < coachMessages.length && msg.mode !== 'crisis' && (
+                  <span className="inline-flex flex-wrap items-center gap-x-2">
+                    <CoachMessageActions text={msg.text} onSave={() => actions.addNote(msg.text, 'coach', nextStepTask.title)} />
+                    {msg.mode === 'live' && <ReportButton msg={msg} onReport={(reason) => actions.reportCoachMessage(i, reason)} />}
+                  </span>
                 )}
                 <span className="ml-auto">{msg.time}</span>
               </span>

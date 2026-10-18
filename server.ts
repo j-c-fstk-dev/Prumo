@@ -3,7 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { handleCoachChat, handleHealth, handleIdea, handleReport } from './server/coach.ts';
+import { handleCoachChat, handleHealth, handleIdea, handleMessageSuggestion, handleReport } from './server/coach.ts';
 
 dotenv.config();
 
@@ -26,6 +26,11 @@ async function startServer() {
 
   app.post('/api/coach/idea', async (req, res) => {
     const result = await handleIdea(req.body);
+    res.status(result.status).json(result.body);
+  });
+
+  app.post('/api/coach/message', async (req, res) => {
+    const result = await handleMessageSuggestion(req.body);
     res.status(result.status).json(result.body);
   });
 

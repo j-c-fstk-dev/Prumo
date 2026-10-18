@@ -17,6 +17,7 @@ import { HomeTab } from '../../app/screens/HomeTab';
 import { RoadmapTab } from '../../app/screens/RoadmapTab';
 import { CoachTab } from '../../app/screens/CoachTab';
 import { ProfileTab } from '../../app/screens/ProfileTab';
+import { NotebookTab } from '../../app/screens/NotebookTab';
 import { TaskDetailScreen } from '../../app/screens/TaskDetailScreen';
 import { PaywallScreen } from '../../app/screens/PaywallScreen';
 import { BottomNav } from '../../app/screens/BottomNav';
@@ -37,7 +38,7 @@ const SCREENS: Record<Exclude<ScreenState, 'home'>, React.FC> = {
   paywall: PaywallScreen,
 };
 
-const TABS = { home: HomeTab, roadmap: RoadmapTab, coach: CoachTab, profile: ProfileTab };
+const TABS = { home: HomeTab, roadmap: RoadmapTab, coach: CoachTab, notebook: NotebookTab, profile: ProfileTab };
 
 /** Tela atual. A `key` remonta a tela a cada troca, o que dispara as animações de entrada. */
 const CurrentScreen: React.FC = () => {

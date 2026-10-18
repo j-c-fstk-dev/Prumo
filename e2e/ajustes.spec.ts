@@ -116,3 +116,25 @@ test('abertura: na 1ª vez mostra a ilustração e espera o toque; depois, entra
   await expect(page.getByRole('button', { name: 'Toque para começar' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Começar diagnóstico' })).toBeVisible({ timeout: 10_000 });
 });
+
+test('app instalável: manifesto e ícones no ar, convite no início e cartão de proteção no perfil', async ({ page, request }) => {
+  const manifest = await (await request.get('/manifest.webmanifest')).json();
+  expect(manifest).toMatchObject({ name: 'Prumo', display: 'standalone', start_url: '/' });
+  for (const icon of manifest.icons) expect((await request.get(icon.src)).status()).toBe(200);
+  expect((await request.get('/icons/apple-touch-icon.png')).status()).toBe(200);
+
+  await onboard(page);
+  await commitAndSeal(page);
+  await expect(page.getByText('Instale o Prumo na tela de início')).toBeVisible();
+  await page.getByRole('button', { name: 'Como instalar' }).click();
+  await expect(page.getByText(/Instalar app/)).toBeVisible();
+  await page.getByRole('button', { name: 'Agora não' }).click();
+  await expect(page.getByText('Instale o Prumo na tela de início')).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByText(/^Olá, /)).toBeVisible();
+  await expect(page.getByText('Instale o Prumo na tela de início')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  await expect(page.getByRole('heading', { name: /Proteja seus dados/ })).toBeVisible();
+  await expect(page.getByText('3. Guarde uma cópia (nenhuma ainda)')).toBeVisible();
+});

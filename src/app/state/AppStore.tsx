@@ -12,6 +12,10 @@ const PAYWALL_ENABLED = import.meta.env.VITE_PAYWALL_ENABLED === 'true';
 import { soundEffects } from '../../utils/soundEffects';
 import { speak, stopSpeaking } from '../../utils/voice';
 import { clearAll, loadValue, saveValue } from './storage';
+import { NOTE_MAX, type Note, type NoteTag, type ProfileFieldId, type ProfileOverrides } from '../../domain/notebook';
+import { cleanPerson, type Person } from '../../domain/people';
+import { requestPersistence } from '../../utils/install';
+import { deleteImages } from './images';
 
 export type ScreenState =
   | 'splash'
@@ -28,7 +32,7 @@ export type ScreenState =
   | 'task_detail'
   | 'paywall';
 
-export type TabId = 'home' | 'roadmap' | 'coach' | 'profile';
+export type TabId = 'home' | 'roadmap' | 'coach' | 'notebook' | 'profile';
 export type MacroGoal = 'renda_extra' | 'substituir' | 'proposito';
 /** auto segue o sistema; light = "Pergaminho"; dark = "Noite" (docs/pesquisa/03) */
 export type ThemePref = 'auto' | 'light' | 'dark';
@@ -79,6 +83,16 @@ interface PersistedState {
   /** Ajustes da pessoa nas tarefas do plano (título e "quando vou fazer") */
   planEdits: Record<string, { title?: string; when?: string }>;
   personalTasks: PersonalTask[];
+  /** Caderno do projeto (etapa 27): anotações, ficha editada e notas por tarefa. Só no aparelho. */
+  notes: Note[];
+  profileOverrides: ProfileOverrides;
+  taskNotes: Record<string, string>;
+  /** Pessoas (mini-CRM, etapa 28): dados de terceiros, só no aparelho e nunca enviados à IA */
+  people: Person[];
+  /** Última vez que a pessoa exportou o Caderno (lembrete de backup) */
+  lastExportAt?: number;
+  /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
+  installHintDismissedAt?: number;
   coachMessages: CoachMessage[];
   /** Diagnóstico calculado ao fim da anamnese (null até lá) */
   diagnosis: Diagnosis | null;
@@ -119,6 +133,10 @@ function initialPersisted(): PersistedState {
     taskStatus: {},
     planEdits: {},
     personalTasks: [],
+    notes: [],
+    profileOverrides: {},
+    taskNotes: {},
+    people: [],
     coachMessages: [],
     diagnosis: null,
     letter: null,
@@ -398,7 +416,11 @@ function useAppState() {
       }
     },
 
-    completeOnboarding: () => setData((d) => ({ ...d, onboardingDone: true, startedAt: d.startedAt ?? Date.now() })),
+    completeOnboarding: () => {
+      setData((d) => ({ ...d, onboardingDone: true, startedAt: d.startedAt ?? Date.now() }));
+      // A partir daqui há dados que importam: pede ao navegador para não apagá-los (etapa 30)
+      void requestPersistence();
+    },
 
     saveDiagnosis: (diag: Diagnosis) =>
       setData((d) => ({
@@ -431,6 +453,36 @@ function useAppState() {
       if (!guard('pivot')) return;
       soundEffects.playSelectOption();
       setData((d) => ({ ...d, diagnosis: buildCustomDiagnosis(diagnosis, input, scoredAnswers), usage: { ...d.usage, pivots: d.usage.pivots + 1 } }));
+    },
+
+    /**
+     * Sugestão de mensagem para uma pessoa da lista. Vai só a etapa, o contexto digitado e o resumo do
+     * produto: o nome e o contato da pessoa nunca saem do aparelho (a IA escreve "[nome]").
+     */
+    suggestMessage: async (stage: string, context: string, another = false): Promise<{ mode: string; text?: string; reply?: string }> => {
+      try {
+        const response = await fetch('/api/coach/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            stage,
+            context,
+            another,
+            clientId: data.clientId,
+            userContext: {
+              userName: data.userName,
+              diagnosis: {
+                product: data.profileOverrides.offer || diagnosis?.product,
+                audience: data.profileOverrides.audience || diagnosis?.audience,
+              },
+            },
+          }),
+        });
+        if (!response.ok) return { mode: 'offline' };
+        return await response.json();
+      } catch {
+        return { mode: 'offline' };
+      }
     },
 
     /** Pede à IA uma sugestão organizada a partir da ideia contada com as próprias palavras */
@@ -638,6 +690,74 @@ function useAppState() {
       soundEffects.playTransition();
       setData((d) => ({ ...d, coachMessages: [...d.coachMessages, { sender: 'coach', text: reply, time: nowTime(), mode }] }));
       setIsTyping(false);
+    },
+
+    /** Caderno: nova anotação (opcionalmente ligada à tarefa em que a pessoa estava) */
+    addNote: (text: string, tag: NoteTag, taskTitle?: string, images: string[] = []) => {
+      const clean = text.trim().slice(0, NOTE_MAX);
+      if (!clean && !images.length) return;
+      soundEffects.playSelectOption();
+      const now = Date.now();
+      const note: Note = {
+        id: `n${now}-${Math.random().toString(36).slice(2, 7)}`,
+        text: clean,
+        tag,
+        taskTitle,
+        images: images.length ? images : undefined,
+        createdAt: now,
+        updatedAt: now,
+      };
+      setData((d) => ({ ...d, notes: [note, ...d.notes] }));
+    },
+    updateNote: (id: string, patch: Partial<Pick<Note, 'text' | 'tag' | 'images'>>) =>
+      setData((d) => ({
+        ...d,
+        notes: d.notes.map((n) =>
+          n.id === id ? { ...n, ...patch, text: (patch.text ?? n.text).slice(0, NOTE_MAX), updatedAt: Date.now() } : n,
+        ),
+      })),
+    deleteNote: (id: string) => {
+      void deleteImages(data.notes.find((n) => n.id === id)?.images);
+      setData((d) => ({ ...d, notes: d.notes.filter((n) => n.id !== id) }));
+    },
+    setProfileField: (id: ProfileFieldId, value: string) =>
+      setData((d) => ({ ...d, profileOverrides: { ...d.profileOverrides, [id]: value.slice(0, 300) } })),
+    setTaskNote: (taskId: string, text: string) =>
+      setData((d) => ({ ...d, taskNotes: { ...d.taskNotes, [taskId]: text.slice(0, NOTE_MAX) } })),
+
+    /** Pessoas: novo contato (manual ou trazido da agenda do celular) */
+    addPerson: (input: Partial<Person> & { name: string }) => {
+      const clean = cleanPerson(input);
+      if (!clean.name) return;
+      const now = Date.now();
+      const stage = clean.stage ?? 'contato';
+      const person: Person = {
+        ...clean,
+        name: clean.name,
+        id: `p${now}-${Math.random().toString(36).slice(2, 7)}`,
+        stage,
+        stageHistory: [{ stage, at: now }],
+        createdAt: now,
+        updatedAt: now,
+      };
+      setData((d) => ({ ...d, people: [person, ...d.people] }));
+    },
+    updatePerson: (id: string, patch: Partial<Omit<Person, 'id' | 'stageHistory' | 'createdAt'>>) =>
+      setData((d) => ({
+        ...d,
+        people: d.people.map((p) => {
+          if (p.id !== id) return p;
+          const next = cleanPerson({ ...p, ...patch, updatedAt: Date.now() });
+          // Guarda quando mudou de etapa (para métricas da fase 2)
+          if (patch.stage && patch.stage !== p.stage) next.stageHistory = [...p.stageHistory, { stage: patch.stage, at: Date.now() }];
+          return next;
+        }),
+      })),
+    markExported: () => setData((d) => ({ ...d, lastExportAt: Date.now() })),
+    dismissInstallHint: () => setData((d) => ({ ...d, installHintDismissedAt: Date.now() })),
+    deletePerson: (id: string) => {
+      void deleteImages(data.people.find((p) => p.id === id)?.images);
+      setData((d) => ({ ...d, people: d.people.filter((p) => p.id !== id) }));
     },
 
     /** Apaga tudo do aparelho e volta ao início */

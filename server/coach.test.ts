@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { handleCoachChat, handleIdea, handleReport, LIMITS, parseIdea } from './coach';
+import { cleanSuggestion, handleCoachChat, handleIdea, handleMessageSuggestion, handleReport, LIMITS, parseIdea } from './coach';
 import { crisisReply, detectCrisis } from './safety';
 
 const LIVE_ENV = { LLM_PROVIDER: 'openai', LLM_API_KEY: 'k', LLM_BASE_URL: 'http://ia.local/v1' };
@@ -189,5 +189,35 @@ describe('sugestão de caminho próprio', () => {
     expect((await handleIdea({ description: 'não quero mais viver' }, LIVE_ENV)).body.mode).toBe('crisis');
     expect(fetchMock).not.toHaveBeenCalled();
     expect((await handleIdea({ description: 'oi' }, LIVE_ENV)).status).toBe(400);
+  });
+});
+
+describe('sugestão de mensagem para uma pessoa', () => {
+  it('nunca manda o nome nem o contato da pessoa para a IA', async () => {
+    const fetchMock = mockLlm('Oi, [nome]! Tudo bem?');
+    const r = await handleMessageSuggestion(
+      { stage: 'contato', context: 'ela trabalha à noite', personName: 'Ana Souza', phone: '11987654321', userContext: { userName: 'Jo', diagnosis: { product: 'Aulas de violão' } } },
+      LIVE_ENV,
+    );
+    expect(r.body).toEqual({ mode: 'live', text: 'Oi, [nome]! Tudo bem?' });
+    const sent = (fetchMock.mock.calls[0] as unknown as [string, { body: string }])[1].body;
+    expect(sent).not.toContain('Ana');
+    expect(sent).not.toContain('98765');
+    expect(sent).toContain('ela trabalha à noite');
+    expect(sent).toContain('[nome]');
+  });
+
+  it('etapa inválida, sem IA, limite e crise', async () => {
+    const fetchMock = mockLlm();
+    expect((await handleMessageSuggestion({ stage: 'hack' }, LIVE_ENV)).status).toBe(400);
+    expect((await handleMessageSuggestion({ stage: 'cliente' }, {})).body.mode).toBe('offline');
+    expect((await handleMessageSuggestion({ stage: 'cliente' }, LIVE_ENV, async () => ({ allowed: false }))).body.mode).toBe('limited');
+    expect((await handleMessageSuggestion({ stage: 'cliente', context: 'não quero mais viver' }, LIVE_ENV)).body.mode).toBe('crisis');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('limpa rótulos e aspas que o modelo às vezes coloca', () => {
+    expect(cleanSuggestion('Mensagem: "Oi, [nome]!"')).toBe('Oi, [nome]!');
+    expect(cleanSuggestion('  Oi  ')).toBe('Oi');
   });
 });
