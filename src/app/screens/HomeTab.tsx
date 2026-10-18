@@ -15,9 +15,10 @@ import { PersonalTasks } from '../components/PersonalTasks';
 import { DailyRhythm } from '../components/DailyRhythm';
 import { DailyInspiration } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
+import { lembreteDoDia } from '../../data/encorajamento';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, actions } = useApp();
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
@@ -256,7 +257,10 @@ export const HomeTab: React.FC = () => {
       <Reveal i={9}>
       <div className="p-3 rounded-xl bg-gold-soft border border-gold-line/60 text-sm text-gold-ink mt-3 flex items-start gap-2">
         <Flame className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-        <span><strong>Lembrete gentil:</strong> Não é corrida. Cada passinho conta, mesmo nos dias mais devagar.</span>
+        <span>
+          <strong>Lembrete do dia:</strong>{' '}
+          {lembreteDoDia({ date: new Date(), chapterId: nextStepTask.chapterId, daysSinceStart: daysSinceStart ?? 0, daysAway: streak.daysAway })}
+        </span>
       </div>
       </Reveal>
     </div>

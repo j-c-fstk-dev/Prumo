@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ArrowRight,
   Sparkles,
@@ -13,10 +13,10 @@ import { Reveal } from '../components/Reveal';
 export const ResultScreen: React.FC = () => {
   const { userName, diagnosis, actions } = useApp();
   const [showJustification, setShowJustification] = useState(false);
-  const [showAlternatives, setShowAlternatives] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-slide-up">
+    <div ref={scrollRef} className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-slide-up">
       <div>
         <Reveal i={0}>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary text-sm font-semibold mb-3">
@@ -109,39 +109,42 @@ export const ResultScreen: React.FC = () => {
           )}
         </div>
 
-        {/* Alternativas recolhidas: 1 recomendação em destaque evita sobrecarga de escolha */}
-        {diagnosis.alternatives.length > 0 && (
-          <div className="p-3.5 rounded-xl bg-surface-2 border border-line mb-4">
-            <button
-              onClick={() => setShowAlternatives(!showAlternatives)}
-              className="w-full flex items-center justify-between text-sm font-semibold text-primary"
-            >
-              <span>Ver {diagnosis.alternatives.length} alternativas</span>
-              {showAlternatives ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-
-            {showAlternatives && (
-              <div className="mt-2 pt-2 border-t border-line space-y-2">
-                {diagnosis.alternatives.map((alt) => (
-                  <div key={`${alt.nicheId}-${alt.productId}`} className="p-2.5 rounded-lg bg-surface border border-line">
-                    <strong className="text-sm text-ink block">{alt.niche}</strong>
-                    <span className="text-[13px] text-muted block mt-0.5">{alt.product}</span>
-                    <button
-                      onClick={() => {
-                        soundEffects.playSelectOption();
-                        actions.chooseAlternative(alt);
-                        setShowAlternatives(false);
-                      }}
-                      className="mt-1.5 text-[13px] font-semibold text-primary hover:underline cursor-pointer"
-                    >
-                      Explorar esta alternativa
-                    </button>
-                  </div>
-                ))}
+        {/* 3 caminhos diferentes + "criar o meu" (teste com usuários, etapa 23) */}
+        <div className="pt-1 mb-4">
+          <h3 className="text-base font-bold text-ink">Não é bem isso? Escolha outro caminho</h3>
+          <p className="text-[13px] text-muted mb-2">
+            {diagnosis.nicheId === 'custom' ? 'Estas são as sugestões que combinam com as suas respostas.' : 'Também combinam com as suas respostas.'}
+          </p>
+          <div className="space-y-2">
+            {diagnosis.alternatives.map((alt) => (
+              <div key={`${alt.nicheId}-${alt.productId}`} className="p-3 rounded-xl bg-surface border border-line">
+                <strong className="text-sm text-ink block">{alt.niche}</strong>
+                <span className="text-[13px] text-muted block mt-0.5">{alt.product}</span>
+                <button
+                  onClick={() => {
+                    soundEffects.playSelectOption();
+                    actions.chooseAlternative(alt);
+                    // Volta ao topo para mostrar o caminho escolhido
+                    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="mt-1.5 min-h-9 text-[13px] font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  Escolher este caminho
+                </button>
               </div>
-            )}
+            ))}
+            <button
+              onClick={() => {
+                soundEffects.playTransition();
+                actions.go('custom_path');
+              }}
+              className="w-full p-3 rounded-xl border-2 border-dashed border-primary/40 text-left cursor-pointer hover:border-primary transition-colors"
+            >
+              <strong className="text-sm text-primary block">✏️ Quero criar o meu</strong>
+              <span className="text-[13px] text-muted block mt-0.5">Conte a sua ideia e a jornada se adapta a ela.</span>
+            </button>
           </div>
-        )}
+        </div>
         </Reveal>
       </div>
 

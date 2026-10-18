@@ -330,9 +330,10 @@ export function calculateDiagnosis(a: Answers, personalAnchor: string, reflectio
 
   const plan = PLAN_B[one(a, 'q5_obstacle') ?? ''] ?? PLAN_B.tempo;
 
+  // 3 caminhos de verdade diferentes: cada alternativa é outro tema (teste com usuários, etapa 23)
   const alternatives: DiagnosisOption[] = [
     { n: rankedNiches[1].n, p: PRODUCTS[rankedProducts[0].p] },
-    { n: niche, p: PRODUCTS[rankedProducts[1].p] },
+    { n: rankedNiches[2].n, p: PRODUCTS[rankedProducts[1].p] },
   ].map(({ n, p }) => ({ nicheId: n.id, productId: p.id, niche: n.label, product: p.name(n.topic) }));
 
   const radar = (v: number) => Math.max(20, Math.min(100, v));
@@ -381,8 +382,9 @@ export function calculateDiagnosis(a: Answers, personalAnchor: string, reflectio
 export function applyAlternative(base: Diagnosis, alt: DiagnosisOption, a: Answers): Diagnosis {
   const niche = NICHES.find((n) => n.id === alt.nicheId) ?? NICHES[0];
   const product = PRODUCTS[alt.productId];
+  // O caminho criado pela pessoa não vira alternativa (ela pode recriar quando quiser)
   const others: DiagnosisOption[] = [
-    { nicheId: base.nicheId, productId: base.productId, niche: base.niche, product: base.product },
+    ...(base.nicheId === CUSTOM_NICHE_ID ? [] : [{ nicheId: base.nicheId, productId: base.productId, niche: base.niche, product: base.product }]),
     ...base.alternatives.filter((x) => !(x.nicheId === alt.nicheId && x.productId === alt.productId)),
   ].slice(0, 2);
   return {
@@ -396,12 +398,68 @@ export function applyAlternative(base: Diagnosis, alt: DiagnosisOption, a: Answe
     audience: niche.audience,
     audienceDescription: niche.audienceDescription,
     pain: niche.pain,
-    hypothesis: `${niche.audience} pagam por "${lower(product.name(niche.topic))}" para resolver ${niche.pain}.`,
+    hypothesis: `${niche.audience} pagam por "${lower(product.name(niche.topic))}" pra resolver ${niche.pain}.`,
     test: product.test,
     justification:
-      'Você escolheu explorar esta alternativa ao plano recomendado. Ela também parte das suas respostas, ' +
-      'e o teste do Capítulo 2 vai mostrar se este é o caminho.',
+      'Você escolheu este caminho entre os que combinam com as suas respostas. ' +
+      'O teste do Capítulo 2 vai mostrar se é por aqui ou se vale ajustar.',
+    warnings: [],
     alternatives: others,
+    ...channelFor(a),
+  };
+}
+
+export const CUSTOM_NICHE_ID = 'custom';
+
+export interface CustomPathInput {
+  /** O que a pessoa vai oferecer (ex.: "aulas de violão para iniciantes") */
+  offer: string;
+  /** Pra quem */
+  audience: string;
+  /** Que problema resolve, nas palavras dela */
+  pain: string;
+  productId: ProductId;
+}
+
+export const CUSTOM_LIMITS = { offer: 80, audience: 80, pain: 120 } as const;
+
+const tidy = (t: string, max: number) => t.trim().replace(/\s+/g, ' ').replace(/[.!]+$/, '').slice(0, max);
+
+export function isCustomPathReady(input: CustomPathInput): boolean {
+  return tidy(input.offer, 80).length >= 3 && tidy(input.audience, 80).length >= 3 && tidy(input.pain, 120).length >= 3;
+}
+
+/**
+ * "Quero criar o meu": a pessoa desenha o próprio caminho e a jornada se adapta a ele.
+ * Mantém o que vem das respostas (canal, prazo, "se travar, eu…") e troca o resto.
+ */
+export function buildCustomDiagnosis(base: Diagnosis, input: CustomPathInput, a: Answers): Diagnosis {
+  const offer = tidy(input.offer, CUSTOM_LIMITS.offer);
+  const audience = tidy(input.audience, CUSTOM_LIMITS.audience);
+  const pain = lower(tidy(input.pain, CUSTOM_LIMITS.pain));
+  const product = PRODUCTS[input.productId];
+  const suggestions: DiagnosisOption[] =
+    base.nicheId === CUSTOM_NICHE_ID
+      ? base.alternatives
+      : [{ nicheId: base.nicheId, productId: base.productId, niche: base.niche, product: base.product }, ...base.alternatives];
+  return {
+    ...base,
+    nicheId: CUSTOM_NICHE_ID,
+    productId: product.id,
+    niche: offer.charAt(0).toUpperCase() + offer.slice(1),
+    nicheDescription: `Ajudar ${lower(audience)} a resolver ${pain}.`,
+    product: product.name(lower(offer)),
+    productDescription: product.description,
+    audience: audience.charAt(0).toUpperCase() + audience.slice(1),
+    audienceDescription: `As pessoas que você mesmo escolheu ajudar.`,
+    pain,
+    hypothesis: `${audience.charAt(0).toUpperCase() + audience.slice(1)} pagam por "${lower(product.name(lower(offer)))}" pra resolver ${pain}.`,
+    test: product.test,
+    justification:
+      'Esse caminho foi você que desenhou. O Prumo montou a jornada em cima dele, mantendo o que veio das suas respostas ' +
+      '(onde achar as pessoas, prazo e o que fazer se travar). O teste do Capítulo 2 vai mostrar se é por aqui.',
+    warnings: [],
+    alternatives: suggestions.slice(0, 3),
     ...channelFor(a),
   };
 }

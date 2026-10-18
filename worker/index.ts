@@ -4,7 +4,7 @@
  * As chaves da IA ficam como secrets do Worker (painel da Cloudflare ou `wrangler secret put`).
  */
 
-import { handleCoachChat, handleHealth, handleReport, type LiveCallGuard } from '../server/coach.ts';
+import { handleCoachChat, handleHealth, handleIdea, handleReport, type LiveCallGuard } from '../server/coach.ts';
 import type { LlmEnv } from '../server/llm.ts';
 import { buildRules, cleanClientId, type LimitEnv, type LimitRule } from '../server/limits.ts';
 
@@ -58,12 +58,17 @@ export default {
       return json(200, handleHealth(env).body);
     }
 
-    if (pathname === '/api/coach/chat' || pathname === '/api/coach/report') {
+    if (pathname === '/api/coach/chat' || pathname === '/api/coach/report' || pathname === '/api/coach/idea') {
       if (request.method !== 'POST') return json(405, { error: 'Use POST.' });
       const body = await readJson(request);
       if (body instanceof Response) return body;
+      const guard = usageGuard(request, env, body);
       const result =
-        pathname === '/api/coach/chat' ? await handleCoachChat(body, env, usageGuard(request, env, body)) : handleReport(body);
+        pathname === '/api/coach/chat'
+          ? await handleCoachChat(body, env, guard)
+          : pathname === '/api/coach/idea'
+            ? await handleIdea(body, env, guard)
+            : handleReport(body);
       return json(result.status, result.body);
     }
 

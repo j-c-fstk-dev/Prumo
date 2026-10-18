@@ -74,3 +74,34 @@ test('em tela baixa, o compromisso rola até o botão de segurar', async ({ page
   for (let i = 0; i < 10; i++) await page.mouse.wheel(0, 300);
   await expect(hold).toBeInViewport({ ratio: 1 });
 });
+
+test('resultado mostra 3 caminhos diferentes e deixa criar o próprio', async ({ page }) => {
+  await onboard(page);
+  const cards = page.getByRole('button', { name: 'Escolher este caminho' });
+  await expect(cards).toHaveCount(2);
+
+  // Trocar por uma sugestão: ela vira o caminho principal
+  const altName = (await cards.first().locator('xpath=..').locator('strong').textContent())!;
+  await cards.first().click();
+  await expect(page.getByRole('heading', { name: altName })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Escolher este caminho' })).toHaveCount(2);
+
+  // Criar o próprio (sem IA no ambiente de teste: avisa e segue pelos campos)
+  await page.getByRole('button', { name: /Quero criar o meu/ }).click();
+  await expect(page.getByRole('heading', { name: 'Criar o meu caminho' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Usar este caminho' })).toBeDisabled();
+  await page.getByLabel('Sua ideia com suas palavras').fill('quero ensinar violão pra adultos');
+  await page.getByRole('button', { name: 'Organizar com a IA' }).click();
+  await expect(page.getByText(/A IA não respondeu agora/)).toBeVisible();
+
+  await page.getByPlaceholder('Ex: aulas de violão para iniciantes').fill('Aulas de violão para iniciantes');
+  await page.getByPlaceholder('Ex: adultos que sempre quiseram tocar').fill('adultos que sempre quiseram tocar');
+  await page.getByPlaceholder('Ex: não saber por onde começar').fill('não saber por onde começar');
+  await page.getByRole('radio', { name: /Uma conversa de 1 hora/ }).click();
+  await page.getByRole('button', { name: 'Usar este caminho' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Aulas de violão para iniciantes' })).toBeVisible();
+  await expect(page.getByText(/Adultos que sempre quiseram tocar pagam por/)).toBeVisible();
+  // As 3 sugestões continuam disponíveis
+  await expect(page.getByRole('button', { name: 'Escolher este caminho' })).toHaveCount(3);
+});

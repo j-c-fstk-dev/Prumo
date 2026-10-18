@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { handleCoachChat, handleReport, LIMITS } from './coach';
+import { handleCoachChat, handleIdea, handleReport, LIMITS, parseIdea } from './coach';
 import { crisisReply, detectCrisis } from './safety';
 
 const LIVE_ENV = { LLM_PROVIDER: 'openai', LLM_API_KEY: 'k', LLM_BASE_URL: 'http://ia.local/v1' };
@@ -165,5 +165,29 @@ describe('registro de custo', () => {
     const entry = JSON.parse(log.mock.calls.find((c) => String(c[0]).includes('coach_usage'))![0] as string);
     expect(entry).toMatchObject({ type: 'coach_usage', provider: 'openai', inputTokens: 120, outputTokens: 30 });
     expect(JSON.stringify(log.mock.calls)).not.toContain('segredo');
+  });
+});
+
+describe('sugestão de caminho próprio', () => {
+  it('lê o JSON mesmo com texto em volta e corrige formato desconhecido', () => {
+    const idea = parseIdea('Claro! {"offer":"Aulas de violão","audience":"adultos iniciantes","pain":"não saber começar","format":"podcast"} Boa sorte');
+    expect(idea).toEqual({ offer: 'Aulas de violão', audience: 'adultos iniciantes', pain: 'não saber começar', format: 'servico' });
+    expect(parseIdea('sem json aqui')).toBeNull();
+    expect(parseIdea('{"offer":"x"}')).toBeNull();
+  });
+
+  it('com IA, devolve a sugestão; sem IA, avisa modo offline', async () => {
+    mockLlm('{"offer":"Aulas de violão","audience":"adultos","pain":"não saber começar","format":"sessao"}');
+    const r = await handleIdea({ description: 'quero ensinar violão pra adultos' }, LIVE_ENV);
+    expect(r.body).toMatchObject({ mode: 'live', idea: { format: 'sessao' } });
+    expect((await handleIdea({ description: 'quero ensinar violão' }, {})).body.mode).toBe('offline');
+  });
+
+  it('respeita o limite de uso e o protocolo de crise', async () => {
+    const fetchMock = mockLlm();
+    expect((await handleIdea({ description: 'quero ensinar violão' }, LIVE_ENV, async () => ({ allowed: false }))).body.mode).toBe('limited');
+    expect((await handleIdea({ description: 'não quero mais viver' }, LIVE_ENV)).body.mode).toBe('crisis');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect((await handleIdea({ description: 'oi' }, LIVE_ENV)).status).toBe(400);
   });
 });

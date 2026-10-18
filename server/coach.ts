@@ -212,3 +212,82 @@ export function handleHealth(env?: LlmEnv): { status: number; body: { status: 'o
   const llm = getLlmConfig(env);
   return { status: 200, body: { status: 'ok', service: 'Prumo Coach API', ai: llm ? `${llm.provider}/${llm.model}` : 'offline' } };
 }
+
+const IDEA_FORMATS = ['servico', 'sessao', 'guia', 'minicurso'] as const;
+type IdeaFormat = (typeof IDEA_FORMATS)[number];
+
+export interface IdeaSuggestion {
+  offer: string;
+  audience: string;
+  pain: string;
+  format: IdeaFormat;
+}
+
+/** Tenta ler a sugestão da IA: aceita texto em volta do JSON e corta campos longos */
+export function parseIdea(text: string): IdeaSuggestion | null {
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try {
+    const raw = JSON.parse(match[0]);
+    const pick = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
+    const idea = {
+      offer: pick(raw.offer, 80),
+      audience: pick(raw.audience, 80),
+      pain: pick(raw.pain, 120),
+      format: (IDEA_FORMATS as readonly string[]).includes(raw.format) ? (raw.format as IdeaFormat) : 'servico',
+    };
+    return idea.offer && idea.audience && idea.pain ? idea : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * "Quero criar o meu": a pessoa descreve a ideia com as próprias palavras e a IA devolve
+ * uma sugestão organizada (o que oferecer, pra quem, que problema resolve e o formato).
+ * A pessoa revisa tudo antes de usar.
+ */
+export async function handleIdea(body: any, env?: LlmEnv, guard?: LiveCallGuard): Promise<{ status: number; body: Record<string, unknown> }> {
+  const description = body?.description;
+  if (!description || typeof description !== 'string' || description.trim().length < 5) {
+    return { status: 400, body: { error: 'Conte sua ideia em algumas palavras.' } };
+  }
+  if (description.length > LIMITS.message) {
+    return { status: 413, body: { error: `A descrição pode ter até ${LIMITS.message} caracteres.` } };
+  }
+  if (detectCrisis(description)) {
+    return { status: 200, body: { mode: 'crisis', reply: crisisReply(clip(body?.userName, 60)) } };
+  }
+  const llm = getLlmConfig(env);
+  if (!llm) return { status: 200, body: { mode: 'offline' } };
+  if (guard) {
+    try {
+      const verdict = await guard();
+      if (!verdict.allowed) return { status: 200, body: { mode: 'limited' } };
+    } catch (error) {
+      console.error('Erro no limite de uso do coach:', error);
+    }
+  }
+  try {
+    const reply = await generateReply(llm, {
+      system:
+        'Você ajuda brasileiros a transformar uma ideia em um primeiro produto simples para vender online. ' +
+        'Responda SOMENTE com um JSON, sem texto em volta, no formato ' +
+        '{"offer": "o que a pessoa vai oferecer, até 8 palavras", "audience": "pra quem, até 8 palavras", ' +
+        '"pain": "o problema que resolve, em palavras simples, até 12 palavras", ' +
+        '"format": "servico" | "sessao" | "guia" | "minicurso"}. ' +
+        'Use português do Brasil, linguagem simples, sem jargão de marketing e sem prometer renda. ' +
+        'Escolha o formato mais simples de testar: serviço feito pela pessoa, sessão individual de 1 hora, ' +
+        'guia com modelo pronto ou mini-curso curto em vídeo.',
+      messages: [{ role: 'user', content: description }],
+      temperature: 0.4,
+      maxTokens: 300,
+    });
+    const idea = parseIdea(reply);
+    if (!idea) throw new Error('IA não devolveu uma sugestão válida');
+    return { status: 200, body: { mode: 'live', idea } };
+  } catch (error) {
+    console.error('Erro na sugestão de caminho:', error);
+    return { status: 200, body: { mode: 'offline' } };
+  }
+}

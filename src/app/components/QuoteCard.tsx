@@ -48,9 +48,13 @@ export const QuoteView: React.FC<{ item: Item; compact?: boolean }> = ({ item, c
   );
 };
 
-/** Citação verificada por tema (primeira disponível; nada aparece se não houver verificada). */
-export const QuoteByTheme: React.FC<{ tema: TemaCitacao; compact?: boolean }> = ({ tema, compact = true }) => {
-  const q = citacoesPublicaveis(tema)[0];
+/**
+ * Citação verificada por tema, trocando a cada dia (teste com usuários: "as frases repetiram").
+ * `seed` faz telas diferentes com o mesmo tema mostrarem citações diferentes no mesmo dia.
+ */
+export const QuoteByTheme: React.FC<{ tema: TemaCitacao; compact?: boolean; seed?: number }> = ({ tema, compact = true, seed = 0 }) => {
+  const list = citacoesPublicaveis(tema);
+  const q = list.length ? list[(dayNumber() + seed) % list.length] : undefined;
   if (!q) return null;
   return <QuoteView item={{ kind: 'citacao', data: q }} compact={compact} />;
 };
