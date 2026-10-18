@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { commitAndSeal, onboard, openApp } from './helpers';
+import { commitAndSeal, onboard, openApp, passSplash } from './helpers';
 
 // Ajustes do 1º teste com usuários (docs/etapas/19-ajustes-do-teste.md)
 
@@ -113,6 +113,7 @@ test('abertura: na 1ª vez mostra a ilustração e espera o toque; depois, entra
   await tap.click({ timeout: 10_000 });
   await expect(tap).toHaveCount(0);
   await page.reload();
+  await passSplash(page);
   await expect(page.getByRole('button', { name: 'Toque para começar' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Começar diagnóstico' })).toBeVisible({ timeout: 10_000 });
 });
@@ -131,6 +132,7 @@ test('app instalável: manifesto e ícones no ar, convite no início e cartão d
   await page.getByRole('button', { name: 'Agora não' }).click();
   await expect(page.getByText('Instale o Prumo na tela de início')).toHaveCount(0);
   await page.reload();
+  await passSplash(page);
   await expect(page.getByText(/^Olá, /)).toBeVisible();
   await expect(page.getByText('Instale o Prumo na tela de início')).toHaveCount(0);
 

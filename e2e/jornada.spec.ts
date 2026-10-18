@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { commitAndSeal, onboard } from './helpers';
+import { commitAndSeal, onboard, passSplash } from './helpers';
 
 test('jornada completa: diagnóstico, carta, tarefas, check-in, capítulo e recarga', async ({ page }) => {
   await onboard(page, 'Jo', { confirmText: 'Ajudo amigos com as planilhas do orçamento' });
@@ -45,6 +45,7 @@ test('jornada completa: diagnóstico, carta, tarefas, check-in, capítulo e reca
 
   // Recarregar: tudo continua salvo no aparelho e a celebração não repete
   await page.reload();
+  await passSplash(page);
   await expect(page.getByText(/^Olá, Jo/)).toBeVisible({ timeout: 10_000 });
   await expect(page.getByText('Escrevi minha promessa')).toBeVisible();
   await expect(page.getByText('Pagar a conta de luz')).toBeVisible();

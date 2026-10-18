@@ -5,9 +5,13 @@ import { soundEffects } from '../../utils/soundEffects';
 
 const SEEN_KEY = 'prumo_splash_seen';
 
-// Duração em ms: na 1ª abertura a pessoa toca para começar (e a música toca); nas seguintes, versão curta
-const FIRST_RUN_BUTTON_MS = 3400;
-const RETURNING_MS = 1600;
+/**
+ * Abertura em duas cenas, toda vez que o app abre (etapa 34): o bonequinho olhando as estrelas e, em
+ * seguida, a bússola se assentando no norte. Na 1ª abertura a pessoa toca para começar (o navegador só
+ * deixa tocar a música depois de um toque); nas seguintes entra sozinho, e um toque pula a abertura.
+ */
+const SEEKER_MS = 3200;
+const COMPASS_MS = 1700;
 const FADE_MS = 700;
 
 function hasSeenSplash(): boolean {
@@ -71,6 +75,7 @@ export const Starfield: React.FC<{ count?: number; seed?: number; maxRadius?: nu
 
 export const CompassSplash: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const [firstRun] = useState(() => !hasSeenSplash());
+  const [scene, setScene] = useState<'seeker' | 'compass'>('seeker');
   const [leaving, setLeaving] = useState(false);
   const doneRef = useRef(false);
   const finish = () => {
@@ -79,17 +84,15 @@ export const CompassSplash: React.FC<{ onDone: () => void }> = ({ onDone }) => {
     onDone();
   };
 
-  const [showButton, setShowButton] = useState(false);
-
-  // Primeira vez: espera o toque (o navegador só deixa tocar som depois de um toque)
+  // Cena 1 → cena 2; depois, na 1ª vez mostra o botão, nas outras sai sozinha
   useEffect(() => {
     markSplashSeen();
-    if (firstRun) {
-      const t = setTimeout(() => setShowButton(true), FIRST_RUN_BUTTON_MS);
-      return () => clearTimeout(t);
-    }
-    const leaveTimer = setTimeout(() => setLeaving(true), RETURNING_MS);
-    return () => clearTimeout(leaveTimer);
+    const toCompass = setTimeout(() => setScene('compass'), SEEKER_MS);
+    const leave = firstRun ? undefined : setTimeout(() => setLeaving(true), SEEKER_MS + COMPASS_MS);
+    return () => {
+      clearTimeout(toCompass);
+      if (leave) clearTimeout(leave);
+    };
   }, [firstRun]);
 
   // Garantia caso o evento de fim de animação não dispare
@@ -101,12 +104,17 @@ export const CompassSplash: React.FC<{ onDone: () => void }> = ({ onDone }) => {
 
   const start = () => {
     if (leaving) return;
-    if (firstRun) soundEffects.playSplashMusic();
+    if (firstRun) {
+      // Na 1ª vez o toque só vale pelo botão, depois que a bússola aparece
+      if (scene !== 'compass') return;
+      soundEffects.playSplashMusic();
+    }
     setLeaving(true);
   };
 
   return (
     <div
+      data-splash
       className={`absolute inset-0 z-[60] bg-night-sky flex flex-col items-center justify-center select-none cursor-pointer ${leaving ? 'splash-out' : ''}`}
       onClick={start}
       onAnimationEnd={(e) => {
@@ -116,35 +124,39 @@ export const CompassSplash: React.FC<{ onDone: () => void }> = ({ onDone }) => {
     >
       <Starfield />
 
-      <div className="relative flex flex-col items-center gap-5">
-        {firstRun ? <Seeker size={240} /> : <CompassMark size={104} mode="settle" tone="night" settleMs={1100} />}
-        <div
-          className="text-center"
-          style={firstRun ? { animation: 'fadeIn 1100ms cubic-bezier(0.22, 1, 0.36, 1) 1800ms both' } : undefined}
-        >
+      {scene === 'seeker' ? (
+        <div key="seeker" className="relative flex flex-col items-center gap-5">
+          <Seeker size={240} />
+          <div className="text-center" style={{ animation: 'fadeIn 1100ms cubic-bezier(0.22, 1, 0.36, 1) 1800ms both' }}>
+            <h1 className="font-display text-4xl font-bold tracking-tight" style={{ color: 'var(--night-text)' }}>
+              Prumo
+            </h1>
+            <p className="mt-1 text-sm" style={{ color: 'var(--night-muted)' }}>
+              encontre seu norte
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div key="compass" className="relative flex flex-col items-center gap-5 animate-fadeIn">
+          <CompassMark size={104} mode="settle" tone="night" settleMs={1100} />
           <h1 className="font-display text-4xl font-bold tracking-tight" style={{ color: 'var(--night-text)' }}>
             Prumo
           </h1>
           {firstRun && (
-            <p className="mt-1 text-sm" style={{ color: 'var(--night-muted)' }}>
-              encontre seu norte
-            </p>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                start();
+              }}
+              className="mt-2 px-6 py-3 rounded-full font-semibold text-base cursor-pointer"
+              style={{ background: 'var(--gold)', color: 'var(--night-900)', animation: 'fadeIn 900ms ease-out 900ms both' }}
+            >
+              Toque para começar
+            </button>
           )}
         </div>
-        {firstRun && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              start();
-            }}
-            className={`mt-2 px-6 py-3 rounded-full font-semibold text-base cursor-pointer transition-opacity duration-1000 ${showButton ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-            style={{ background: 'var(--gold)', color: 'var(--night-900)' }}
-          >
-            Toque para começar
-          </button>
-        )}
-      </div>
+      )}
     </div>
   );
 };
