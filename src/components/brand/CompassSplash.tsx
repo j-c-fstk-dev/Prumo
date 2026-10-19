@@ -6,12 +6,17 @@ import { soundEffects } from '../../utils/soundEffects';
 const SEEN_KEY = 'prumo_splash_seen';
 
 /**
- * Abertura em duas cenas, toda vez que o app abre (etapa 34): o bonequinho olhando as estrelas e, em
- * seguida, a bússola se assentando no norte. Na 1ª abertura a pessoa toca para começar (o navegador só
- * deixa tocar a música depois de um toque); nas seguintes entra sozinho, e um toque pula a abertura.
+ * Abertura em duas cenas, toda vez que o app abre (etapa 34): o bonequinho olhando o céu e, em seguida,
+ * a bússola se assentando no norte. Na 1ª abertura a pessoa toca para começar; nas seguintes entra
+ * sozinho, e um toque pula a abertura.
+ *
+ * Etapa 48: o céu fica ~6 s (com estrelas cadentes) antes da bússola. A música toca sozinha quando o
+ * navegador deixa (app instalado no Android, por exemplo); quando não deixa, aparece "♪ Ouvir a música".
+ * Quem pede menos movimento vê a versão curta.
  */
-const SEEKER_MS = 3200;
-const COMPASS_MS = 1700;
+const lessMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const SEEKER_MS = lessMotion() ? 1500 : 6000;
+const COMPASS_MS = lessMotion() ? 900 : 1700;
 const FADE_MS = 700;
 
 function hasSeenSplash(): boolean {
@@ -78,6 +83,19 @@ export const CompassSplash: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const [scene, setScene] = useState<'seeker' | 'compass'>('seeker');
   const [leaving, setLeaving] = useState(false);
   const doneRef = useRef(false);
+  const musicRef = useRef(false);
+  const [musicBlocked, setMusicBlocked] = useState(false);
+  const playMusic = () => {
+    if (musicRef.current) return;
+    musicRef.current = true;
+    setMusicBlocked(false);
+    // Som nunca pode travar a abertura
+    try {
+      soundEffects.playSplashMusic();
+    } catch {
+      // sem som: segue
+    }
+  };
   const finish = () => {
     if (doneRef.current) return;
     doneRef.current = true;
@@ -85,6 +103,20 @@ export const CompassSplash: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   };
 
   // Cena 1 → cena 2; depois, na 1ª vez mostra o botão, nas outras sai sozinha
+  // Música: toca já, se o navegador deixar; senão oferece um botão discreto
+  useEffect(() => {
+    let alive = true;
+    void soundEffects.canAutoplay().then((ok) => {
+      if (!alive) return;
+      if (ok) playMusic();
+      else if (!firstRun) setMusicBlocked(true);
+    });
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     markSplashSeen();
     const toCompass = setTimeout(() => setScene('compass'), SEEKER_MS);
@@ -107,7 +139,9 @@ export const CompassSplash: React.FC<{ onDone: () => void }> = ({ onDone }) => {
     if (firstRun) {
       // Na 1ª vez o toque só vale pelo botão, depois que a bússola aparece
       if (scene !== 'compass') return;
-      soundEffects.playSplashMusic();
+      setLeaving(true);
+      playMusic();
+      return;
     }
     setLeaving(true);
   };
@@ -122,7 +156,42 @@ export const CompassSplash: React.FC<{ onDone: () => void }> = ({ onDone }) => {
       }}
       role="presentation"
     >
-      <Starfield />
+      <Starfield count={44} maxRadius={0.4} />
+
+      {/* Estrelas cadentes enquanto o céu brilha (etapa 48) */}
+      {scene === 'seeker' &&
+        [
+          { top: '14%', left: '78%', delay: 1600 },
+          { top: '26%', left: '62%', delay: 3900 },
+        ].map((st) => (
+          <span
+            key={st.delay}
+            aria-hidden="true"
+            className="shooting-star absolute w-24 h-px pointer-events-none"
+            style={{
+              top: st.top,
+              left: st.left,
+              rotate: '-29deg',
+              background: 'linear-gradient(90deg, rgba(237,232,247,0.95), rgba(237,232,247,0))',
+              animationDelay: `${st.delay}ms`,
+            }}
+          />
+        ))}
+
+      {/* Quando o navegador não deixa a música tocar sozinha: um toque aqui toca (sem pular a abertura) */}
+      {musicBlocked && !leaving && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            playMusic();
+          }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 min-h-10 px-4 rounded-full text-sm cursor-pointer border"
+          style={{ color: 'var(--night-text)', borderColor: 'rgba(237,232,247,.3)' }}
+        >
+          ♪ Ouvir a música
+        </button>
+      )}
 
       {scene === 'seeker' ? (
         <div key="seeker" className="relative flex flex-col items-center gap-5">

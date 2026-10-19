@@ -7,6 +7,9 @@ import { expect, type Page } from '@playwright/test';
 export async function passSplash(page: Page) {
   const splash = page.locator('[data-splash]');
   const tap = page.getByRole('button', { name: 'Toque para começar' });
+  // Logo depois de navegar, o app pode ainda não ter montado a abertura: sem esperar, "nenhuma abertura"
+  // parece "abertura já passou" e o toque da 1ª vez nunca acontece
+  await splash.waitFor({ state: 'attached', timeout: 10_000 }).catch(() => undefined);
   await expect(async () => {
     if (await tap.isVisible()) return;
     expect(await splash.count()).toBe(0);

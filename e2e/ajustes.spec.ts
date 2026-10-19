@@ -160,3 +160,17 @@ test('apresentação em /, app em /app/, políticas no rodapé e no "Sobre" do a
   await expect(page.getByRole('heading', { name: 'Termos de uso' })).toBeVisible();
   await expect(page.getByText('Não é promessa de renda.')).toBeVisible();
 });
+
+test.describe('abertura com animações ligadas', () => {
+  test.use({ contextOptions: { reducedMotion: 'no-preference' } });
+
+  test('o céu fica uns 6 segundos antes da bússola', async ({ page }) => {
+    await page.goto('/app/');
+    const seeker = page.getByRole('img', { name: /Uma pessoa com uma bússola/ });
+    await expect(seeker).toBeVisible();
+    await page.waitForTimeout(4500);
+    await expect(seeker).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Toque para começar' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Toque para começar' })).toBeVisible({ timeout: 4000 });
+  });
+});
