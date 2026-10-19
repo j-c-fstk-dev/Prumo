@@ -54,6 +54,7 @@ test('apresentação inicial explica o que é prumo, a constelação e a jornada
   await page.getByRole('button', { name: 'Continuar' }).click();
 
   await expect(page.getByText('Mas afinal, o que é prumo?')).toBeVisible();
+  await expect(page.getByText('um fio com um peso na ponta')).toBeVisible();
   await page.getByRole('button', { name: 'Próximo' }).click();
   await expect(page.getByText('Cada passo acende uma estrela')).toBeVisible();
   await page.getByRole('button', { name: 'Próximo' }).click();
