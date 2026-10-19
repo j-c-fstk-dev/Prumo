@@ -310,6 +310,23 @@ class SoundEffectsService {
    * Música curta da abertura (só depois de um toque: o navegador bloqueia som antes disso).
    * ~7 s: um acorde que entra devagar e uma melodia de kalimba na pentatônica, com eco.
    */
+  /**
+   * O navegador deixa tocar som agora, sem um toque? (etapa 48) Chrome deixa para o app instalado na tela
+   * de início e para sites que a pessoa usa bastante; Safari quase nunca. Nunca toca se o som está desligado.
+   */
+  public async canAutoplay(): Promise<boolean> {
+    if (this.isMuted) return false;
+    const ctx = this.getContext();
+    if (!ctx) return false;
+    if (ctx.state === 'running') return true;
+    try {
+      await Promise.race([ctx.resume(), new Promise((r) => setTimeout(r, 300))]);
+    } catch {
+      return false;
+    }
+    return (ctx.state as AudioContextState) === 'running';
+  }
+
   public playSplashMusic(): void {
     const ctx = this.ready(false);
     if (!ctx) return;

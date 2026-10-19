@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { commitAndSeal, onboard, passSplash } from './helpers';
+import { commitAndSeal, onboard, passSplash, seedState } from './helpers';
 
 // Caderno do projeto (docs/etapas/27-caderno.md)
 test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
@@ -235,4 +235,27 @@ test('fotos: anexar na anotação, ver, persistir, exportar em .zip e apagar jun
   await page.getByRole('button', { name: 'Apagar' }).first().click();
   await expect(page.getByRole('button', { name: 'Ver foto' })).toHaveCount(0);
   await expect.poll(imgKeys).toBe(0);
+});
+
+test.describe('com animações ligadas', () => {
+  test.use({ contextOptions: { reducedMotion: 'no-preference' } });
+
+  test('a mensagem do coach aparece sendo digitada, e dá para mostrar tudo de uma vez', async ({ page }) => {
+    const reply = 'Oi, [nome]! Lembrei de você porque estou testando uma ideia nova e queria muito a sua opinião sincera. Posso te mandar em 2 minutos?';
+    await page.route('**/api/coach/message', (r) => r.fulfill({ json: { mode: 'live', text: reply } }));
+    await page.goto('/app/');
+    await seedState(page, { coachConsentAt: 1, people: [{ id: 'p1', name: 'Ana Souza', phone: '11987654321', stage: 'contato', stageHistory: [], createdAt: 1, updatedAt: 1 }] });
+    await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+    await page.getByRole('tab', { name: /Pessoas/ }).click();
+    await page.getByRole('button', { name: 'Ana Souza, Novo' }).click();
+    await page.getByRole('button', { name: /Pedir ajuda ao coach/ }).click();
+    await page.getByRole('button', { name: 'Pedir sugestão' }).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('O coach está escrevendo…')).toBeVisible();
+    await expect(dialog.getByRole('link', { name: 'Enviar no WhatsApp' })).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'mostrar tudo' }).click();
+    await expect(dialog.getByLabel('Sugestão do coach')).toHaveValue(reply.replace('[nome]', 'Ana'));
+    await expect(dialog.getByRole('link', { name: 'Enviar no WhatsApp' })).toBeVisible();
+  });
 });

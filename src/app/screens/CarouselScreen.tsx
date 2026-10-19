@@ -1,23 +1,18 @@
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
-import { CompassMark } from '../../components/brand/CompassMark';
+import { PlumbLine } from '../../components/brand/PlumbLine';
+import { PrumoMeaning } from '../components/PrumoMeaning';
 import { useApp } from '../state/AppStore';
 import { Reveal } from '../components/Reveal';
 
 /** Apresentação inicial (etapa 20): o que é prumo, a constelação, como funciona e "é só o começo". */
-const SLIDES: { icon: React.ReactNode; title: string; body: React.ReactNode }[] = [
+const SLIDES: { icon: React.ReactNode; title: string; body: React.ReactNode; wide?: boolean }[] = [
   {
-    icon: <CompassMark size={44} />,
+    icon: <PlumbLine size={112} />,
+    wide: true,
     title: 'Mas afinal, o que é prumo?',
-    body: (
-      <>
-        Sabe aquele fio com um peso na ponta que o pedreiro usa pra deixar a parede reta? <strong className="text-ink">Isso é um prumo.</strong>
-        <br />
-        <br />
-        Aqui, ele é a sua direção: o próximo passo certo quando tudo parece meio torto.
-      </>
-    ),
+    body: <PrumoMeaning />,
   },
   {
     icon: '✨',
@@ -98,7 +93,10 @@ export const CarouselScreen: React.FC = () => {
 
       <div key={`slide-${slide}`} className="flex-1 flex flex-col items-center justify-center text-center px-2">
         <Reveal i={0}>
-          <div className="w-16 h-16 rounded-2xl bg-primary-soft text-primary flex items-center justify-center mx-auto mb-4 text-3xl">
+          {/* A ilustração do prumo ocupa mais espaço; os outros slides usam um ícone pequeno */}
+          <div
+            className={`${current.wide ? 'w-32 h-32' : 'w-16 h-16'} rounded-2xl bg-primary-soft text-primary flex items-center justify-center mx-auto mb-4 text-3xl`}
+          >
             {current.icon}
           </div>
         </Reveal>

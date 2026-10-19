@@ -302,6 +302,24 @@
   to   { stroke-dashoffset: 0; }
 }
 
+/* O peso do prumo balança e para na vertical (etapa 45) */
+@keyframes plumbSwing {
+  0%   { transform: rotate(18deg); }
+  25%  { transform: rotate(-12deg); }
+  45%  { transform: rotate(7deg); }
+  62%  { transform: rotate(-4deg); }
+  78%  { transform: rotate(1.5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Estrela cadente na abertura (etapa 47) */
+@keyframes shootingStar {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  10%  { opacity: 1; }
+  70%  { opacity: 0.9; }
+  100% { transform: translate(-160px, 90px); opacity: 0; }
+}
+
 @keyframes splashOut {
   to { opacity: 0; visibility: hidden; }
 }
@@ -326,6 +344,9 @@
 
 .splash-out { animation: splashOut 700ms ease-in forwards; }
 
+.plumb-swing { transform-box: view-box; transform-origin: 51px 12px; animation: plumbSwing 2600ms cubic-bezier(0.3, 0.7, 0.4, 1) 300ms both; }
+.shooting-star { animation: shootingStar 1400ms ease-out both; }
+
 /* Quem pede menos movimento vê tudo estático (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   .animate-fadeIn, .animate-slide-in-right, .animate-slide-in-left, .animate-slide-up,
@@ -334,9 +355,10 @@
     animation-iteration-count: 1 !important;
   }
   .reveal { animation: none !important; opacity: 1 !important; }
-  .needle-settle, .needle-seek, .star-twinkle, .star-ignite, .star-pulse, .constellation-line {
+  .needle-settle, .needle-seek, .star-twinkle, .star-ignite, .star-pulse, .constellation-line, .plumb-swing, .shooting-star {
     animation: none !important;
   }
+  .shooting-star { opacity: 0; }
   .constellation-line { stroke-dasharray: none; }
   .splash-out { animation-duration: 1ms; }
 }

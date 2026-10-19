@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTypewriter } from './useTypewriter';
 import { Mail, MessageCircle, Pencil, Phone, Sparkles, Trash2, UserPlus, Users } from 'lucide-react';
 import { copyText } from '../../utils/share';
 import { AddPhotoButton, LinkedText, PhotoStrip } from './Photos';
@@ -147,13 +148,15 @@ const CoachMessageModal: React.FC<{
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState('');
   const first = person.name.trim().split(/\s+/)[0] || person.name;
+  // A sugestão aparece sendo "digitada" (etapa 46)
+  const writer = useTypewriter(setText);
 
   const ask = async (another: boolean) => {
     setLoading(true);
     setNotice('');
     const r = await actions.suggestMessage(person.stage, context, another);
     setLoading(false);
-    if (r.mode === 'live' && r.text) setText(r.text.split('[nome]').join(first));
+    if (r.mode === 'live' && r.text) writer.start(r.text.split('[nome]').join(first));
     else if (r.mode === 'limited') setNotice('O coach já ajudou bastante por hoje. Use a mensagem pronta, ela funciona igual.');
     else if (r.mode === 'crisis') setNotice('Parece que você não está bem. O CVV atende de graça, 24 h: ligue 188 ou acesse cvv.org.br.');
     else setNotice('O coach não respondeu agora. Tente de novo daqui a pouco ou use a mensagem pronta.');
@@ -205,9 +208,24 @@ const CoachMessageModal: React.FC<{
 
             {text && (
               <div className="space-y-2">
-                <textarea rows={7} value={text} onChange={(e) => setText(e.target.value)} aria-label="Sugestão do coach" className={`${inputClass} resize-none text-[13px]`} />
-                <SendButtons person={person} text={text} subject={subject} onSent={onSent} onAddContact={onAddContact} />
-                <div className="grid grid-cols-3 gap-2">
+                <textarea
+                  rows={7}
+                  value={text + (writer.typing ? '▍' : '')}
+                  readOnly={writer.typing}
+                  onChange={(e) => setText(e.target.value)}
+                  onClick={() => writer.typing && writer.skip()}
+                  aria-label="Sugestão do coach"
+                  aria-busy={writer.typing}
+                  className={`${inputClass} resize-none text-[13px]`}
+                />
+                {writer.typing ? (
+                  <p className="text-xs text-muted" role="status">
+                    ✨ O coach está escrevendo… <button onClick={writer.skip} className="underline cursor-pointer">mostrar tudo</button>
+                  </p>
+                ) : (
+                  <SendButtons person={person} text={text} subject={subject} onSent={onSent} onAddContact={onAddContact} />
+                )}
+                <div className={`grid grid-cols-3 gap-2 ${writer.typing ? 'hidden' : ''}`}>
                   <button onClick={() => onUse(text)} className="min-h-10 rounded-xl border border-line text-[13px] text-ink cursor-pointer">
                     Editar antes
                   </button>

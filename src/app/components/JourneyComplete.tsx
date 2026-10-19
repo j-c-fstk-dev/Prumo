@@ -10,7 +10,7 @@ export const JourneyComplete: React.FC = () => {
   const { tasks, people, canChooseCycle, actions } = useApp();
   const clients = people.filter((p) => p.stage === 'cliente').length;
   return (
-    <div className="p-4 rounded-2xl bg-night-sky shadow-sm space-y-3" style={{ color: 'var(--night-text)' }}>
+    <div data-tour="proximo" className="p-4 rounded-2xl bg-night-sky shadow-sm space-y-3" style={{ color: 'var(--night-text)' }}>
       <span className="text-xs font-bold uppercase tracking-wider block" style={{ color: 'var(--gold)' }}>
         ✦ Roteiro concluído
       </span>

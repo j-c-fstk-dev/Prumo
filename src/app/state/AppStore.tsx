@@ -98,6 +98,8 @@ interface PersistedState {
   routineLog: Record<string, string[]>;
   /** Revisões da semana, pela segunda-feira da semana em que foram feitas */
   weeklyReviews: Record<string, WeeklyReview>;
+  /** Quando a pessoa terminou ou pulou o guia do app (etapa 47); sem isso, ele abre na 1ª visita à Início */
+  guideSeenAt?: number;
   /** Ciclos de 30 dias depois do roteiro (etapa 44) */
   cycles: Cycle[];
   /** Jornadas anteriores, de quando a pessoa trocou de caminho (ficam na linha do tempo) */
@@ -215,6 +217,8 @@ function useAppState() {
   const [screen, setScreen] = useState<ScreenState>('splash');
   const [tab, setTab] = useState<TabId>('home');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  /** Guia do app aberto agora (não fica salvo) */
+  const [guideOpen, setGuideOpen] = useState(false);
   /** Em que parte o Caderno abre (as rotinas de conversa levam direto para Pessoas) */
   const [notebookSection, setNotebookSection] = useState<'notas' | 'pessoas'>('notas');
   const [sectionIndex, setSectionIndex] = useState(0);
@@ -371,6 +375,18 @@ function useAppState() {
     goTab: (t: TabId) => {
       setTab(t);
       setScreen('home');
+    },
+    /** Guia do app (etapa 47): abre na Início, que é onde ficam as partes que ele mostra */
+    startGuide: () => {
+      setTab('home');
+      setScreen('home');
+      setGuideOpen(true);
+      track('guia_aberto');
+    },
+    endGuide: (finished: boolean) => {
+      setGuideOpen(false);
+      track(finished ? 'guia_concluido' : 'guia_pulado');
+      setData((d) => (d.guideSeenAt ? d : { ...d, guideSeenAt: Date.now() }));
     },
     /** Abre o Caderno direto na lista de pessoas */
     openPeople: () => {
@@ -932,6 +948,7 @@ function useAppState() {
     selectedTask,
     nextStepTask,
     journeyComplete,
+    guideOpen,
     cycleInfo,
     canChooseCycle,
     notebookSection,

@@ -10,6 +10,7 @@ import {
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { SITE } from '../../landing/site';
+import { PrumoMeaning } from '../components/PrumoMeaning';
 
 export const ProfileTab: React.FC = () => {
   const { userName, isSoundMuted, tapSounds, timeline, plan, trialDaysLeft, theme, actions } = useApp();
@@ -150,6 +151,22 @@ export const ProfileTab: React.FC = () => {
         {/* Sobre (etapa 39): links da apresentação, das políticas e do código */}
         <div className="pt-2 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted block px-1">Sobre o Prumo</span>
+          {/* Guia do app e o que é prumo (etapas 45 e 47) */}
+          <div className="rounded-xl bg-surface border border-line divide-y divide-line text-sm">
+            <button onClick={actions.startGuide} className="w-full p-3 flex items-center justify-between hover:bg-surface-2 cursor-pointer text-left">
+              <span>🧭 Guia do app</span>
+              <ChevronRight className="w-4 h-4 text-muted" />
+            </button>
+            <details className="group">
+              <summary className="p-3 flex items-center justify-between cursor-pointer list-none">
+                <span>O que é prumo?</span>
+                <ChevronRight className="w-4 h-4 text-muted transition-transform group-open:rotate-90" />
+              </summary>
+              <p className="px-3 pb-3 text-[13px] text-muted leading-relaxed">
+                <PrumoMeaning />
+              </p>
+            </details>
+          </div>
           {/* Nossa história: texto em src/landing/site.ts (até lá, aparece "em breve") */}
           <div className="p-3 rounded-xl bg-surface border border-line">
             <strong className="text-sm text-ink block mb-1">Nossa história</strong>

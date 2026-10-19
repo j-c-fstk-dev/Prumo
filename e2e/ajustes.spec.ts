@@ -54,6 +54,7 @@ test('apresentação inicial explica o que é prumo, a constelação e a jornada
   await page.getByRole('button', { name: 'Continuar' }).click();
 
   await expect(page.getByText('Mas afinal, o que é prumo?')).toBeVisible();
+  await expect(page.getByText('um fio com um peso na ponta')).toBeVisible();
   await page.getByRole('button', { name: 'Próximo' }).click();
   await expect(page.getByText('Cada passo acende uma estrela')).toBeVisible();
   await page.getByRole('button', { name: 'Próximo' }).click();
@@ -158,4 +159,18 @@ test('apresentação em /, app em /app/, políticas no rodapé e no "Sobre" do a
   await page.goto('/termos/');
   await expect(page.getByRole('heading', { name: 'Termos de uso' })).toBeVisible();
   await expect(page.getByText('Não é promessa de renda.')).toBeVisible();
+});
+
+test.describe('abertura com animações ligadas', () => {
+  test.use({ contextOptions: { reducedMotion: 'no-preference' } });
+
+  test('o céu fica uns 6 segundos antes da bússola', async ({ page }) => {
+    await page.goto('/app/');
+    const seeker = page.getByRole('img', { name: /Uma pessoa com uma bússola/ });
+    await expect(seeker).toBeVisible();
+    await page.waitForTimeout(4500);
+    await expect(seeker).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Toque para começar' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Toque para começar' })).toBeVisible({ timeout: 4000 });
+  });
 });

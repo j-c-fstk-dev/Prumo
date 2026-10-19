@@ -54,7 +54,7 @@ export const DailyRhythm: React.FC = () => {
         </div>
       )}
 
-      <div className="p-4 rounded-2xl bg-surface border border-line shadow-xs space-y-2.5">
+      <div data-tour="checkin" className="p-4 rounded-2xl bg-surface border border-line shadow-xs space-y-2.5">
         <div className="flex items-center justify-between">
           <span className="text-sm font-bold text-ink">Check-in de hoje</span>
           {streak.current > 0 && (

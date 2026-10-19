@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Compass,
   CheckCircle2,
@@ -25,7 +25,14 @@ import { lembreteDoDia } from '../../data/encorajamento';
 import { JOURNEY_DAYS, journeyDayLabel } from '../../domain/journey';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, cycleInfo, canChooseCycle, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, cycleInfo, canChooseCycle, guideSeenAt, guideOpen, actions } = useApp();
+  // Primeira visita à Início: o guia do app abre sozinho, depois que a tela termina de surgir (etapa 47)
+  useEffect(() => {
+    if (guideSeenAt || guideOpen) return;
+    const t = setTimeout(actions.startGuide, 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guideSeenAt]);
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const progressPercent = Math.round((completedCount / tasks.length) * 100);
   // Progresso real de cada capítulo
@@ -134,7 +141,7 @@ export const HomeTab: React.FC = () => {
         {journeyComplete ? (
           !cycleInfo && <JourneyComplete />
         ) : (
-        <div className="p-4 rounded-2xl bg-primary-soft border border-primary/30 shadow-sm relative overflow-hidden">
+        <div data-tour="proximo" className="p-4 rounded-2xl bg-primary-soft border border-primary/30 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <span className="text-lg">{nextStepTask.anchorIllustration.symbol}</span>
