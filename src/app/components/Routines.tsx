@@ -77,7 +77,7 @@ export const RoutinesCard: React.FC<{ title?: string }> = ({ title = 'Rotina da 
   if (!routines.length) return null;
 
   return (
-    <section aria-label={title} className="p-4 rounded-2xl bg-surface border border-line shadow-xs space-y-2.5">
+    <section aria-label={title} data-tour="rotinas" className="p-4 rounded-2xl bg-surface border border-line shadow-xs space-y-2.5">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-sm font-bold text-ink">{title}</span>
         <span className="text-xs text-muted">o que se repete, no seu ritmo</span>

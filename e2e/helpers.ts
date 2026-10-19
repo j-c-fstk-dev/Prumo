@@ -74,6 +74,9 @@ export async function commitAndSeal(page: Page) {
   await page.getByRole('button', { name: 'Selar as cartas' }).click();
   await page.getByRole('button', { name: /Começar a jornada/ }).click();
   await expect(page.getByText(/^Olá, /)).toBeVisible();
+  // O guia do app abre sozinho na 1ª visita à Início (etapa 47): os outros testes seguem sem ele
+  await page.getByRole('button', { name: 'Pular o guia' }).click();
+  await expect(page.getByRole('dialog', { name: 'Guia do app' })).toHaveCount(0);
 }
 
 /** Grava um estado pronto no IndexedDB (para cenários de datas) e recarrega */
@@ -90,7 +93,7 @@ export async function seedState(page: Page, patch: Record<string, unknown>) {
       version: 1, userName: 'Jo', macroGoal: 'renda_extra', answers: {}, reflections: {},
       textOptions: { confirmed: {}, dismissed: {} }, taskStatus: {}, planEdits: {}, personalTasks: [],
       coachMessages: [], diagnosis: null, letter: null, actionsByDay: {}, repairedDays: [], checkIns: [],
-      completedAt: {}, celebratedChapters: [], isPremium: false, onboardingDone: true, ...patch,
+      completedAt: {}, celebratedChapters: [], isPremium: false, onboardingDone: true, guideSeenAt: 1, ...patch,
     };
     await new Promise<void>((resolve) => {
       const tx = db.transaction('kv', 'readwrite');

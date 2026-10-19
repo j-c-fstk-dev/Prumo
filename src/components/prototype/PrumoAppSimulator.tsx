@@ -22,6 +22,7 @@ import { PaywallScreen } from '../../app/screens/PaywallScreen';
 import { NextCycleScreen } from '../../app/screens/NextCycleScreen';
 import { BottomNav } from '../../app/screens/BottomNav';
 import { ChapterComplete } from '../../app/components/ChapterComplete';
+import { GuideTour } from '../../app/components/GuideTour';
 
 const SCREENS: Record<Exclude<ScreenState, 'home'>, React.FC> = {
   splash: WelcomeScreen,
@@ -43,7 +44,7 @@ const TABS = { home: HomeTab, roadmap: RoadmapTab, coach: CoachTab, notebook: No
 
 /** Tela atual. A `key` remonta a tela a cada troca, o que dispara as animações de entrada. */
 const CurrentScreen: React.FC = () => {
-  const { screen, tab, sectionIndex } = useApp();
+  const { screen, tab, sectionIndex, guideOpen } = useApp();
   useEffect(() => setScreenForLogs(screen === 'home' ? `aba:${tab}` : screen), [screen, tab]);
   if (screen === 'home') {
     const Tab = TABS[tab];
@@ -52,6 +53,7 @@ const CurrentScreen: React.FC = () => {
         <Tab key={`tab-${tab}`} />
         <BottomNav />
         <ChapterComplete />
+        {guideOpen && <GuideTour />}
       </>
     );
   }

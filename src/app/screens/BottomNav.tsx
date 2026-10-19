@@ -33,6 +33,7 @@ export const BottomNav: React.FC = () => {
         return (
           <button
             key={t.id}
+            data-tour={`nav-${t.id}`}
             onClick={() => go(t.id)}
             aria-label={t.label}
             title={t.label}

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { dayKey, seedState } from './helpers';
+import { dayKey, passSplash, seedState } from './helpers';
 import { INITIAL_TASKS } from '../src/data/prumoData';
 
 test.beforeEach(async ({ page }) => {
@@ -213,4 +213,32 @@ test('ciclos: depois do roteiro, continuar com meta do Caderno; ao bater a meta,
   await page.getByRole('button', { name: 'Você', exact: true }).click();
   await expect(page.getByText(/Jornada anterior:/)).toBeVisible();
   await expect(page.getByText('Começou o ciclo: Crescer')).toBeVisible();
+});
+
+test('guia do app: abre sozinho na 1ª visita, passa por todas as partes, não repete e fica no Sobre', async ({ page }) => {
+  await seedState(page, { guideSeenAt: undefined, startedAt: Date.now() });
+  const guide = page.getByRole('dialog', { name: 'Guia do app' });
+  await expect(guide).toContainText('1 de 8');
+  for (const title of ['Check-in do dia', 'Seu próximo passo', 'Rotina da semana', 'Roteiro', 'Coach', 'Caderno', 'Você']) {
+    await guide.getByRole('button', { name: 'Próximo' }).click();
+    await expect(guide.getByRole('heading', { name: title, exact: true })).toBeVisible();
+  }
+  await guide.getByRole('button', { name: 'Bora começar' }).click();
+  await expect(guide).toHaveCount(0);
+
+  // Não abre de novo sozinho
+  await page.reload();
+  await passSplash(page);
+  await expect(page.getByText(/^Olá, /)).toBeVisible();
+  await page.waitForTimeout(1600);
+  await expect(guide).toHaveCount(0);
+
+  // Mas dá para rever em Você → Sobre o Prumo, junto com "O que é prumo?"
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  await page.getByText('O que é prumo?').click();
+  await expect(page.getByText('um fio com um peso na ponta')).toBeVisible();
+  await page.getByRole('button', { name: /Guia do app/ }).click();
+  await expect(guide).toContainText('1 de 8');
+  await guide.getByRole('button', { name: 'Pular o guia' }).click();
+  await expect(guide).toHaveCount(0);
 });
