@@ -115,6 +115,8 @@ interface PersistedState {
   lastExportAt?: number;
   /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
   installHintDismissedAt?: number;
+  /** Partes feitas dos passos longos (etapa 53), por passo */
+  partsDone?: Record<string, number[]>;
   /** "Quando vou fazer" de cada rotina (etapa 53), ex.: "terça e quinta, 7h" */
   routineWhen?: Record<string, string>;
   /** Ritmo escolhido na entrada (etapa 53). Sem escolha, vale o firme (o de antes) */
@@ -312,8 +314,9 @@ function useAppState() {
         ...data.planEdits[t.id],
         title: data.planEdits[t.id]?.title || t.title,
         status: data.taskStatus[t.id] ?? 'pending',
+        ...(t.parts && { partsDone: data.partsDone?.[t.id] ?? [] }),
       })),
-    [data.diagnosis, data.taskStatus, data.planEdits],
+    [data.diagnosis, data.taskStatus, data.planEdits, data.partsDone],
   );
   /** Todos os passos do roteiro feitos (etapa 41): a Início mostra "jornada concluída" em vez de repetir a 1ª tarefa */
   const journeyComplete = tasks.length > 0 && tasks.every((t) => t.status === 'completed');
@@ -887,6 +890,16 @@ function useAppState() {
       track('recomeco', { semana: nextStepTask.week, dias_longe: streak.daysAway ?? 0 });
       const extra = restartShift(pacingDay ?? journeyDay, nextStepTask.week);
       setData((d) => ({ ...d, paceShiftDays: (d.paceShiftDays ?? 0) + extra, restartDismissedOn: today }));
+    },
+    /** Marca ou desmarca uma parte de um passo longo; cada parte feita conta como ação do dia */
+    togglePart: (taskId: string, index: number) => {
+      if (!(data.partsDone?.[taskId] ?? []).includes(index)) soundEffects.playSelectOption();
+      setData((d) => {
+        const done = d.partsDone?.[taskId] ?? [];
+        const has = done.includes(index);
+        const next = { ...d, partsDone: { ...d.partsDone, [taskId]: has ? done.filter((i) => i !== index) : [...done, index].sort((a, b) => a - b) } };
+        return has ? next : withAction(next);
+      });
     },
     setRoutineWhen: (id: string, when: string) =>
       setData((d) => {

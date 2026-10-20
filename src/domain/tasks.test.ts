@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildPlanTasks } from './tasks';
+import { buildPlanTasks, durationLabel } from './tasks';
 
 const plan = (productId: 'servico' | 'sessao' | 'guia' | 'minicurso', channel = 'Sua rede de contatos (WhatsApp) + Instagram') => ({
   productId,
@@ -98,5 +98,31 @@ describe('ferramentas por tarefa', () => {
     for (const c of Object.values(TOOL_CATEGORIES)) {
       for (const e of c.examples) if (e.url) expect(e.url).toMatch(/^https:\/\//);
     }
+  });
+});
+
+describe('passos longos em partes (etapa 53)', () => {
+  const tasks = buildPlanTasks(null);
+
+  it('nenhuma parte passa de 20 minutos, e a duração do passo é a soma', () => {
+    for (const t of tasks.filter((t) => t.parts)) {
+      expect(t.parts!.every((p) => p.minutes <= 20), t.id).toBe(true);
+      expect(t.parts!.reduce((n, p) => n + p.minutes, 0), t.id).toBe(t.durationMinutes);
+    }
+  });
+
+  it('todo passo de 30 minutos ou mais está em partes', () => {
+    expect(tasks.filter((t) => t.durationMinutes >= 30 && !t.parts).map((t) => t.id)).toEqual([]);
+  });
+
+  it('o rótulo mostra as partes', () => {
+    expect(durationLabel(tasks.find((t) => t.id === 't5')!)).toBe('3 × 20 min');
+    expect(durationLabel(tasks.find((t) => t.id === 't1')!)).toBe('15 min');
+  });
+
+  it('sem Instagram, as partes viram as dos grupos', () => {
+    const t5 = buildPlanTasks({ productId: 'guia', channel: 'WhatsApp + grupos', test: 'x' }).find((t) => t.id === 't5')!;
+    expect(t5.parts?.[0].title).toContain('grupos');
+    expect(t5.durationMinutes).toBe(35);
   });
 });

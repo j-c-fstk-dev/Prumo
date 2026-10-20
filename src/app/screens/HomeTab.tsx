@@ -8,6 +8,7 @@ import {
   Bookmark,
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
+import { durationLabel } from '../../domain/tasks';
 import { useApp } from '../state/AppStore';
 import { estimateSeconds, formatDuration, VOICE_ENABLED } from '../../utils/voice';
 import { Constellation } from '../../components/brand/Constellation';
@@ -158,7 +159,7 @@ export const HomeTab: React.FC = () => {
               </span>
             </div>
             <span className="text-[13px] text-muted">
-              ⏱ {nextStepTask.durationMinutes} min
+              ⏱ {durationLabel(nextStepTask)}
             </span>
           </div>
 

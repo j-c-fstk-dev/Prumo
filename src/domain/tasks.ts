@@ -7,7 +7,7 @@ import { INITIAL_TASKS, TaskItem } from '../data/prumoData';
 import type { ProductId } from './diagnosis';
 import type { ToolCategoryId } from '../data/ferramentas';
 
-type TaskOverride = Partial<Pick<TaskItem, 'title' | 'description' | 'whatToDo' | 'howToKnowItIsGood' | 'signals' | 'ifNoSignal' | 'durationMinutes'>>;
+type TaskOverride = Partial<Pick<TaskItem, 'title' | 'description' | 'whatToDo' | 'howToKnowItIsGood' | 'signals' | 'ifNoSignal' | 'durationMinutes' | 'parts'>>;
 
 /** t2: a "versão mínima entregável" muda conforme o formato */
 const MINIMUM_VERSION: Record<ProductId, TaskOverride> = {
@@ -123,6 +123,11 @@ export function buildPlanTasks(plan: PlanInput | null): TaskItem[] {
           whatToDo:
             'Encontre 2 grupos ou comunidades do seu tema (WhatsApp, Facebook, Reddit ou fóruns) e responda 3 dúvidas de forma útil, sem vender nada.',
           howToKnowItIsGood: ['Você encontrou 2 grupos do seu tema', 'Respondeu 3 dúvidas sem vender nada'],
+          parts: [
+            { title: 'Encontrar 2 grupos do seu tema', minutes: 15 },
+            { title: 'Responder 3 dúvidas, sem vender', minutes: 20 },
+          ],
+          durationMinutes: 35,
           signals: ['Alguém agradeceu ou puxou conversa com você'],
           ifNoSignal: 'Grupo parado? Procure outro mais ativo e continue ajudando: confiança leva umas semanas.',
           toolCategories: ['mensagens', 'ia_texto'],
@@ -143,4 +148,10 @@ export function buildPlanTasks(plan: PlanInput | null): TaskItem[] {
         return task;
     }
   });
+}
+
+/** "15 min" ou, num passo em partes, "3 × 20 min" (etapa 53) */
+export function durationLabel(t: Pick<TaskItem, 'durationMinutes' | 'parts'>): string {
+  if (!t.parts?.length) return `${t.durationMinutes} min`;
+  return `${t.parts.length} × ${Math.max(...t.parts.map((p) => p.minutes))} min`;
 }

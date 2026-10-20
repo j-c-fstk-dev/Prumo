@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   CheckCircle2,
+  Circle,
   Clock,
   ArrowLeft,
   MessageSquare,
@@ -129,7 +130,11 @@ export const TaskDetailScreen: React.FC = () => {
           )}
           <div className="flex items-center gap-2 mt-0.5 text-sm text-muted">
             <Clock className="w-3.5 h-3.5" />
-            <span>Duração recomendada: {selectedTask.durationMinutes} min</span>
+            <span>
+              {selectedTask.parts
+                ? `${selectedTask.parts.length} partes de até ${Math.max(...selectedTask.parts.map((p) => p.minutes))} min`
+                : `Duração recomendada: ${selectedTask.durationMinutes} min`}
+            </span>
           </div>
         </div>
 
@@ -221,6 +226,39 @@ export const TaskDetailScreen: React.FC = () => {
           </p>
         </div>
         </Reveal>
+
+        {/* Passo longo em partes de 15 a 20 minutos (etapa 53): dá pra fazer uma por dia */}
+        {selectedTask.parts && (
+          <Reveal i={2}>
+            <section aria-label="Partes do passo" className="p-3.5 rounded-xl bg-surface border border-line">
+              <strong className="text-sm text-ink block">Em {selectedTask.parts.length} partes</strong>
+              <span className="text-xs text-muted block mb-2">Uma de cada vez, até em dias diferentes. Cada parte conta no seu dia.</span>
+              <ul className="space-y-1.5">
+                {selectedTask.parts.map((part, i) => {
+                  const done = selectedTask.partsDone?.includes(i) ?? false;
+                  return (
+                    <li key={i}>
+                      <button
+                        type="button"
+                        aria-pressed={done}
+                        onClick={() => actions.togglePart(selectedTask.id, i)}
+                        className="w-full flex items-start gap-2 text-left text-sm cursor-pointer"
+                      >
+                        {done ? <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" /> : <Circle className="w-4 h-4 text-muted shrink-0 mt-0.5" />}
+                        <span className={done ? 'text-muted line-through' : 'text-ink'}>
+                          {part.title} <span className="text-xs text-muted no-underline">· {part.minutes} min</span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              {selectedTask.status !== 'completed' && selectedTask.partsDone?.length === selectedTask.parts.length && (
+                <p className="text-[13px] text-success font-semibold mt-2">Todas as partes feitas! Agora é só marcar o passo como feito.</p>
+              )}
+            </section>
+          </Reveal>
+        )}
 
         <Reveal i={2}>
         {/* Duas camadas (etapa 52): o que depende de você marca o passo; o sinal do mundo é informação */}

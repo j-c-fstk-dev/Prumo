@@ -298,3 +298,23 @@ test('recomeço sem culpa: quem volta depois de 7+ dias recomeça a partir de ho
   await passSplash(page);
   await expect(page.getByRole('region', { name: 'Recomeçar' })).toHaveCount(0);
 });
+
+test('passo longo em partes: cada parte se marca sozinha, conta no dia e fica salva', async ({ page }) => {
+  const ch1 = INITIAL_TASKS.filter((t) => t.chapterId === 1).map((t) => t.id);
+  await seedState(page, { taskStatus: Object.fromEntries(ch1.map((id) => [id, 'completed'])), startedAt: Date.now(), celebratedChapters: [1] });
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await page.getByRole('button', { name: /^Cap\. 2:/ }).click();
+  await expect(page.getByText(/⏱ 3 × 20 min/).first()).toBeVisible();
+  await page.getByRole('heading', { name: 'Publicar 3 posts sobre o problema que você resolve' }).click();
+  const parts = page.getByRole('region', { name: 'Partes do passo' });
+  await expect(parts).toContainText('Em 3 partes');
+  await parts.getByRole('button', { name: /Post 1: um erro comum/ }).click();
+  await expect(parts.getByRole('button', { name: /Post 1: um erro comum/ })).toHaveAttribute('aria-pressed', 'true');
+  await page.reload();
+  await passSplash(page);
+  await expect(page.getByText(/1 dia de prumo/)).toBeVisible();
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await page.getByRole('button', { name: /^Cap\. 2:/ }).click();
+  await page.getByRole('heading', { name: 'Publicar 3 posts sobre o problema que você resolve' }).click();
+  await expect(page.getByRole('region', { name: 'Partes do passo' }).getByRole('button', { name: /Post 1/ })).toHaveAttribute('aria-pressed', 'true');
+});

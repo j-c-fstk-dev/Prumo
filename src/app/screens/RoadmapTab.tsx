@@ -7,6 +7,7 @@ import {
   Bookmark,
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
+import { durationLabel } from '../../domain/tasks';
 import { useApp } from '../state/AppStore';
 import { PersonalTasks } from '../components/PersonalTasks';
 import { RoutinesCard } from '../components/Routines';
@@ -142,7 +143,7 @@ const TaskRow: React.FC<{ task: TaskItem }> = ({ task }) => {
 
           <div className="flex items-center justify-between mt-2 text-xs text-muted">
             <span>
-              ⏱ {task.durationMinutes} min · {task.chapterTitle.split(':')[0]}
+              ⏱ {durationLabel(task)} · {task.chapterTitle.split(':')[0]}
             </span>
             {task.audioCoach && (
               <span className="text-primary font-semibold flex items-center gap-1">
