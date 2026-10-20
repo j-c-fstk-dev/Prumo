@@ -71,9 +71,13 @@ export async function commitAndSeal(page: Page) {
   await page.mouse.down();
   await page.waitForTimeout(2900);
   await page.mouse.up();
-  await expect(page.getByText('Escreva para você daqui a 90 dias')).toBeVisible();
+  await expect(page.getByText('Escreva para você daqui a 10 anos')).toBeVisible();
+  // O número de anos é só uma sugestão: trocar atualiza o título e a 1ª linha do rascunho
+  await page.getByLabel('Daqui a quantos anos').selectOption('20');
+  await expect(page.getByLabel('Carta para o seu eu de daqui a 20 anos')).toHaveValue(/^Oi, eu de daqui a 20 anos\./);
+  await page.getByLabel('Daqui a quantos anos').selectOption('10');
   await page.getByRole('button', { name: /resposta do seu eu futuro/ }).click();
-  const reply = page.getByLabel('Resposta do seu eu de daqui a 90 dias');
+  const reply = page.getByLabel('Resposta do seu eu de daqui a 10 anos');
   await reply.fill((await reply.inputValue()) + 'Deu certo. Mostrei para 5 pessoas e 2 compraram. Nos dias cansados fiz só 5 minutos.');
   await page.getByRole('button', { name: 'Selar as cartas' }).click();
   await page.getByRole('button', { name: /Começar a jornada/ }).click();

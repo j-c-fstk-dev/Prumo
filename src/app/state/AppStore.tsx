@@ -52,10 +52,12 @@ export interface PersonalTask {
   createdAt: number;
 }
 
-/** Carta em duas vias: ida (hoje → 90 dias) e resposta escrita pela pessoa como seu eu futuro */
+/** Carta em duas vias: ida (hoje → futuro) e resposta escrita pela pessoa como seu eu futuro */
 export interface FutureLetter {
   toFuture: string;
   fromFuture: string;
+  /** Para daqui a quantos anos (etapa 52). Cartas antigas, sem isso, eram para daqui a 90 dias */
+  years?: number;
   sealedAt?: number;
 }
 
