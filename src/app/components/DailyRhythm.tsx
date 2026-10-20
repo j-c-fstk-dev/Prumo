@@ -15,7 +15,8 @@ const MOOD_LABEL = Object.fromEntries(MOODS.map((m) => [m.id, m.label]));
  * remendo, e acolhimento para quem volta. Nunca mostra "você quebrou a sequência".
  */
 export const DailyRhythm: React.FC = () => {
-  const { userName, streak, todayCheckIn, freshStart, tasksDoneToday, actions } = useApp();
+  const { userName, streak, todayCheckIn, freshStart, tasksDoneToday, restartOffer, nextStepTask, actions } = useApp();
+  const [restarted, setRestarted] = useState<number | null>(null);
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(todayCheckIn?.text ?? '');
   const [mood, setMood] = useState<CheckIn['mood']>(todayCheckIn?.mood);
@@ -25,7 +26,39 @@ export const DailyRhythm: React.FC = () => {
 
   return (
     <div className="space-y-2">
-      {returning && (
+      {/* Recomeço sem culpa (etapa 52): logo na volta, a semana do próximo passo começa hoje */}
+      {restartOffer && nextStepTask?.week && (
+        <section aria-label="Recomeçar" className="p-3.5 rounded-2xl bg-gold-soft border border-gold-line text-sm text-gold-ink leading-relaxed space-y-2">
+          <p>
+            <strong className="block mb-0.5">
+              {returning ? `Que bom te ver de volta, ${userName}.` : freshStart === 'segunda' ? 'Hoje é segunda-feira: um bom dia para recomeçar.' : 'Hoje é o primeiro dia do mês: um bom dia para recomeçar.'}
+            </strong>
+            Quer recomeçar a partir de hoje? O roteiro volta para a semana {nextStepTask.week}, a do seu próximo passo, sem nada atrasado. O que você
+            já fez continua feito.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setRestarted(nextStepTask.week!);
+                actions.restartFromToday();
+              }}
+              className="px-3 min-h-9 rounded-lg bg-primary text-on-primary text-[13px] font-semibold cursor-pointer"
+            >
+              Recomeçar a partir de hoje
+            </button>
+            <button onClick={actions.dismissRestart} className="px-3 min-h-9 rounded-lg text-[13px] text-gold-ink cursor-pointer">
+              Agora não
+            </button>
+          </div>
+        </section>
+      )}
+      {restarted !== null && (
+        <p role="status" className="p-3 rounded-xl bg-primary-soft border border-primary/30 text-sm text-primary">
+          Pronto: a semana {restarted} começa hoje. Um passo de cada vez. 🧭
+        </p>
+      )}
+
+      {returning && !restartOffer && (
         <div className="p-3.5 rounded-2xl bg-gold-soft border border-gold-line text-sm text-gold-ink leading-relaxed">
           <strong className="block mb-0.5">Que bom te ver de volta, {userName}.</strong>
           Ficar uns dias longe acontece com todo mundo e não apaga o que você já fez. Que tal só 5 minutos hoje?

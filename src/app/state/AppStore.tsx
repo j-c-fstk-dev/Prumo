@@ -6,7 +6,7 @@ import { buildPlanTasks } from '../../domain/tasks';
 import { ACTIONS_TO_REPAIR, JOURNEY_DAYS, addDays, buildTimeline, computeStreak, isFreshStart, journeyDayKey, journeyDayNumber, tasksDoneOn, weekKey } from '../../domain/journey';
 import { track } from '../../utils/telemetry';
 import { REVIEW_LIMIT, activeRoutines, currentGoal, routineProgress, toggleRoutineDay, type WeeklyReview } from '../../domain/routines';
-import { suggestedWeek } from '../../domain/pacing';
+import { restartShift, shouldOfferRestart, suggestedWeek } from '../../domain/pacing';
 import { CYCLE_LABEL, CYCLE_NOTE_LIMIT, activeCycle, cycleStatus, type Cycle, type CycleKind, type PastJourney } from '../../domain/cycles';
 import { can as canUse, currentPlan, trialDaysLeft, type Feature } from '../../domain/entitlements';
 import type { KitId } from '../../domain/kit';
@@ -115,6 +115,10 @@ interface PersistedState {
   lastExportAt?: number;
   /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
   installHintDismissedAt?: number;
+  /** Recomeço (etapa 52): dias descontados da jornada para a semana sugerida voltar ao próximo passo */
+  paceShiftDays?: number;
+  /** Dia (AAAA-MM-DD) em que a pessoa disse "agora não" ao recomeço */
+  restartDismissedOn?: string;
   coachMessages: CoachMessage[];
   /** Diagnóstico calculado ao fim da anamnese (null até lá) */
   diagnosis: Diagnosis | null;
@@ -349,7 +353,11 @@ function useAppState() {
 
   const now = Date.now();
   const journeyDay = data.startedAt ? journeyDayNumber(data.startedAt, new Date(now)) : null;
-  const currentWeek = suggestedWeek(journeyDay);
+  const pacingDay = journeyDay === null ? null : journeyDay - (data.paceShiftDays ?? 0);
+  const currentWeek = suggestedWeek(pacingDay);
+  const restartOffer =
+    data.restartDismissedOn !== today &&
+    shouldOfferRestart({ daysAway: streak.daysAway, freshStart: freshStart !== null, nextWeek: nextStepTask?.week, currentWeek, journeyComplete });
   const routines = activeRoutines(currentChapterId, journeyComplete).map((r) => ({ ...r, ...routineProgress(r, data.routineLog[r.id], today) }));
   const weeklyGoal = currentGoal(data.weeklyReviews);
   const reviewedThisWeek = Boolean(data.weeklyReviews[weekKey(today)]);
@@ -869,6 +877,14 @@ function useAppState() {
       setData((d) => ({ ...d, lastExportAt: Date.now() }));
     },
     dismissInstallHint: () => setData((d) => ({ ...d, installHintDismissedAt: Date.now() })),
+    /** Recomeçar a partir de hoje: a semana do próximo passo começa hoje; nada do que foi feito muda */
+    restartFromToday: () => {
+      if (journeyDay === null || !nextStepTask?.week) return;
+      track('recomeco', { semana: nextStepTask.week, dias_longe: streak.daysAway ?? 0 });
+      const extra = restartShift(pacingDay ?? journeyDay, nextStepTask.week);
+      setData((d) => ({ ...d, paceShiftDays: (d.paceShiftDays ?? 0) + extra, restartDismissedOn: today }));
+    },
+    dismissRestart: () => setData((d) => ({ ...d, restartDismissedOn: today })),
     deletePerson: (id: string) => {
       void deleteImages(data.people.find((p) => p.id === id)?.images);
       setData((d) => ({ ...d, people: d.people.filter((p) => p.id !== id) }));
@@ -998,6 +1014,7 @@ function useAppState() {
     notebookSection,
     currentChapterId,
     currentWeek,
+    restartOffer,
     routines,
     weeklyGoal,
     reviewedThisWeek,

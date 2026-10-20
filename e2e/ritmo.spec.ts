@@ -263,3 +263,27 @@ test('roteiro revisado: conversar com 5 vem antes de criar; o contador anda pelo
   await expect(page.getByText('O que o mundo respondeu:')).toBeVisible();
   await expect(page.getByText(/o passo conta como feito mesmo sem resposta/)).toBeVisible();
 });
+
+test('recomeço sem culpa: quem volta depois de 7+ dias recomeça a partir de hoje, sem atraso e sem perder nada', async ({ page }) => {
+  await seedState(page, {
+    startedAt: Date.now() - 30 * 86_400_000,
+    actionsByDay: { [dayKey(-10)]: 1 },
+    taskStatus: { t1: 'completed' },
+    completedAt: { t1: Date.now() - 10 * 86_400_000 },
+  });
+  const offer = page.getByRole('region', { name: 'Recomeçar' });
+  await expect(offer).toContainText('Que bom te ver de volta, Jo.');
+  await expect(offer).toContainText('semana 1');
+  await offer.getByRole('button', { name: 'Recomeçar a partir de hoje' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'a semana 1 começa hoje' })).toBeVisible();
+  await expect(offer).toHaveCount(0);
+
+  // O roteiro volta para a semana 1, e o passo feito continua feito
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await expect(page.getByText('1 de 23 concluídas')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Semana 1', exact: true })).toContainText('esta semana');
+  await expect(page.getByRole('region', { name: 'Semana 5', exact: true })).toContainText('dá pra adiantar');
+  await page.reload();
+  await passSplash(page);
+  await expect(page.getByRole('region', { name: 'Recomeçar' })).toHaveCount(0);
+});
