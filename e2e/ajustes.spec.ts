@@ -158,6 +158,21 @@ test('app Android (.apk): a página oferece o download e, dentro do app, o convi
   await expect(page.getByRole('link', { name: 'Baixar para Android' })).toHaveCount(0);
 });
 
+test.describe('no iPhone', () => {
+  test.use({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' });
+
+  test('a página troca o .apk pelo passo a passo de instalar pelo Safari', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('link', { name: 'Baixar para Android' })).toHaveCount(0);
+    const install = page.getByRole('button', { name: 'Instalar no iPhone' }).first();
+    await install.click();
+    await expect(install).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByText('Adicionar à Tela de Início').first()).toBeVisible();
+    await install.click();
+    await expect(page.getByText('Adicionar à Tela de Início')).toHaveCount(0);
+  });
+});
+
 test('apresentação em /, app em /app/, políticas no rodapé e no "Sobre" do app', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Ache o seu caminho no digital.' })).toBeVisible();

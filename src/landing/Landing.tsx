@@ -1,10 +1,10 @@
-import React from 'react';
-import { ArrowRight, Check, Download, Lock, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Check, Download, Lock, Smartphone, X } from 'lucide-react';
 import { Seeker } from '../components/brand/Seeker';
 import { Starfield } from '../components/brand/CompassSplash';
 import { CompassMark } from '../components/brand/CompassMark';
 import { track } from '../utils/telemetry';
-import { APK_URL, isApk, platform } from '../utils/install';
+import { APK_URL, isApk, isStandalone, platform } from '../utils/install';
 import { SiteFooter } from './SiteFooter';
 
 /**
@@ -25,18 +25,59 @@ const OpenApp: React.FC<{ where: string; className?: string; children?: React.Re
   </a>
 );
 
-/** Baixar o app Android: some no iPhone (não instala .apk) e dentro do próprio app */
-const DownloadApk: React.FC<{ where: string }> = ({ where }) =>
-  platform() === 'ios' || isApk() ? null : (
-    <a
-      href={APK_URL}
-      onClick={() => track('apresentacao_baixar_apk', { onde: where })}
-      className="inline-flex items-center justify-center gap-2 min-h-12 px-5 rounded-xl font-semibold text-base border transition-transform active:scale-[0.98]"
-      style={{ borderColor: 'rgba(227,184,96,.55)', color: 'var(--gold)' }}
-    >
+const secondaryClass =
+  'inline-flex items-center justify-center gap-2 min-h-12 px-5 rounded-xl font-semibold text-base border transition-transform active:scale-[0.98] cursor-pointer';
+const secondaryStyle: React.CSSProperties = { borderColor: 'rgba(227,184,96,.55)', color: 'var(--gold)' };
+
+/** iPhone não instala .apk: o caminho é a Tela de Início pelo Safari (o app abre em tela cheia) */
+const InstallIphone: React.FC<{ where: string }> = ({ where }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        onClick={() => {
+          if (!open) track('apresentacao_instalar_iphone', { onde: where });
+          setOpen(!open);
+        }}
+        aria-expanded={open}
+        className={secondaryClass}
+        style={secondaryStyle}
+      >
+        <Smartphone className="w-4 h-4" aria-hidden="true" /> Instalar no iPhone
+      </button>
+      {open && (
+        <ol
+          className="basis-full text-left text-sm leading-relaxed space-y-1 list-decimal pl-5 p-4 rounded-xl border max-w-[40ch]"
+          style={{ borderColor: 'rgba(227,184,96,.35)', color: 'var(--night-text)' }}
+        >
+          <li>
+            No <strong>Safari</strong>, toque em <strong>Abrir o Prumo</strong>.
+          </li>
+          <li>
+            Toque em <strong>Compartilhar</strong> (o quadrado com a seta para cima).
+          </li>
+          <li>
+            Escolha <strong>Adicionar à Tela de Início</strong> e depois <strong>Adicionar</strong>.
+          </li>
+          <li className="list-none -ml-5 pt-1" style={{ color: 'var(--night-muted)' }}>
+            Pronto: o Prumo abre pelo ícone da bússola, em tela cheia, e seus dados ficam guardados.
+          </li>
+        </ol>
+      )}
+    </>
+  );
+};
+
+/** Instalar como app: .apk no Android, Tela de Início no iPhone. Some quando já está como app. */
+const GetApp: React.FC<{ where: string }> = ({ where }) => {
+  if (isApk() || isStandalone()) return null;
+  if (platform() === 'ios') return <InstallIphone where={where} />;
+  return (
+    <a href={APK_URL} onClick={() => track('apresentacao_baixar_apk', { onde: where })} className={secondaryClass} style={secondaryStyle}>
       <Download className="w-4 h-4" aria-hidden="true" /> Baixar para Android
     </a>
   );
+};
 
 /** Print real do app numa moldura simples de celular */
 const Phone: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => (
@@ -133,13 +174,13 @@ export const Landing: React.FC = () => (
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <OpenApp where="abertura" />
-            <DownloadApk where="abertura" />
+            <GetApp where="abertura" />
             <a href="#como-funciona" className="min-h-12 px-4 inline-flex items-center text-sm font-semibold" style={{ color: 'var(--night-text)' }}>
               Como funciona
             </a>
           </div>
           <p className="mt-4 text-sm" style={{ color: 'var(--night-muted)' }}>
-            Sem cadastro. Abre no navegador do celular ou como app no Android (.apk).
+            Sem cadastro. Abre no navegador do celular, ou instale como app no Android e no iPhone.
           </p>
         </div>
         <div className="flex justify-center sm:justify-end" aria-hidden="true">
@@ -255,7 +296,7 @@ export const Landing: React.FC = () => (
         <p style={{ color: 'var(--night-muted)' }}>São uns 15 minutos. Você sai sabendo o que testar primeiro.</p>
         <div className="mt-2 flex flex-wrap justify-center gap-3">
           <OpenApp where="final">Começar agora</OpenApp>
-          <DownloadApk where="final" />
+          <GetApp where="final" />
         </div>
       </div>
     </section>
