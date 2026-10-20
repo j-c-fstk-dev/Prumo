@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
-import { PlumbLine } from '../../components/brand/PlumbLine';
+import { CompassMark } from '../../components/brand/CompassMark';
 import { PrumoMeaning } from '../components/PrumoMeaning';
 import { useApp } from '../state/AppStore';
 import { Reveal } from '../components/Reveal';
 
-/** Apresentação inicial (etapa 20): o que é prumo, a constelação, como funciona e "é só o começo". */
+/** Apresentação inicial (etapa 20): o que é o Prumo, a constelação, como funciona e "é só o começo". */
 const SLIDES: { icon: React.ReactNode; title: string; body: React.ReactNode; wide?: boolean }[] = [
   {
-    icon: <PlumbLine size={112} />,
+    icon: <CompassMark size={96} mode="settle" settleMs={1400} />,
     wide: true,
-    title: 'Mas afinal, o que é prumo?',
+    title: 'O que é o Prumo?',
     body: <PrumoMeaning />,
   },
   {

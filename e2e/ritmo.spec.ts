@@ -233,10 +233,10 @@ test('guia do app: abre sozinho na 1ª visita, passa por todas as partes, não r
   await page.waitForTimeout(1600);
   await expect(guide).toHaveCount(0);
 
-  // Mas dá para rever em Você → Sobre o Prumo, junto com "O que é prumo?"
+  // Mas dá para rever em Você → Sobre o Prumo, junto com "O que é o Prumo?"
   await page.getByRole('button', { name: 'Você', exact: true }).click();
-  await page.getByText('O que é prumo?').click();
-  await expect(page.getByText('um fio com um peso na ponta')).toBeVisible();
+  await page.getByText('O que é o Prumo?').click();
+  await expect(page.getByText('encontrar o seu norte no digital')).toBeVisible();
   await page.getByRole('button', { name: /Guia do app/ }).click();
   await expect(guide).toContainText('1 de 8');
   await guide.getByRole('button', { name: 'Pular o guia' }).click();

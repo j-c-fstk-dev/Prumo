@@ -47,14 +47,14 @@ test('âncora aparece inteira e o botão de assumir explica como segurar', async
   expect(cut).toBe(false);
 });
 
-test('apresentação inicial explica o que é prumo, a constelação e a jornada', async ({ page }) => {
+test('apresentação inicial explica o que é o Prumo, a constelação e a jornada', async ({ page }) => {
   await openApp(page);
   await page.getByRole('button', { name: 'Começar diagnóstico' }).click();
   await page.getByPlaceholder('Seu nome').fill('Jo');
   await page.getByRole('button', { name: 'Continuar' }).click();
 
-  await expect(page.getByText('Mas afinal, o que é prumo?')).toBeVisible();
-  await expect(page.getByText('um fio com um peso na ponta')).toBeVisible();
+  await expect(page.getByText('O que é o Prumo?')).toBeVisible();
+  await expect(page.getByText('encontrar o seu norte no digital')).toBeVisible();
   await page.getByRole('button', { name: 'Próximo' }).click();
   await expect(page.getByText('Cada passo acende uma estrela')).toBeVisible();
   await page.getByRole('button', { name: 'Próximo' }).click();
