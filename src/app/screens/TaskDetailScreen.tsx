@@ -49,6 +49,20 @@ export const TaskDetailScreen: React.FC = () => {
   const [newTitle, setNewTitle] = useState(selectedTask.title);
   const [showTranscript, setShowTranscript] = useState(false);
   const transcriptOpen = showTranscript || (voiceUnavailable && activeAudioTaskId === selectedTask.id);
+  // Quando e onde (etapa 53): sem combinado, a pergunta vem logo no começo do passo. Decidido ao abrir,
+  // para o cartão não pular de lugar enquanto a pessoa escolhe.
+  const [askWhenFirst] = useState(!selectedTask.when && selectedTask.status !== 'completed');
+  const whenCard = (
+    <div className="p-3.5 rounded-xl bg-surface border border-primary/30">
+      <strong className="text-sm text-ink block mb-0.5">{askWhenFirst ? 'Antes de começar: quando e onde você vai fazer?' : 'Quando vou fazer:'}</strong>
+      {askWhenFirst && <p className="text-[13px] text-muted mb-2">Combinar dia, hora e lugar aumenta muito a chance de sair do papel.</p>}
+      <WhenPicker
+        value={selectedTask.when}
+        onChange={(when) => actions.setPlanTaskWhen(selectedTask.id, when)}
+        timeThieves={reflections.q3_hours}
+      />
+    </div>
+  );
 
   return (
     <div className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-slide-up">
@@ -118,6 +132,8 @@ export const TaskDetailScreen: React.FC = () => {
             <span>Duração recomendada: {selectedTask.durationMinutes} min</span>
           </div>
         </div>
+
+        {askWhenFirst && whenCard}
 
         {/* Sem voz: as palavras de encorajamento como texto */}
         {selectedTask.audioCoach && !VOICE_ENABLED && (
@@ -241,17 +257,12 @@ export const TaskDetailScreen: React.FC = () => {
         </div>
         </Reveal>
 
-        <Reveal i={3}>
-        {/* Intenção de implementação: o recurso com mais evidência (docs/pesquisa/02) */}
-        <div className="p-3.5 rounded-xl bg-surface border border-primary/30">
-          <strong className="text-sm text-ink block mb-2">Quando vou fazer:</strong>
-          <WhenPicker
-            value={selectedTask.when}
-            onChange={(when) => actions.setPlanTaskWhen(selectedTask.id, when)}
-            timeThieves={reflections.q3_hours}
-          />
-        </div>
-        </Reveal>
+        {!askWhenFirst && (
+          <Reveal i={3}>
+            {/* Intenção de implementação: o recurso com mais evidência (docs/pesquisa/02) */}
+            {whenCard}
+          </Reveal>
+        )}
 
         <Reveal i={4}>
           {/* Caderno: anotações desta tarefa (aparecem também na aba Caderno) */}

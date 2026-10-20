@@ -37,7 +37,7 @@ export const WhenPicker: React.FC<WhenPickerProps> = ({ value, onChange, timeThi
         onChange={(e) => setCustom(e.target.value)}
         onBlur={() => custom.trim() && onChange(custom)}
         onKeyDown={(e) => e.key === 'Enter' && custom.trim() && onChange(custom)}
-        placeholder="Ou escreva: quando eu..."
+        placeholder="Ou escreva dia, hora e lugar: terça, 7h, na cozinha"
         className="w-full px-3 py-1.5 bg-surface border border-line rounded-lg text-sm focus:outline-none focus:border-primary"
       />
       {value && (

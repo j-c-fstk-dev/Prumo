@@ -150,6 +150,11 @@ test('rotinas: as do capítulo aparecem, marcar conta no dia, e a revisão da se
   await expect(card.getByText('Falar com 1 pessoa nova')).toBeVisible();
   await expect(card.getByText('Retomar quem ficou de responder')).toHaveCount(0);
 
+  // Quando e onde também para as rotinas (etapa 53)
+  await card.getByRole('button', { name: 'Quando fazer: Falar com 1 pessoa nova' }).click();
+  await card.getByRole('button', { name: 'depois do café' }).click();
+  await expect(card.getByRole('button', { name: 'Quando fazer: Falar com 1 pessoa nova' })).toHaveText('⏰ depois do café');
+
   await card.getByRole('button', { name: 'Falar com 1 pessoa nova: marcar como feita hoje' }).click();
   await expect(card.getByText('1 de 5 esta semana')).toBeVisible();
   await expect(page.getByText(/1 dia de prumo/)).toBeVisible();

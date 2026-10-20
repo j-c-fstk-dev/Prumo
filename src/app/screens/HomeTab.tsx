@@ -168,8 +168,18 @@ export const HomeTab: React.FC = () => {
           <p className="text-sm text-muted mt-1 leading-relaxed">
             {nextStepTask.description}
           </p>
-          {nextStepTask.when && (
+          {nextStepTask.when ? (
             <p className="text-[13px] text-primary font-semibold mt-1.5">⏰ Combinado: {nextStepTask.when}</p>
+          ) : (
+            <button
+              onClick={() => {
+                actions.openTask(nextStepTask.id);
+                actions.go('task_detail');
+              }}
+              className="mt-1.5 text-[13px] text-primary font-semibold underline underline-offset-2 cursor-pointer"
+            >
+              ⏰ Combinar quando e onde
+            </button>
           )}
           {nextStepTask.week && <WeekHint week={nextStepTask.week} current={currentWeek} />}
 

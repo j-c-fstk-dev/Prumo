@@ -115,6 +115,8 @@ interface PersistedState {
   lastExportAt?: number;
   /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
   installHintDismissedAt?: number;
+  /** "Quando vou fazer" de cada rotina (etapa 53), ex.: "terça e quinta, 7h" */
+  routineWhen?: Record<string, string>;
   /** Ritmo escolhido na entrada (etapa 53). Sem escolha, vale o firme (o de antes) */
   pace?: Pace;
   /** Recomeço (etapa 52): dias descontados da jornada para a semana sugerida voltar ao próximo passo */
@@ -360,7 +362,7 @@ function useAppState() {
   const restartOffer =
     data.restartDismissedOn !== today &&
     shouldOfferRestart({ daysAway: streak.daysAway, freshStart: freshStart !== null, nextWeek: nextStepTask?.week, currentWeek, journeyComplete });
-  const routines = activeRoutines(currentChapterId, journeyComplete, data.pace ?? 'firme').map((r) => ({ ...r, ...routineProgress(r, data.routineLog[r.id], today) }));
+  const routines = activeRoutines(currentChapterId, journeyComplete, data.pace ?? 'firme').map((r) => ({ ...r, when: data.routineWhen?.[r.id], ...routineProgress(r, data.routineLog[r.id], today) }));
   const weeklyGoal = currentGoal(data.weeklyReviews);
   const reviewedThisWeek = Boolean(data.weeklyReviews[weekKey(today)]);
   // A pergunta "Mandou?" vale por 12 horas depois de abrir o WhatsApp ou o e-mail
@@ -886,6 +888,13 @@ function useAppState() {
       const extra = restartShift(pacingDay ?? journeyDay, nextStepTask.week);
       setData((d) => ({ ...d, paceShiftDays: (d.paceShiftDays ?? 0) + extra, restartDismissedOn: today }));
     },
+    setRoutineWhen: (id: string, when: string) =>
+      setData((d) => {
+        const routineWhen = { ...d.routineWhen };
+        if (when.trim()) routineWhen[id] = when.trim();
+        else delete routineWhen[id];
+        return { ...d, routineWhen };
+      }),
     setPace: (pace: Pace) => {
       track('ritmo_escolhido', { ritmo: pace });
       setData((d) => ({ ...d, pace }));
