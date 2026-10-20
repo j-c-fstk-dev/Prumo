@@ -211,6 +211,8 @@ describe('sugestão de mensagem para uma pessoa', () => {
     const fetchMock = mockLlm();
     expect((await handleMessageSuggestion({ stage: 'hack' }, LIVE_ENV)).status).toBe(400);
     expect((await handleMessageSuggestion({ stage: 'cliente' }, {})).body.mode).toBe('offline');
+    // Nome antigo da etapa (app em cache): ainda vale
+    expect((await handleMessageSuggestion({ stage: 'interessado' }, {})).body.mode).toBe('offline');
     expect((await handleMessageSuggestion({ stage: 'cliente' }, LIVE_ENV, async () => ({ allowed: false }))).body.mode).toBe('limited');
     expect((await handleMessageSuggestion({ stage: 'cliente', context: 'não quero mais viver' }, LIVE_ENV)).body.mode).toBe('crisis');
     expect(fetchMock).not.toHaveBeenCalled();

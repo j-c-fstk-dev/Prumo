@@ -11,11 +11,11 @@ const ctx: KitContext = {
 };
 
 describe('modelos do kit', () => {
-  it('a mensagem de convite usa o público, a dor e o produto, e não promete venda', () => {
+  it('a mensagem de convite usa o público e a dor, sem mostrar a ideia nem vender (The Mom Test)', () => {
     const t = buildKitText('convite', ctx);
     expect(t).toContain('autônomos e freelancers');
     expect(t).toContain('sempre atrasado');
-    expect(t).toContain('guia prático');
+    expect(t).not.toContain('guia prático');
     expect(t).toContain('não vou te vender nada');
   });
 

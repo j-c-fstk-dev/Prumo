@@ -356,7 +356,7 @@ export function calculateDiagnosis(a: Answers, personalAnchor: string, reflectio
     pain: niche.pain,
     hypothesis: `${niche.audience} pagam por "${lower(product.name(niche.topic))}" pra resolver ${niche.pain}.`,
     test: product.test,
-    successSignal: '2 de 5 pessoas dizem sim (ou pagam) em até 14 dias.',
+    successSignal: '2 compromissos em até 5 apresentações, sendo pelo menos 1 em dinheiro (pagamento ou sinal).',
     calcSteps: [
       skills.length ? `Cruzando sua facilidade com ${skills[0]}` : 'Olhando o que você faz bem',
       hours ? `Considerando seu tempo real: ${hours}` : 'Olhando o tempo que você tem',

@@ -70,7 +70,7 @@ describe('calculateDiagnosis', () => {
     const d = calculateDiagnosis({ ...base, q1_help: ['tecnologia'] }, 'âncora');
     expect(d.hypothesis).toContain('pagam por');
     expect(d.test).toMatch(/5 pessoas/);
-    expect(d.successSignal).toContain('2 de 5');
+    expect(d.successSignal).toContain('2 compromissos');
   });
 });
 

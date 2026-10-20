@@ -125,7 +125,8 @@ test('backup completo: faz o .zip, apaga tudo e restaura na tela de boas-vindas,
   // A miniatura só mostra a imagem se a foto voltou para o banco do aparelho
   await expect(page.getByRole('button', { name: 'Ver foto' }).locator('img')).toBeVisible();
   await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
-  await expect(page.getByRole('button', { name: 'Ana Souza, Interessado' })).toBeVisible();
+  // Backup antigo: "Interessado" volta como "Viu a proposta"
+  await expect(page.getByRole('button', { name: 'Ana Souza, Viu a proposta' })).toBeVisible();
 });
 
 test('roteiro concluído: a Início não volta pra tarefa 1, e rever o resultado não refaz o compromisso', async ({ page }) => {
@@ -194,7 +195,7 @@ test('ciclos: depois do roteiro, continuar com meta do Caderno; ao bater a meta,
 
   // A Ana vira cliente no Caderno: a meta conta sozinha
   await cycle.getByRole('button', { name: 'Ver minhas pessoas' }).click();
-  await page.getByRole('button', { name: 'Ana Souza, Interessado' }).click();
+  await page.getByRole('button', { name: 'Ana Souza, Viu a proposta' }).click();
   await page.getByLabel('Etapa de Ana Souza').selectOption('cliente');
   await page.getByRole('button', { name: 'Início', exact: true }).click();
   await expect(cycle).toContainText('1 de 1 cliente novo ✦');
@@ -241,4 +242,48 @@ test('guia do app: abre sozinho na 1ª visita, passa por todas as partes, não r
   await expect(guide).toContainText('1 de 8');
   await guide.getByRole('button', { name: 'Pular o guia' }).click();
   await expect(guide).toHaveCount(0);
+});
+
+test('roteiro revisado: conversar com 5 vem antes de criar; o contador anda pelo Caderno e o passo separa "Você fez" do sinal', async ({ page }) => {
+  await seedState(page, {
+    startedAt: Date.now(),
+    people: [
+      { id: 'p1', name: 'Ana Souza', stage: 'conversou', stageHistory: [], createdAt: 1, updatedAt: 1 },
+      { id: 'p2', name: 'Beto Lima', stage: 'contato', stageHistory: [], createdAt: 1, updatedAt: 1 },
+    ],
+  });
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await page.getByRole('button', { name: /^Cap\. 1:/ }).click();
+  await expect(page.getByRole('heading', { name: 'Conversar com 5 pessoas sobre o problema' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Criar a versão mais simples/ })).toHaveCount(0);
+
+  await page.getByRole('heading', { name: 'Conversar com 5 pessoas sobre o problema' }).click();
+  await expect(page.getByRole('status', { name: 'Contador do Caderno' })).toContainText('1 de 5 conversas sobre o problema');
+  await expect(page.getByText('Você fez:')).toBeVisible();
+  await expect(page.getByText('O que o mundo respondeu:')).toBeVisible();
+  await expect(page.getByText(/o passo conta como feito mesmo sem resposta/)).toBeVisible();
+});
+
+test('recomeço sem culpa: quem volta depois de 7+ dias recomeça a partir de hoje, sem atraso e sem perder nada', async ({ page }) => {
+  await seedState(page, {
+    startedAt: Date.now() - 30 * 86_400_000,
+    actionsByDay: { [dayKey(-10)]: 1 },
+    taskStatus: { t1: 'completed' },
+    completedAt: { t1: Date.now() - 10 * 86_400_000 },
+  });
+  const offer = page.getByRole('region', { name: 'Recomeçar' });
+  await expect(offer).toContainText('Que bom te ver de volta, Jo.');
+  await expect(offer).toContainText('semana 1');
+  await offer.getByRole('button', { name: 'Recomeçar a partir de hoje' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'a semana 1 começa hoje' })).toBeVisible();
+  await expect(offer).toHaveCount(0);
+
+  // O roteiro volta para a semana 1, e o passo feito continua feito
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await expect(page.getByText('1 de 23 concluídas')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Semana 1', exact: true })).toContainText('esta semana');
+  await expect(page.getByRole('region', { name: 'Semana 5', exact: true })).toContainText('dá pra adiantar');
+  await page.reload();
+  await passSplash(page);
+  await expect(page.getByRole('region', { name: 'Recomeçar' })).toHaveCount(0);
 });

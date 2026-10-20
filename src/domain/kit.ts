@@ -34,8 +34,8 @@ export const KIT_ITEMS: KitItem[] = [
   {
     id: 'convite',
     title: 'Mensagem de convite',
-    description: 'Para chamar alguém do seu público para conversar ou testar, sem parecer vendedor.',
-    tasks: ['t9', 't3', 't6'],
+    description: 'Para pedir 10 minutos de conversa sobre o problema, sem mostrar a sua ideia nem vender.',
+    tasks: ['t9', 't21'],
     kind: 'text',
     isMessage: true,
   },
@@ -43,7 +43,7 @@ export const KIT_ITEMS: KitItem[] = [
     id: 'roteiro_conversa',
     title: 'Roteiro de conversa de escuta',
     description: 'Perguntas sobre o que a pessoa já viveu, que dão respostas mais honestas do que "você compraria?".',
-    tasks: ['t3'],
+    tasks: ['t21'],
     kind: 'text',
   },
   {
@@ -78,15 +78,13 @@ const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 /** Texto do modelo, já preenchido com o plano da pessoa. */
 export function buildKitText(id: Exclude<KitId, 'preco'>, c: KitContext): string {
-  const product = lower(c.product);
   const audience = lower(c.audience);
   switch (id) {
     case 'convite':
       return [
         'Oi, [nome]! Tudo bem?',
-        `Estou criando algo para ${audience} que passam por isto: ${c.pain}. E lembrei de você.`,
+        `Estou estudando como ${audience} lidam com isto: ${c.pain}. E lembrei de você.`,
         'Posso te fazer 3 perguntas rápidas sobre como é isso no seu dia a dia? Leva uns 10 minutos e não vou te vender nada.',
-        `Se fizer sentido depois, te mostro a primeira versão (${product}) com uma condição especial de teste.`,
         `Obrigado(a)! ${c.name}`,
       ].join('\n\n');
     case 'roteiro_conversa':
@@ -107,9 +105,10 @@ export function buildKitText(id: Exclude<KitId, 'preco'>, c: KitContext): string
         '## O problema\n[Descreva a dor com as palavras que você ouviu nas conversas.]',
         `## O que você recebe\n${c.product}.\n- [Item 1]\n- [Item 2]\n- [Item 3]`,
         '## Como funciona\n[Em 2 ou 3 passos: o que acontece depois de comprar.]',
-        '## Preço de teste\n[Valor] (condição especial para as primeiras pessoas, em troca de um retorno sincero).',
+        '## Preço\n[Valor]. Se for o preço de fundador, diga que é para as primeiras pessoas, e só ofereça bônus ou vagas limitadas se for verdade.',
+        '## Garantia\nSe não for o que você esperava, devolvo o valor em até 7 dias, sem perguntas (Código de Defesa do Consumidor, art. 49).',
         '## Quem está por trás\n' + `Eu sou ${c.name}. [Por que você entende desse problema.]`,
-        '## Quero participar\n[Link de pagamento ou "me chame no WhatsApp".]',
+        '## Quero participar\n[Chave Pix, link de pagamento ou "me chame no WhatsApp".] Dúvidas: [seu contato].',
       ].join('\n\n');
     case 'depoimento':
       return [
@@ -118,7 +117,7 @@ export function buildKitText(id: Exclude<KitId, 'preco'>, c: KitContext): string
         '1. Como estava a situação antes?',
         '2. O que mudou depois?',
         '3. Para quem você indicaria?',
-        'Posso usar a sua resposta (com seu primeiro nome) para mostrar para outras pessoas? Se preferir anônimo, tudo bem.',
+        'Posso usar a sua resposta (com seu primeiro nome) para mostrar para outras pessoas? Se puder, me responde "pode usar". Se preferir anônimo, tudo bem.',
         `Um abraço, ${c.name}`,
       ].join('\n\n');
   }

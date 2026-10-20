@@ -63,12 +63,13 @@ test('caderno: ficha preenchida, anotações, nota da tarefa, resposta do coach 
   await expect(page.getByText('Eu ajudo pessoas em transição a se apresentar')).toBeVisible();
 });
 
-test('pessoas: adicionar, mensagem pronta com WhatsApp, etapas, teste "2 de 5", próximo passo e busca', async ({ page }) => {
+test('pessoas: adicionar, mensagem pronta com WhatsApp, etapas, funil com compromissos, próximo passo e busca', async ({ page }) => {
   await onboard(page);
   await commitAndSeal(page);
   await page.getByRole('button', { name: 'Caderno', exact: true }).click();
   await page.getByRole('tab', { name: /Pessoas/ }).click();
-  await expect(page.getByText('0 de 0 pessoas disseram sim')).toBeVisible();
+  const funil = page.getByRole('region', { name: 'Seu funil' });
+  await expect(funil).toContainText('Elogio não conta');
 
   // Adicionar
   await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
@@ -85,9 +86,12 @@ test('pessoas: adicionar, mensagem pronta com WhatsApp, etapas, teste "2 de 5", 
   const wa = page.getByRole('link', { name: 'WhatsApp' });
   await expect(wa).toHaveAttribute('href', /^https:\/\/wa\.me\/5511987654321\?text=Oi%2C%20Ana!/);
 
-  // Mudar de etapa conta no teste
-  await page.getByLabel('Etapa de Ana Souza').selectOption('interessado');
-  await expect(page.getByText('1 de 1 pessoa disse sim')).toBeVisible();
+  // Mudar de etapa conta no funil; o compromisso é uma etiqueta e leva para "Se comprometeu"
+  await page.getByLabel('Etapa de Ana Souza').selectOption('proposta');
+  await expect(funil.getByRole('listitem').nth(2)).toHaveText('1viu a proposta');
+  await page.getByRole('button', { name: '💰 Pagou ou deu sinal' }).click();
+  await expect(page.getByLabel('Etapa de Ana Souza')).toHaveValue('compromisso');
+  await expect(funil).toContainText('1 compromisso, 1 em dinheiro.');
 
   // Próximo passo atrasado aparece em "Pra hoje"
   await page.getByLabel('Próximo passo com Ana Souza', { exact: true }).fill('Mandar proposta');
@@ -97,7 +101,7 @@ test('pessoas: adicionar, mensagem pronta com WhatsApp, etapas, teste "2 de 5", 
   // Busca do caderno acha a pessoa pela nota
   await page.getByRole('button', { name: 'Buscar no caderno' }).click();
   await page.getByLabel('Buscar em todo o caderno').fill('novembro');
-  await expect(page.getByText(/👥 Pessoa · ✨ Interessado/)).toBeVisible();
+  await expect(page.getByText(/👥 Pessoa · 🤝 Se comprometeu/)).toBeVisible();
   await page.getByRole('button', { name: 'Fechar busca' }).click();
 
   // Persiste
@@ -106,11 +110,12 @@ test('pessoas: adicionar, mensagem pronta com WhatsApp, etapas, teste "2 de 5", 
   await page.getByRole('button', { name: 'Caderno', exact: true }).click();
   await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
   // A lista volta fechada: nome e etapa; tocando no nome, a ficha abre
-  const row = page.getByRole('button', { name: 'Ana Souza, Interessado' });
+  const row = page.getByRole('button', { name: 'Ana Souza, Se comprometeu' });
   await expect(row).toHaveAttribute('aria-expanded', 'false');
   await expect(page.getByLabel('Etapa de Ana Souza')).toHaveCount(0);
   await row.click();
-  await expect(page.getByLabel('Etapa de Ana Souza')).toHaveValue('interessado');
+  await expect(page.getByLabel('Etapa de Ana Souza')).toHaveValue('compromisso');
+  await expect(page.getByRole('button', { name: '💰 Pagou ou deu sinal' })).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('pessoas: lista em ordem alfabética, uma ficha aberta por vez, e quem muda de etapa não some', async ({ page }) => {

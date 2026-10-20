@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowRight, ArrowLeft, Sparkles, Bookmark, Pencil } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ANAMNESE_SECTIONS } from '../../data/prumoData';
-import { draftToFuture, hasWrittenReply, starterFromFuture } from '../../domain/letter';
+import { draftToFuture, hasWrittenReply, horizonLabel, LETTER_YEAR_OPTIONS, LETTER_YEARS, retitle, starterFromFuture } from '../../domain/letter';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 
@@ -13,7 +13,7 @@ const textareaClass =
 
 /**
  * Carta ao eu futuro em duas vias (docs/pesquisa/02, Chishima & Wilson):
- * 1) a pessoa escreve para si daqui a 90 dias (com rascunho editável);
+ * 1) a pessoa escreve para si daqui a alguns anos (10 sugeridos, editável; com rascunho editável);
  * 2) responde como esse eu futuro (só a primeira linha vem pronta);
  * 3) as duas ficam seladas e podem ser relidas.
  */
@@ -27,17 +27,27 @@ export const FutureLetterScreen: React.FC = () => {
 
   // Preenche os rascunhos na primeira vez
   useEffect(() => {
+    // Carta nova: já nasce com o horizonte sugerido
+    const years = letter?.toFuture ? letter.years : LETTER_YEARS;
     if (!letter?.toFuture) {
       actions.setLetter({
-        toFuture: draftToFuture({ name: userName, product: diagnosis.product, anchor: personalAnchor, obstacleLabel, planB: diagnosis.planB }),
+        years,
+        toFuture: draftToFuture({ name: userName, product: diagnosis.product, anchor: personalAnchor, obstacleLabel, planB: diagnosis.planB }, years),
       });
     }
-    if (!letter?.fromFuture) actions.setLetter({ fromFuture: starterFromFuture(userName) });
+    if (!letter?.fromFuture) actions.setLetter({ fromFuture: starterFromFuture(userName, years) });
   }, []);
 
   const toFuture = letter?.toFuture ?? '';
   const fromFuture = letter?.fromFuture ?? '';
-  const canSeal = hasWrittenReply(fromFuture, userName);
+  const years = letter?.years;
+  const horizon = horizonLabel(years);
+  const canSeal = hasWrittenReply(fromFuture, userName, years);
+
+  const changeYears = (to: number) => {
+    soundEffects.playSelectOption();
+    actions.setLetter({ years: to, toFuture: retitle(toFuture, years, to), fromFuture: retitle(fromFuture, years, to) });
+  };
 
   const enterJourney = () => {
     soundEffects.playCompleteTask();
@@ -57,16 +67,33 @@ export const FutureLetterScreen: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5" />
             <span>Carta 1 de 2</span>
           </div>
-          <h2 className="text-xl font-bold font-display text-ink leading-tight">Escreva para você daqui a 90 dias</h2>
+          <h2 className="text-xl font-bold font-display text-ink leading-tight">Escreva para você {horizon}</h2>
           <p className="text-sm text-muted leading-relaxed">
-            Uma carta pra você ler daqui a 3 meses. Já deixamos um rascunho: mude o que quiser. Quanto mais tiver o seu jeito de falar, melhor.
+            Imagine você {horizon}, com a vida que quer ter: onde está, o que faz, quem está por perto. Quanto mais concreto, melhor. Já
+            deixamos um rascunho: mude o que quiser, do seu jeito de falar. Você relê no dia 90.
           </p>
+          <label className="flex items-center gap-2 text-sm text-ink">
+            <span>Daqui a</span>
+            <select
+              value={years ?? ''}
+              onChange={(e) => changeYears(Number(e.target.value))}
+              aria-label="Daqui a quantos anos"
+              className="rounded-lg border border-gold-line bg-surface text-ink px-2 py-1.5 cursor-pointer"
+            >
+              {!years && <option value="">90 dias</option>}
+              {LETTER_YEAR_OPTIONS.map((n) => (
+                <option key={n} value={n}>
+                  {n} anos
+                </option>
+              ))}
+            </select>
+          </label>
           <textarea
             rows={12}
             value={toFuture}
             onChange={(e) => actions.setLetter({ toFuture: e.target.value })}
             className={textareaClass}
-            aria-label="Carta para o seu eu de daqui a 90 dias"
+            aria-label={`Carta para o seu eu de ${horizon}`}
           />
         </div>
         <div className="pt-3">
@@ -103,9 +130,9 @@ export const FutureLetterScreen: React.FC = () => {
             </button>
             <span className="text-[13px] font-semibold text-primary">Carta 2 de 2</span>
           </div>
-          <h2 className="text-xl font-bold font-display text-ink leading-tight">Responda como o seu eu de 90 dias</h2>
+          <h2 className="text-xl font-bold font-display text-ink leading-tight">Responda como o seu eu de {horizon}</h2>
           <p className="text-sm text-muted leading-relaxed">
-            Agora imagine que deu certo. O que você fez? Como foram os dias difíceis? O que diria pra você de hoje?
+            Agora escreva como se fosse você {horizon}. Como está a sua vida? O que te ajudou nos dias difíceis? O que diria pra você de hoje?
             Essa parte é só sua: escrever essa resposta é o que mais ajuda a manter o combinado.
           </p>
           <textarea
@@ -114,7 +141,7 @@ export const FutureLetterScreen: React.FC = () => {
             onChange={(e) => actions.setLetter({ fromFuture: e.target.value })}
             placeholder="Escreva com suas palavras..."
             className={textareaClass}
-            aria-label="Resposta do seu eu de daqui a 90 dias"
+            aria-label={`Resposta do seu eu de ${horizon}`}
           />
           {!canSeal && <p className="text-[13px] text-muted">Escreva pelo menos algumas frases para selar a carta.</p>}
         </div>
@@ -162,7 +189,7 @@ export const FutureLetterScreen: React.FC = () => {
             <p className="text-sm text-ink font-serif leading-relaxed whitespace-pre-line">{toFuture}</p>
           </div>
           <div className="border-t border-gold-soft pt-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary block mb-1">Do seu eu de 90 dias</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-primary block mb-1">Do seu eu de {horizon}</span>
             <p className="text-sm text-ink font-serif leading-relaxed whitespace-pre-line">{fromFuture}</p>
           </div>
           <div className="pt-2.5 border-t border-gold-soft flex items-center gap-1.5 text-[13px] text-gold-ink font-medium">

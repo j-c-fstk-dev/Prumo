@@ -7,7 +7,7 @@ import { INITIAL_TASKS, TaskItem } from '../data/prumoData';
 import type { ProductId } from './diagnosis';
 import type { ToolCategoryId } from '../data/ferramentas';
 
-type TaskOverride = Partial<Pick<TaskItem, 'title' | 'description' | 'whatToDo' | 'howToKnowItIsGood' | 'durationMinutes'>>;
+type TaskOverride = Partial<Pick<TaskItem, 'title' | 'description' | 'whatToDo' | 'howToKnowItIsGood' | 'signals' | 'ifNoSignal' | 'durationMinutes'>>;
 
 /** t2: a "versão mínima entregável" muda conforme o formato */
 const MINIMUM_VERSION: Record<ProductId, TaskOverride> = {
@@ -70,6 +70,8 @@ const BASE_TOOLS: Record<string, ToolCategoryId[]> = {
   t13: ['design', 'ia_texto', 'pagamento'],
   t15: ['documentos'],
   t17: ['agenda'],
+  t21: ['mensagens', 'videochamada'],
+  t22: ['agenda'],
   t18: ['documentos', 'design'],
 };
 
@@ -108,8 +110,9 @@ export function buildPlanTasks(plan: PlanInput | null): TaskItem[] {
         return {
           ...task,
           whatToDo:
-            `Defina o preço de teste (referência inicial: ${TEST_PRICE[plan.productId]}). ` +
-            'Escolha como vai receber (o Pix do seu banco já basta no teste) e tenha isso pronto antes das conversas.',
+            `Defina o preço de fundador do teste (referência inicial: ${TEST_PRICE[plan.productId]}): barato, e dito como preço de teste. ` +
+            'Para receber, a chave Pix ou o QR code do seu banco já bastam; link de pagamento é opcional. ' +
+            'Escreva também como devolve: quem compra pela internet pode desistir em até 7 dias e receber tudo de volta (Código de Defesa do Consumidor, art. 49).',
         };
       case 't5':
         if (plan.channel.includes('Instagram')) return task;
@@ -119,7 +122,9 @@ export function buildPlanTasks(plan: PlanInput | null): TaskItem[] {
           description: 'Ser útil onde as pessoas já estão, sem precisar aparecer em vídeo.',
           whatToDo:
             'Encontre 2 grupos ou comunidades do seu tema (WhatsApp, Facebook, Reddit ou fóruns) e responda 3 dúvidas de forma útil, sem vender nada.',
-          howToKnowItIsGood: ['Pelo menos 1 pessoa agradeceu ou puxou conversa com você'],
+          howToKnowItIsGood: ['Você encontrou 2 grupos do seu tema', 'Respondeu 3 dúvidas sem vender nada'],
+          signals: ['Alguém agradeceu ou puxou conversa com você'],
+          ifNoSignal: 'Grupo parado? Procure outro mais ativo e continue ajudando: confiança leva umas semanas.',
           toolCategories: ['mensagens', 'ia_texto'],
         };
       case 't6':
@@ -127,8 +132,12 @@ export function buildPlanTasks(plan: PlanInput | null): TaskItem[] {
           ...task,
           title: 'Fazer o teste da sua aposta',
           description: 'A hora de descobrir se as pessoas pagam pelo que você criou.',
-          whatToDo: `${plan.test} Seja honesto: diga que é uma versão de teste com condição especial.`,
-          howToKnowItIsGood: ['2 de 5 pessoas disseram sim (ou pagaram) em até 14 dias', 'Você anotou o que fez as outras dizerem não'],
+          whatToDo:
+            `${plan.test} Seja honesto: diga que é um teste, com preço de fundador. ` +
+            'Se ainda não tem coragem de cobrar, pode fazer de graça para 1 ou 2 pessoas, mas só em troca de um compromisso combinado antes: data marcada, depoimento autorizado ou uma indicação. Esse compromisso conta como tempo ou indicação, nunca como dinheiro.',
+          howToKnowItIsGood: ['Você ofereceu para 5 pessoas, uma de cada vez', 'Anotou no Caderno o que cada uma fez'],
+          signals: ['2 compromissos, sendo pelo menos 1 em dinheiro (pagamento ou sinal)'],
+          ifNoSignal: 'Teve compromisso, mas não chegou a 2 com 1 em dinheiro? A dor existe: mude uma coisa só (a oferta ou o preço) e faça mais uma rodada.',
         };
       default:
         return task;

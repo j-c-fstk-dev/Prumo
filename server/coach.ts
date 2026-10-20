@@ -293,9 +293,10 @@ export async function handleIdea(body: any, env?: LlmEnv, guard?: LiveCallGuard)
 }
 
 const MESSAGE_STAGES: Record<string, string> = {
-  contato: 'primeiro contato: convidar a pessoa para uma conversa curta, sem vender nada',
-  conversou: 'já conversaram: contar que a primeira versão ficou pronta e oferecer a condição de teste',
-  interessado: 'a pessoa disse sim ou pediu mais: combinar o próximo passo e facilitar a compra',
+  contato: 'primeiro contato: pedir uma conversa curta sobre como a pessoa lida com o problema hoje, sem mostrar a ideia nem vender',
+  conversou: 'já conversaram sobre o problema: contar que a primeira versão ficou pronta e oferecer o teste com preço de fundador',
+  proposta: 'a pessoa já viu a proposta: tirar dúvidas e pedir um próximo passo concreto (marcar data, pagar o teste ou indicar alguém), sem pressão',
+  compromisso: 'a pessoa se comprometeu: confirmar o combinado (o que, quando, como pagar) e agradecer',
   cliente: 'já é cliente: agradecer, perguntar como foi e pedir um depoimento ou indicação',
   agora_nao: 'disse "agora não": retomar com leveza, sem pressão, contando uma novidade',
 };
@@ -319,7 +320,9 @@ export async function handleMessageSuggestion(
   env?: LlmEnv,
   guard?: LiveCallGuard,
 ): Promise<{ status: number; body: Record<string, unknown> }> {
-  const stage = typeof body?.stage === 'string' && body.stage in MESSAGE_STAGES ? body.stage : null;
+  // "interessado" é o nome antigo de "proposta" (etapa 52): versões do app ainda em cache mandam assim
+  const rawStage = body?.stage === 'interessado' ? 'proposta' : body?.stage;
+  const stage = typeof rawStage === 'string' && rawStage in MESSAGE_STAGES ? rawStage : null;
   if (!stage) return { status: 400, body: { error: 'Etapa inválida.' } };
   const context = typeof body?.context === 'string' ? body.context.trim().slice(0, 500) : '';
   if (context && detectCrisis(context)) {
