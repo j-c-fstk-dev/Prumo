@@ -41,6 +41,9 @@ jobs:
           cache: gradle
 
       - uses: android-actions/setup-android@v3
+        with:
+          # O padrão inclui o pacote "tools", que não existe mais nas cmdline-tools novas
+          packages: 'platform-tools'
 
       - name: Ferramentas do Android
         run: sdkmanager "build-tools;${BUILD_TOOLS}" "platforms;android-36"
