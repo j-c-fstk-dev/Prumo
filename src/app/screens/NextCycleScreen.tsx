@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
-import { testStats } from '../../domain/people';
+import { funnel } from '../../domain/people';
 import { CYCLE_DAYS, CYCLE_LABEL, CYCLE_NOTE_LIMIT, suggestedTarget, type CycleKind } from '../../domain/cycles';
 import { Reveal } from '../components/Reveal';
 
@@ -25,7 +25,7 @@ export const NextCycleScreen: React.FC = () => {
   const [note, setNote] = useState('');
   const [confirmSwitch, setConfirmSwitch] = useState(false);
 
-  const stats = testStats(people);
+  const stats = funnel(people);
   const done = tasks.filter((t) => t.status === 'completed').length;
   const routinesDone = Object.values(routineLog).reduce((n, days) => n + days.length, 0);
 
@@ -57,7 +57,7 @@ export const NextCycleScreen: React.FC = () => {
             [done, 'passos feitos'],
             [routinesDone, 'rotinas feitas'],
             [stats.talked, 'conversas'],
-            [stats.yes, 'disseram sim'],
+            [stats.committed, 'compromissos'],
             [stats.clients, 'clientes'],
           ].map(([n, label]) => (
             <div key={label} className="p-2.5 rounded-xl bg-surface border border-line">

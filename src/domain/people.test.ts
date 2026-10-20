@@ -6,7 +6,9 @@ import {
   emailLink,
   messageFor,
   phoneLink,
-  testStats,
+  funnel,
+  normalizePerson,
+  testVerdict,
   waNumber,
   whatsappLink,
   type Person,
@@ -46,23 +48,47 @@ describe('pessoas', () => {
     const convite = messageFor(person('contato'), ctx).text;
     expect(convite.startsWith('Oi, Ana!')).toBe(true);
     expect(convite).not.toContain('[nome]');
-    expect(messageFor(person('interessado'), ctx).text).toContain('condição especial de teste');
+    expect(messageFor(person('conversou'), ctx).text).toContain('preço de fundador');
+    expect(messageFor(person('proposta'), ctx).text).toContain('devolvo em até 7 dias');
     expect(messageFor(person('cliente'), ctx).text).toContain('Como estava a situação antes?');
     expect(messageFor(person('agora_nao'), ctx).text).toContain('Sem pressão');
   });
 
-  it('conta o teste "2 de 5": quem conversou e quem disse sim', () => {
-    const people = [person('contato'), person('conversou'), person('interessado'), person('cliente'), person('agora_nao')];
-    expect(testStats(people)).toEqual({ talked: 4, yes: 2, clients: 1, goalMet: true });
-    expect(testStats([person('contato')])).toEqual({ talked: 0, yes: 0, clients: 0, goalMet: false });
+  it('funil único: conta até onde cada pessoa chegou, mesmo pulando etapas ou dizendo "agora não" depois', () => {
+    const people = [
+      person('contato'),
+      person('conversou'),
+      person('proposta'),
+      person('compromisso', { commitments: ['tempo'] }),
+      person('cliente'),
+      person('agora_nao', { stageHistory: [{ stage: 'proposta', at: 1 }, { stage: 'agora_nao', at: 2 }] }),
+    ];
+    expect(funnel(people)).toEqual({ names: 6, talked: 5, presented: 4, committed: 2, money: 1, clients: 1 });
     expect(countByStage(people).contato).toBe(1);
+    // Indicou alguém sem mudar a etapa: conta como compromisso
+    expect(funnel([person('conversou', { commitments: ['indicacao'] })]).committed).toBe(1);
+  });
+
+  it('decisão da semana 6: compromissos, não sins', () => {
+    const f = (presented: number, committed: number, money: number) => ({ names: 20, talked: 8, presented, committed, money, clients: 0 });
+    expect(testVerdict(f(3, 2, 1))).toBe('seguir');
+    expect(testVerdict(f(3, 1, 0))).toBeNull();
+    expect(testVerdict(f(5, 2, 0))).toBe('ajustar');
+    expect(testVerdict(f(5, 0, 0))).toBe('trocar');
+  });
+
+  it('dados antigos: "Interessado" vira "Viu a proposta", também no histórico', () => {
+    const old = person('interessado' as Stage, { stageHistory: [{ stage: 'interessado' as Stage, at: 1 }] });
+    const p = normalizePerson(old);
+    expect(p.stage).toBe('proposta');
+    expect(p.stageHistory[0].stage).toBe('proposta');
   });
 
   it('próximos passos de hoje e atrasados, sem quem disse "agora não"', () => {
     const people = [
       person('conversou', { name: 'B', nextDate: '2026-10-20' }),
       person('conversou', { name: 'A', nextDate: '2026-10-15' }),
-      person('interessado', { name: 'C', nextDate: '2026-10-18' }),
+      person('proposta', { name: 'C', nextDate: '2026-10-18' }),
       person('agora_nao', { name: 'D', nextDate: '2026-10-10' }),
     ];
     expect(dueFollowUps(people, '2026-10-18').map((p) => p.name)).toEqual(['A', 'C']);

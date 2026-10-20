@@ -6,14 +6,29 @@
 
 import { buildKitText, type KitContext } from './kit';
 
-export type Stage = 'contato' | 'conversou' | 'interessado' | 'cliente' | 'agora_nao';
+/**
+ * Etapas (etapa 52): o funil único do roteiro. Conversou = falaram sobre o problema dela, sem mostrar
+ * a sua ideia; Viu a proposta = você mostrou o que oferece; Se comprometeu = deu tempo, reputação ou
+ * dinheiro (The Mom Test: elogio não conta). Dá para pular etapas: alguém da sua rede pode comprar direto.
+ */
+export type Stage = 'contato' | 'conversou' | 'proposta' | 'compromisso' | 'cliente' | 'agora_nao';
 
 export const STAGES: { id: Stage; label: string; emoji: string; hint: string }[] = [
-  { id: 'contato', label: 'Novo', emoji: '👋', hint: 'Ainda não conversaram sobre a sua ideia' },
-  { id: 'conversou', label: 'Conversou', emoji: '💬', hint: 'Vocês já conversaram' },
-  { id: 'interessado', label: 'Interessado', emoji: '✨', hint: 'Disse sim ou pediu mais' },
-  { id: 'cliente', label: 'Cliente', emoji: '🤝', hint: 'Pagou' },
+  { id: 'contato', label: 'Novo', emoji: '👋', hint: 'Ainda não conversaram' },
+  { id: 'conversou', label: 'Conversou', emoji: '💬', hint: 'Conversaram sobre o problema dela, sem mostrar a sua ideia' },
+  { id: 'proposta', label: 'Viu a proposta', emoji: '👀', hint: 'Você mostrou o que oferece' },
+  { id: 'compromisso', label: 'Se comprometeu', emoji: '🤝', hint: 'Marcou uma data, indicou alguém ou deu um sinal' },
+  { id: 'cliente', label: 'Cliente', emoji: '⭐', hint: 'Pagou' },
   { id: 'agora_nao', label: 'Agora não', emoji: '🌙', hint: 'Disse não ou não é o momento' },
+];
+
+/** Tipo de compromisso, do mais fraco ao mais forte: uma etiqueta da pessoa, não uma etapa */
+export type Commitment = 'tempo' | 'indicacao' | 'dinheiro';
+
+export const COMMITMENTS: { id: Commitment; label: string; emoji: string }[] = [
+  { id: 'tempo', label: 'Marcou uma data', emoji: '📅' },
+  { id: 'indicacao', label: 'Indicou alguém', emoji: '🙋' },
+  { id: 'dinheiro', label: 'Pagou ou deu sinal', emoji: '💰' },
 ];
 
 export const SOURCES = ['Indicação', 'Conhecido', 'Grupo', 'Instagram', 'Outro'] as const;
@@ -25,6 +40,8 @@ export interface Person {
   email?: string;
   source?: string;
   stage: Stage;
+  /** Compromissos que a pessoa assumiu (etapa 52) */
+  commitments?: Commitment[];
   note?: string;
   /** Próximo passo combinado ("mandar proposta") e a data (AAAA-MM-DD) */
   nextStep?: string;
@@ -72,14 +89,33 @@ export function messageFor(person: Pick<Person, 'name' | 'stage'>, c: KitContext
     case 'contato':
       return { subject: 'Uma pergunta rápida', text: buildKitText('convite', c).replace('[nome]', nome) };
     case 'conversou':
-    case 'interessado':
       return {
         subject: 'A primeira versão ficou pronta',
         text: [
           `Oi, ${nome}! Lembra da nossa conversa sobre ${c.pain}?`,
-          `A primeira versão (${product}) ficou pronta, e você está entre as primeiras pessoas que eu quis avisar.`,
-          'Tenho uma condição especial de teste: [valor].',
-          'Quer que eu te explique como funciona? Sem compromisso.',
+          `Com o que você e outras pessoas me contaram, montei a primeira versão: ${product}.`,
+          'Estou abrindo um teste com preço de fundador, só para as primeiras pessoas: [valor].',
+          'Quer que eu te mostre como funciona?',
+          `Um abraço, ${c.name}`,
+        ].join('\n\n'),
+      };
+    case 'proposta':
+      return {
+        subject: 'Sobre o teste',
+        text: [
+          `Oi, ${nome}! Ficou alguma dúvida sobre ${product}?`,
+          'Se fizer sentido pra você, a gente já pode marcar o dia. O valor de teste é [valor], por Pix, e se não for o que você esperava eu devolvo em até 7 dias.',
+          'Se agora não for o momento, tudo bem também. Você conhece alguém que passa por isso?',
+          `Um abraço, ${c.name}`,
+        ].join('\n\n'),
+      };
+    case 'compromisso':
+      return {
+        subject: 'Combinado!',
+        text: [
+          `Oi, ${nome}! Obrigado(a) pela confiança.`,
+          'Só pra deixar tudo combinado: [o que você vai entregar], no dia [data].',
+          'Qualquer dúvida até lá, é só me chamar aqui.',
           `Um abraço, ${c.name}`,
         ].join('\n\n'),
       };
@@ -98,15 +134,64 @@ export function messageFor(person: Pick<Person, 'name' | 'stage'>, c: KitContext
   }
 }
 
+const RANK: Record<Exclude<Stage, 'agora_nao'>, number> = { contato: 0, conversou: 1, proposta: 2, compromisso: 3, cliente: 4 };
+
+/** A etapa mais longe a que a pessoa chegou (quem disse "agora não" conta onde estava antes) */
+function reached(p: Person): number {
+  let best = p.stage === 'agora_nao' ? 0 : RANK[p.stage];
+  for (const h of p.stageHistory) if (h.stage !== 'agora_nao' && RANK[h.stage] !== undefined) best = Math.max(best, RANK[h.stage]);
+  // Quem pulou direto para "Agora não" já conversou com você
+  if (p.stage === 'agora_nao') best = Math.max(best, 1);
+  if (p.commitments?.length) best = Math.max(best, RANK.compromisso);
+  return best;
+}
+
+export interface Funnel {
+  names: number;
+  /** Conversaram sobre o problema (ou foram além) */
+  talked: number;
+  /** Viram a proposta (ou foram além) */
+  presented: number;
+  /** Assumiram algum compromisso: tempo, indicação ou dinheiro */
+  committed: number;
+  /** Desses, quantos em dinheiro (pagou ou deu sinal) */
+  money: number;
+  clients: number;
+}
+
+/** O funil único do roteiro: 20 nomes → conversas sobre o problema → apresentações → compromissos */
+export function funnel(people: Person[]): Funnel {
+  const r = people.map(reached);
+  return {
+    names: people.length,
+    talked: r.filter((x) => x >= RANK.conversou).length,
+    presented: r.filter((x) => x >= RANK.proposta).length,
+    committed: r.filter((x) => x >= RANK.compromisso).length,
+    money: people.filter((p, i) => p.commitments?.includes('dinheiro') || r[i] >= RANK.cliente).length,
+    clients: r.filter((x) => x >= RANK.cliente).length,
+  };
+}
+
+export type TestVerdict = 'seguir' | 'ajustar' | 'trocar';
+
+/** Apresentações que formam uma rodada de teste */
+export const TEST_ROUND = 5;
+
 /**
- * O teste do Capítulo 2: "2 de 5 dizem sim". Conta quem já conversou (qualquer etapa depois de
- * "Contato") e, desses, quem disse sim (Interessado ou Cliente).
+ * A decisão da semana 6 conta compromissos, não "sins": 2 compromissos, 1 deles em dinheiro, é seguir.
+ * Sem dinheiro, mas com tempo ou indicação, a dor existe: ajustar a oferta ou o preço. Nenhum
+ * compromisso em 5 apresentações: trocar de caminho. Antes disso, ainda está testando (null).
  */
-export function testStats(people: Person[]): { talked: number; yes: number; clients: number; goalMet: boolean } {
-  const talked = people.filter((p) => p.stage !== 'contato').length;
-  const yes = people.filter((p) => p.stage === 'interessado' || p.stage === 'cliente').length;
-  const clients = people.filter((p) => p.stage === 'cliente').length;
-  return { talked, yes, clients, goalMet: yes >= 2 };
+export function testVerdict(f: Funnel): TestVerdict | null {
+  if (f.committed >= 2 && f.money >= 1) return 'seguir';
+  if (f.presented < TEST_ROUND) return null;
+  return f.committed > 0 ? 'ajustar' : 'trocar';
+}
+
+/** Dados antigos: "Interessado" virou "Viu a proposta" (interesse não é compromisso) */
+export function normalizePerson(p: Person): Person {
+  const fix = (s: string): Stage => (s === 'interessado' ? 'proposta' : (s as Stage));
+  return { ...p, stage: fix(p.stage), stageHistory: (p.stageHistory ?? []).map((h) => ({ ...h, stage: fix(h.stage) })) };
 }
 
 /** Próximos passos para hoje ou atrasados, mais antigos primeiro */
@@ -117,7 +202,7 @@ export function dueFollowUps(people: Person[], today: string): Person[] {
 }
 
 export function countByStage(people: Person[]): Record<Stage, number> {
-  const out = { contato: 0, conversou: 0, interessado: 0, cliente: 0, agora_nao: 0 } as Record<Stage, number>;
+  const out = { contato: 0, conversou: 0, proposta: 0, compromisso: 0, cliente: 0, agora_nao: 0 } as Record<Stage, number>;
   for (const p of people) out[p.stage]++;
   return out;
 }
@@ -132,5 +217,6 @@ export function cleanPerson<T extends Partial<Person>>(p: T): T {
     email: cut(p.email, PERSON_LIMITS.email),
     note: cut(p.note, PERSON_LIMITS.note),
     nextStep: cut(p.nextStep, PERSON_LIMITS.nextStep),
+    ...(p.commitments !== undefined && { commitments: COMMITMENTS.map((c) => c.id).filter((id) => p.commitments!.includes(id)) }),
   };
 }

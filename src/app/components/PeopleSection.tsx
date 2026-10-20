@@ -20,7 +20,10 @@ import {
   phoneLink,
   SOURCES,
   STAGES,
-  testStats,
+  funnel,
+  testVerdict,
+  COMMITMENTS,
+  TEST_ROUND,
   whatsappLink,
   type Person,
   type Stage,
@@ -258,7 +261,8 @@ const initialOf = (name: string) => (name.trim()[0] ?? '').normalize('NFD').repl
 const STAGE_BADGE: Record<Stage, string> = {
   contato: 'bg-surface-2 text-muted border-line',
   conversou: 'bg-primary-soft text-primary border-primary/25',
-  interessado: 'bg-gold-soft text-gold-ink border-gold-line',
+  proposta: 'bg-primary-soft text-primary border-primary/25',
+  compromisso: 'bg-gold-soft text-gold-ink border-gold-line',
   cliente: 'bg-primary text-on-primary border-primary',
   agora_nao: 'bg-surface-2 text-muted border-line',
 };
@@ -364,6 +368,30 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string; ope
           ))}
         </select>
       </div>
+
+      {/* Compromisso (etapa 52): o tipo vira etiqueta; tempo < indicação < dinheiro */}
+      {person.stage !== 'contato' && (
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={`Compromissos de ${person.name}`}>
+          <span className="text-xs text-muted">Compromisso:</span>
+          {COMMITMENTS.map((c) => {
+            const on = person.commitments?.includes(c.id) ?? false;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                aria-pressed={on}
+                onClick={() => {
+                  soundEffects.playSelectOption();
+                  actions.toggleCommitment(person.id, c.id);
+                }}
+                className={`min-h-8 px-2 rounded-full border text-xs cursor-pointer ${on ? 'bg-gold-soft text-gold-ink border-gold-line font-semibold' : 'border-line text-muted'}`}
+              >
+                {c.emoji} {c.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {person.note && (
         <p className="text-[13px] text-ink leading-snug whitespace-pre-line break-words">
@@ -479,7 +507,8 @@ export const PeopleSection: React.FC = () => {
   const [openId, setOpenId] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
   const today = dayKey(new Date());
-  const stats = testStats(people);
+  const f = funnel(people);
+  const verdict = testVerdict(f);
   const counts = countByStage(people);
   const due = dueFollowUps(people, today);
   const visible = useMemo(
@@ -519,19 +548,39 @@ export const PeopleSection: React.FC = () => {
 
   return (
     <div className="space-y-3">
-      {/* O teste do Capítulo 2, contado sozinho */}
-      <div className="p-4 rounded-2xl bg-primary-soft/60 border border-primary/25">
-        <span className="text-xs font-bold uppercase tracking-wider text-primary block mb-1">Seu teste</span>
-        <p className="text-lg font-bold text-ink">
-          {stats.yes} de {stats.talked} {stats.talked === 1 ? 'pessoa disse' : 'pessoas disseram'} sim
-        </p>
+      {/* O funil único do roteiro (etapa 52), contado sozinho pelas etapas e compromissos */}
+      <section aria-label="Seu funil" className="p-4 rounded-2xl bg-primary-soft/60 border border-primary/25 space-y-2">
+        <span className="text-xs font-bold uppercase tracking-wider text-primary block">Seu funil</span>
+        <ol className="grid grid-cols-4 gap-1.5 text-center">
+          {[
+            [f.names, f.names === 1 ? 'nome' : 'nomes'],
+            [f.talked, f.talked === 1 ? 'conversa' : 'conversas'],
+            [f.presented, f.presented === 1 ? 'viu a proposta' : 'viram a proposta'],
+            [f.committed, f.committed === 1 ? 'compromisso' : 'compromissos'],
+          ].map(([n, label]) => (
+            <li key={label as string} className="rounded-xl bg-surface border border-line py-1.5 px-1">
+              <span className="block text-lg font-bold text-ink leading-none">{n}</span>
+              <span className="block text-[11px] text-muted leading-tight mt-1">{label}</span>
+            </li>
+          ))}
+        </ol>
         <p className="text-[13px] text-muted leading-snug">
-          {stats.goalMet
-            ? 'Bateu o sinal de que deu certo (2 sins)! Hora de seguir para as vendas.'
-            : 'O sinal de que deu certo é 2 sins entre as pessoas com quem você conversar. Mude a etapa de cada uma conforme as conversas.'}
-          {stats.clients > 0 && ` Clientes: ${stats.clients}.`}
+          {f.committed > 0 && (
+            <strong className="text-ink">
+              {f.committed} {f.committed === 1 ? 'compromisso' : 'compromissos'}
+              {f.money > 0 ? `, ${f.money} em dinheiro. ` : ', nenhum em dinheiro ainda. '}
+            </strong>
+          )}
+          {verdict === 'seguir'
+            ? 'Sinal de seguir: 2 compromissos, 1 deles em dinheiro. Hora das vendas.'
+            : verdict === 'ajustar'
+              ? 'Tem gente se comprometendo, mas ninguém pagou: mude uma coisa só (a oferta ou o preço) e faça mais uma rodada.'
+              : verdict === 'trocar'
+                ? `Nenhum compromisso em ${TEST_ROUND} apresentações. Tudo bem trocar de caminho: você aprendeu o que não é.`
+                : `Elogio não conta: conta quem marcou uma data, indicou alguém ou pagou. O sinal de seguir é 2 compromissos, 1 deles em dinheiro, em até ${TEST_ROUND} apresentações.`}
+          {f.clients > 0 && ` Clientes: ${f.clients}.`}
         </p>
-      </div>
+      </section>
 
       {due.length > 0 && (
         <div className="p-3 rounded-xl bg-gold-soft border border-gold-line">

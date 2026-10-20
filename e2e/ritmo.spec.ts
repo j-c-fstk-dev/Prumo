@@ -125,7 +125,8 @@ test('backup completo: faz o .zip, apaga tudo e restaura na tela de boas-vindas,
   // A miniatura só mostra a imagem se a foto voltou para o banco do aparelho
   await expect(page.getByRole('button', { name: 'Ver foto' }).locator('img')).toBeVisible();
   await page.getByRole('tab', { name: /Pessoas \(1\)/ }).click();
-  await expect(page.getByRole('button', { name: 'Ana Souza, Interessado' })).toBeVisible();
+  // Backup antigo: "Interessado" volta como "Viu a proposta"
+  await expect(page.getByRole('button', { name: 'Ana Souza, Viu a proposta' })).toBeVisible();
 });
 
 test('roteiro concluído: a Início não volta pra tarefa 1, e rever o resultado não refaz o compromisso', async ({ page }) => {
@@ -194,7 +195,7 @@ test('ciclos: depois do roteiro, continuar com meta do Caderno; ao bater a meta,
 
   // A Ana vira cliente no Caderno: a meta conta sozinha
   await cycle.getByRole('button', { name: 'Ver minhas pessoas' }).click();
-  await page.getByRole('button', { name: 'Ana Souza, Interessado' }).click();
+  await page.getByRole('button', { name: 'Ana Souza, Viu a proposta' }).click();
   await page.getByLabel('Etapa de Ana Souza').selectOption('cliente');
   await page.getByRole('button', { name: 'Início', exact: true }).click();
   await expect(cycle).toContainText('1 de 1 cliente novo ✦');

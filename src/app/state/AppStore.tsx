@@ -17,7 +17,7 @@ import { soundEffects } from '../../utils/soundEffects';
 import { speak, stopSpeaking } from '../../utils/voice';
 import { clearAll, loadValue, saveValue } from './storage';
 import { NOTE_MAX, type Note, type NoteTag, type ProfileFieldId, type ProfileOverrides } from '../../domain/notebook';
-import { cleanPerson, type Person } from '../../domain/people';
+import { cleanPerson, normalizePerson, type Commitment, type Person } from '../../domain/people';
 import { requestPersistence } from '../../utils/install';
 import { deleteImages, saveImageAs } from './images';
 
@@ -197,6 +197,7 @@ function migrate(raw: unknown): PersistedState | null {
     textOptions: { ...base.textOptions, ...data.textOptions },
     usage: { ...base.usage, ...data.usage },
     clientId: data.clientId || base.clientId,
+    people: (data.people ?? base.people).map(normalizePerson),
   };
 }
 
@@ -843,6 +844,21 @@ function useAppState() {
           const next = cleanPerson({ ...p, ...patch, updatedAt: Date.now() });
           // Guarda quando mudou de etapa (para métricas da fase 2)
           if (patch.stage && patch.stage !== p.stage) next.stageHistory = [...p.stageHistory, { stage: patch.stage, at: Date.now() }];
+          return next;
+        }),
+      })),
+    /** Marca ou desmarca um compromisso; marcar leva a pessoa para "Se comprometeu" se ainda estava antes */
+    toggleCommitment: (id: string, kind: Commitment) =>
+      setData((d) => ({
+        ...d,
+        people: d.people.map((p) => {
+          if (p.id !== id) return p;
+          const has = p.commitments?.includes(kind);
+          const next = cleanPerson({ ...p, commitments: has ? p.commitments!.filter((c) => c !== kind) : [...(p.commitments ?? []), kind], updatedAt: Date.now() });
+          if (!has && p.stage !== 'compromisso' && p.stage !== 'cliente') {
+            next.stage = 'compromisso';
+            next.stageHistory = [...p.stageHistory, { stage: 'compromisso', at: Date.now() }];
+          }
           return next;
         }),
       })),

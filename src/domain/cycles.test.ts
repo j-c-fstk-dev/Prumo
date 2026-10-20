@@ -35,7 +35,7 @@ describe('ciclos depois do roteiro', () => {
 
   it('ajustar conta quem avançou além de "novo" durante o ciclo', () => {
     const ajustar: Cycle = { ...crescer, kind: 'ajustar', target: 2 };
-    const people = [person('a', [['contato', start], ['conversou', start + DAY]]), person('b', [['contato', start], ['interessado', start + DAY]])];
+    const people = [person('a', [['contato', start], ['conversou', start + DAY]]), person('b', [['contato', start], ['proposta', start + DAY]])];
     expect(cycleStatus(ajustar, people, start + DAY).goalMet).toBe(true);
   });
 
