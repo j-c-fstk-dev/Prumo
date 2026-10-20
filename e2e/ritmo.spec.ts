@@ -168,6 +168,12 @@ test('rotinas: as do capítulo aparecem, marcar conta no dia, e a revisão da se
   await expect(page.getByRole('region', { name: 'Semana 1', exact: true })).toBeVisible();
   await expect(page.getByText('● esta semana')).toBeVisible();
   await expect(page.getByRole('region', { name: 'Rotinas' })).toBeVisible();
+
+  // Ritmo leve (etapa 53): em Você, as frequências se ajustam sozinhas
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  await page.getByRole('radiogroup', { name: 'Seu ritmo' }).getByRole('radio', { name: /Leve/ }).click();
+  await page.getByRole('button', { name: 'Início', exact: true }).click();
+  await expect(card.getByText('1 de 3 esta semana')).toBeVisible();
 });
 
 test('ciclos: depois do roteiro, continuar com meta do Caderno; ao bater a meta, trocar de caminho recomeça o roteiro', async ({ page }) => {

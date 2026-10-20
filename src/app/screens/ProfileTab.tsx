@@ -11,6 +11,7 @@ import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { SITE } from '../../landing/site';
 import { PrumoMeaning } from '../components/PrumoMeaning';
+import { PaceChooser } from '../components/PaceChooser';
 
 export const ProfileTab: React.FC = () => {
   const { userName, isSoundMuted, tapSounds, timeline, plan, trialDaysLeft, theme, actions } = useApp();
@@ -117,6 +118,11 @@ export const ProfileTab: React.FC = () => {
           >
             <span>Refazer as perguntas</span>
             <ChevronRight className="w-4 h-4 text-muted" />
+          </div>
+          {/* Ritmo (etapa 53) */}
+          <div className="p-3 bg-surface border border-line rounded-xl space-y-2">
+            <span className="block">Seu ritmo</span>
+            <PaceChooser />
           </div>
           <div
             onClick={actions.cycleTheme}
