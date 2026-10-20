@@ -19,12 +19,32 @@ import { ExecutionKit } from '../components/ExecutionKit';
 import { QuoteByTheme } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
 import type { TemaCitacao } from '../../data/citacoes';
+import { funnel } from '../../domain/people';
 
 /** Citação para as tarefas em que a trava mais aparece */
 const QUOTE_BY_TASK: Record<string, TemaCitacao> = { t2: 'perfeccionismo', t6: 'medo' };
 
+const COUNTER_LABEL = {
+  names: ['nome no Caderno', 'nomes no Caderno'],
+  talked: ['conversa sobre o problema', 'conversas sobre o problema'],
+  presented: ['pessoa viu a proposta', 'pessoas viram a proposta'],
+} as const;
+
+/** Contador que vem do Caderno → Pessoas: anda sozinho conforme as etapas mudam */
+const TaskCounter: React.FC<{ kind: keyof typeof COUNTER_LABEL; target: number; count: ReturnType<typeof funnel> }> = ({ kind, target, count }) => {
+  const n = { names: count.names, talked: count.talked, presented: count.presented }[kind];
+  const done = n >= target;
+  return (
+    <p className={`text-sm font-semibold ${done ? 'text-success' : 'text-ink'}`} role="status" aria-label="Contador do Caderno">
+      {done ? '✓ ' : ''}
+      {Math.min(n, target)} de {target} {COUNTER_LABEL[kind][target === 1 ? 0 : 1]}
+      <span className="block text-xs font-normal text-muted">Conta sozinho pelo Caderno → Pessoas.</span>
+    </p>
+  );
+};
+
 export const TaskDetailScreen: React.FC = () => {
-  const { selectedTask, reflections, taskNotes, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, actions } = useApp();
+  const { selectedTask, people, reflections, taskNotes, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, actions } = useApp();
   const [renaming, setRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(selectedTask.title);
   const [showTranscript, setShowTranscript] = useState(false);
@@ -187,17 +207,37 @@ export const TaskDetailScreen: React.FC = () => {
         </Reveal>
 
         <Reveal i={2}>
-        {/* Como saber que ficou bom */}
-        <div className="p-3.5 rounded-xl bg-primary-soft/60 border border-primary/20">
-          <strong className="text-sm text-primary block mb-1.5">Como saber que ficou bom:</strong>
-          <ul className="space-y-1.5 text-sm text-ink">
-            {selectedTask.howToKnowItIsGood.map((item, idx) => (
-              <li key={idx} className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+        {/* Duas camadas (etapa 52): o que depende de você marca o passo; o sinal do mundo é informação */}
+        <div className="p-3.5 rounded-xl bg-primary-soft/60 border border-primary/20 space-y-2.5">
+          {selectedTask.counter && <TaskCounter kind={selectedTask.counter.kind} target={selectedTask.counter.target} count={funnel(people)} />}
+          <div>
+            <strong className="text-sm text-primary block mb-1.5">Você fez:</strong>
+            <ul className="space-y-1.5 text-sm text-ink">
+              {selectedTask.howToKnowItIsGood.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {selectedTask.signals?.length ? (
+            <div className="pt-2 border-t border-primary/15">
+              <strong className="text-sm text-ink block mb-1">O que o mundo respondeu:</strong>
+              <ul className="space-y-1 text-sm text-ink">
+                {selectedTask.signals.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span aria-hidden="true">📡</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-[13px] text-muted leading-snug mt-1.5">
+                Isso não depende só de você, e o passo conta como feito mesmo sem resposta.
+                {selectedTask.ifNoSignal && ` ${selectedTask.ifNoSignal}`}
+              </p>
+            </div>
+          ) : null}
         </div>
         </Reveal>
 

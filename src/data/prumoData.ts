@@ -362,7 +362,7 @@ export const DEFAULT_DIAGNOSIS: DiagnosisProfile = {
   timeline: '60 dias até a 1ª validação',
   personalAnchor: 'Criei e validei meu próprio mini-produto digital do zero, com rotina serena e sem burnout.',
   futureSelfLetter: 'Oi, sou você daqui a 90 dias. Escrevo para te lembrar do dia em que você segurou a tela e assumiu seu prumo. Naquele momento você não sabia bem por onde começar, mas decidiu dar um passo pequeno por vez. Hoje nosso mini-curso está validado, ajudamos 3 pessoas de verdade e aquela sensação de paralisia ficou para trás. Continue firme, seu prumo é real.',
-  chapterTitle: 'Capítulo 1: Deixar a ideia clara',
+  chapterTitle: 'Capítulo 1: Entender o problema',
   justification: 'Você indicou facilidade para ensinar, tempo moderado (1h/dia) e prefere formatos práticos. Por isso sugerimos um mini-curso gravado com modelo pronto: você cria uma vez, valida com 3 pessoas reais e não se torna refém de horários de atendimento.',
   radarScores: {
     skills: 85,
@@ -387,7 +387,14 @@ export interface TaskItem {
   durationMinutes: number;
   status: 'pending' | 'in_progress' | 'completed';
   whatToDo: string;
+  /** "Você fez": o que depende só da pessoa e marca o passo como feito (etapa 52) */
   howToKnowItIsGood: string[];
+  /** "O que o mundo respondeu": o sinal, que não depende só da pessoa */
+  signals?: string[];
+  /** O que fazer se o sinal não veio */
+  ifNoSignal?: string;
+  /** Contador que vem do Caderno → Pessoas (ex.: 3 de 5 conversas) */
+  counter?: { kind: 'names' | 'talked' | 'presented'; target: number };
   resources: { title: string; type: string }[];
   userNotes?: string;
   isLocked?: boolean;
@@ -420,12 +427,12 @@ const ROADMAP: TaskItem[] = [
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
-    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
-    title: 'Dizer em 1 frase o que você resolve',
-    description: 'Uma frase simples: o que você resolve, e pra quem.',
+    chapterTitle: 'Capítulo 1: Entender o problema',
+    title: 'Rascunhar em 1 frase o que você resolve',
+    description: 'Um rascunho simples: o que você resolve, e pra quem. Você vai reescrever depois das conversas.',
     durationMinutes: 15,
     status: 'completed',
-    whatToDo: 'Complete a frase: "Eu ajudo [quem] a [conseguir o quê], mesmo que [a maior dificuldade dessa pessoa]". Use palavras simples, do jeito que você falaria com um amigo.',
+    whatToDo: 'Complete a frase: "Eu ajudo [quem] a [conseguir o quê], mesmo que [a maior dificuldade dessa pessoa]". Use palavras simples, do jeito que você falaria com um amigo. É um rascunho: na semana 2 você reescreve com as palavras de quem tem o problema.',
     howToKnowItIsGood: [
       'Qualquer pessoa da sua família consegue entender ao ouvir',
       'Resolve exatamente 1 dor central, não 5 coisas diferentes',
@@ -454,16 +461,16 @@ const ROADMAP: TaskItem[] = [
   },
   {
     id: 't2',
-    week: 2,
-    phaseId: 'fundacao',
-    phaseName: 'Fundação',
-    chapterId: 1,
-    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
+    week: 3,
+    phaseId: 'marketing',
+    phaseName: 'Teste',
+    chapterId: 2,
+    chapterTitle: 'Capítulo 2: Testar a solução',
     title: 'Criar a versão mais simples do que você vai oferecer',
-    description: 'Só o básico, pra testar se alguém se interessa.',
+    description: 'Só o básico, montado com o que as pessoas te contaram.',
     durationMinutes: 20,
     status: 'pending',
-    whatToDo: 'Pegue o tema que você mais domina e monte o menor formato possível: um checklist em PDF, um documento bem estruturado ou um vídeo direto de 10 minutos.',
+    whatToDo: 'Releia as palavras exatas das conversas e monte o menor formato que resolve o problema que elas descreveram: um checklist em PDF, um documento bem estruturado ou um vídeo direto de 10 minutos.',
     howToKnowItIsGood: [
       'Dá para ser consumido e aplicado em menos de 1 dia',
       'Resolve 1 problema de ponta a ponta',
@@ -496,16 +503,22 @@ const ROADMAP: TaskItem[] = [
     phaseId: 'marketing',
     phaseName: 'Teste',
     chapterId: 2,
-    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
-    title: 'Mostrar pra 3 pessoas e ouvir o que acham',
-    description: 'Converse com 3 pessoas que têm esse problema e peça uma opinião sincera.',
+    chapterTitle: 'Capítulo 2: Testar a solução',
+    title: 'Mostrar pra 5 pessoas e pedir um próximo passo',
+    description: 'Mostrar a versão mínima e pedir algo concreto: marcar, pagar o teste ou indicar alguém.',
     durationMinutes: 30,
     status: 'pending',
-    whatToDo: 'Mostre sua versão mínima (o desenho do serviço, o roteiro da sessão, o esboço do guia ou a aula 1) para 3 pessoas que já expressaram dificuldade no tema. Faça duas perguntas: "O que ficou confuso?" e "Isso resolveria seu problema?".',
+    whatToDo: 'Mostre sua versão mínima (o desenho do serviço, o roteiro da sessão, o esboço do guia ou a aula 1) para 5 pessoas que têm o problema, de preferência as das conversas. Pergunte "o que ficou confuso?" e, no fim, peça um próximo passo concreto: marcar a entrega, pagar o teste ou indicar alguém. Marque cada uma como "Viu a proposta" no Caderno e anote as palavras exatas.',
     howToKnowItIsGood: [
-      'Pelo menos 2 pessoas confirmaram que aplicaram o conselho',
-      'Você anotou as palavras exatas que elas usaram para descrever o alívio'
+      'Você mostrou para 5 pessoas',
+      'Pediu um próximo passo concreto a cada uma',
+      'Anotou as palavras exatas que elas usaram'
     ],
+    signals: [
+      'Alguém marcou uma data, pagou ou indicou outra pessoa (marque o compromisso no Caderno)'
+    ],
+    ifNoSignal: 'Elogio sem compromisso não conta, mas também não é fracasso: anote o que travou e use no próximo passo.',
+    counter: { kind: 'presented', target: 5 },
     resources: [
       { title: 'Script de abordagem no WhatsApp sem ser chato', type: 'Script' }
     ],
@@ -528,18 +541,19 @@ const ROADMAP: TaskItem[] = [
   },
   {
     id: 't4',
-    week: 2,
-    phaseId: 'fundacao',
-    phaseName: 'Fundação',
-    chapterId: 1,
-    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
-    title: 'Escolher o preço de teste e como receber',
-    description: 'Quanto cobrar no teste e como a pessoa vai te pagar.',
-    durationMinutes: 15,
+    week: 3,
+    phaseId: 'marketing',
+    phaseName: 'Teste',
+    chapterId: 2,
+    chapterTitle: 'Capítulo 2: Testar a solução',
+    title: 'Escolher o preço de teste, como receber e como devolver',
+    description: 'Quanto cobrar no teste, como a pessoa paga e como devolve se não gostar.',
+    durationMinutes: 20,
     status: 'pending',
-    whatToDo: 'Defina o preço inicial de validação (ex: R$ 27 a R$ 47) e escolha como vai receber. O Pix do seu banco já basta no teste.',
+    whatToDo: 'Defina o preço de fundador do teste (ex: R$ 27 a R$ 47): barato, e dito como preço de teste. Para receber, a chave Pix ou o QR code do seu banco já bastam; link de pagamento é opcional. Escreva também como devolve: quem compra pela internet pode desistir em até 7 dias e receber tudo de volta (Código de Defesa do Consumidor, art. 49).',
     howToKnowItIsGood: [
-      'O link de pagamento abre no celular e aceita Pix em segundos',
+      'A pessoa consegue te pagar pelo celular em segundos (chave Pix, QR code ou link)',
+      'Você escreveu como devolve o dinheiro em até 7 dias',
       'O preço não dá medo de cobrar nem parece golpe'
     ],
     resources: [
@@ -568,15 +582,21 @@ const ROADMAP: TaskItem[] = [
     phaseId: 'marketing',
     phaseName: 'Teste',
     chapterId: 2,
-    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
-    title: 'Fazer 3 posts no Instagram sobre o problema que você resolve',
-    description: 'Posts que mostram que você entende o que essas pessoas passam.',
-    durationMinutes: 40,
+    chapterTitle: 'Capítulo 2: Testar a solução',
+    title: 'Publicar 3 posts sobre o problema que você resolve',
+    description: 'Um por vez, no seu canal: posts que mostram que você entende o que essas pessoas passam.',
+    durationMinutes: 20,
     status: 'pending',
-    whatToDo: 'Faça 3 posts (carrossel ou vídeo curto): 1) um erro comum que essas pessoas cometem, 2) uma ideia errada que muita gente acredita, 3) uma solução simples.',
+    whatToDo: 'Faça um post por vez, em dias diferentes (uns 20 minutos cada): 1) um erro comum que essas pessoas cometem, 2) uma ideia errada que muita gente acredita, 3) uma solução simples. Use as palavras exatas das conversas.',
     howToKnowItIsGood: [
-      'Pelo menos 1 pessoa respondeu com "nossa, eu passo por isso!"'
+      'Publicou o post 1 (um erro comum)',
+      'Publicou o post 2 (uma ideia errada)',
+      'Publicou o post 3 (uma solução simples)'
     ],
+    signals: [
+      'Alguém respondeu, salvou ou encaminhou'
+    ],
+    ifNoSignal: 'No começo é normal ninguém responder. Mande o post para 1 ou 2 pessoas da sua lista e pergunte o que acharam.',
     resources: [
       { title: '5 Modelos de Carrossel que Geram Directs', type: 'Templates' }
     ],
@@ -603,15 +623,20 @@ const ROADMAP: TaskItem[] = [
     phaseId: 'marketing',
     phaseName: 'Teste',
     chapterId: 2,
-    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
-    title: 'Convidar 10 pessoas pra conhecer o que você criou',
-    description: 'Conversar com quem já demonstrou interesse.',
+    chapterTitle: 'Capítulo 2: Testar a solução',
+    title: 'Convidar 10 pessoas para o teste pago',
+    description: 'Oferecer o teste com preço de fundador para quem tem o problema.',
     durationMinutes: 30,
     status: 'pending',
-    whatToDo: 'Puxe conversa com quem curtiu, comentou ou já te pediu ajuda, e ofereça com uma condição especial de teste.',
+    whatToDo: 'Chame, uma de cada vez, quem curtiu, comentou, conversou com você ou já te pediu ajuda. Ofereça o teste com o preço de fundador, dito como teste. Se você ainda não tem coragem de cobrar, pode fazer de graça para 1 ou 2 pessoas, mas só em troca de um compromisso combinado antes: data marcada, depoimento autorizado ou uma indicação. Grátis "pra ver se gosta" não conta.',
     howToKnowItIsGood: [
-      'Conversas respeitosas que geraram perguntas sobre como comprar'
+      'Você mandou 10 convites, um de cada vez',
+      'Disse com clareza que é um teste e quanto custa'
     ],
+    signals: [
+      'Alguém perguntou como pagar, pagou, deu um sinal ou marcou uma data'
+    ],
+    ifNoSignal: 'Se ninguém perguntou como pagar, mude uma coisa só (o preço, a promessa ou o formato) e convide mais 5.',
     resources: [
       { title: 'Fluxo de conversa consultiva no 1 a 1', type: 'Roteiro' }
     ],
@@ -644,10 +669,16 @@ const ROADMAP: TaskItem[] = [
     description: 'Avise que está vendendo, com prazo, e peça a opinião de quem comprou.',
     durationMinutes: 45,
     status: 'pending',
-    whatToDo: 'Conte que abriu as vendas, com um bônus pros 5 primeiros, e acompanhe cada pessoa de perto.',
+    whatToDo: 'Conte que abriu as vendas e acompanhe cada pessoa de perto. Só ofereça bônus ou vagas limitadas se for verdade. A quem comprou, peça um depoimento com autorização por escrito para usar.',
     howToKnowItIsGood: [
-      'Pelo menos 1 venda realizada e feedback positivo registrado'
+      'Você avisou que abriu as vendas',
+      'Acompanhou quem perguntou',
+      'Pediu depoimento, com autorização, a quem comprou'
     ],
+    signals: [
+      'Pelo menos 1 venda'
+    ],
+    ifNoSignal: 'Sem venda ainda? Retome quem viu a proposta (a maioria das vendas sai da segunda mensagem) e confira se o preço e o jeito de pagar estão claros.',
     resources: [
       { title: 'Script de coleta de depoimento espontâneo', type: 'Guia' }
     ],
@@ -675,16 +706,18 @@ const ROADMAP: TaskItem[] = [
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
-    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
+    chapterTitle: 'Capítulo 1: Entender o problema',
     title: 'Listar 20 pessoas que podem ter esse problema',
     description: 'Gente que você conhece, que já te pediu ajuda ou que está em grupos do tema.',
     durationMinutes: 20,
     status: 'pending',
-    whatToDo: 'Abra o Caderno → Pessoas e adicione pelo menos 10 nomes hoje (dá pra puxar da agenda). Ao longo da semana, chegue a 20. Ainda não precisa falar com ninguém: é só o mapa.',
+    whatToDo: 'Abra o Caderno → Pessoas e adicione pelo menos 10 nomes hoje (dá pra puxar da agenda). Na nota de cada um, escreva em poucas palavras por que você acha que essa pessoa tem o problema. Ao longo da semana, chegue a 20. Guarde só o nome e o contato: são dados de outras pessoas, para você falar com uma de cada vez.',
     howToKnowItIsGood: [
       'Pelo menos 10 nomes no Caderno',
+      'Cada nome tem um "por que" na nota',
       'Tem gente de fora do seu círculo mais próximo'
     ],
+    counter: { kind: 'names', target: 20 },
     resources: [],
     anchorIllustration: {
       title: 'O Mapa das Pessoas',
@@ -701,15 +734,16 @@ const ROADMAP: TaskItem[] = [
     phaseId: 'fundacao',
     phaseName: 'Fundação',
     chapterId: 1,
-    chapterTitle: 'Capítulo 1: Deixar a ideia clara',
-    title: 'Escrever sua mensagem de convite',
-    description: 'Uma mensagem curta, do seu jeito, para chamar alguém para conversar.',
+    chapterTitle: 'Capítulo 1: Entender o problema',
+    title: 'Escrever o convite para conversar sobre o problema',
+    description: 'Uma mensagem curta para pedir 10 minutos de conversa, sem mostrar a sua ideia.',
     durationMinutes: 15,
     status: 'pending',
-    whatToDo: 'Abra a mensagem pronta (Caderno → Pessoas → toque num nome → Mensagem pronta) e reescreva com as suas palavras: quem você é, o que está testando e um pedido pequeno, como 10 minutos de conversa.',
+    whatToDo: 'Abra a mensagem pronta (Caderno → Pessoas → toque num nome → Mensagem pronta) e reescreva com as suas palavras: quem você é, que está estudando esse problema e um pedido pequeno, como 10 minutos de conversa. Não fale da sua ideia ainda. Mande de um em um, com o nome da pessoa, nunca em massa.',
     howToKnowItIsGood: [
       'Cabe numa tela de celular',
       'Pede uma conversa, não uma compra',
+      'Não conta a sua ideia',
       'Você mandaria para um conhecido sem vergonha'
     ],
     resources: [],
@@ -724,16 +758,16 @@ const ROADMAP: TaskItem[] = [
   },
   {
     id: 't10',
-    week: 3,
+    week: 4,
     phaseId: 'marketing',
     phaseName: 'Teste',
     chapterId: 2,
-    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
+    chapterTitle: 'Capítulo 2: Testar a solução',
     title: 'Ajustar com o que você ouviu',
-    description: 'Mudar uma coisa na sua oferta a partir das primeiras conversas.',
+    description: 'Mudar uma coisa na sua oferta a partir das apresentações.',
     durationMinutes: 20,
     status: 'pending',
-    whatToDo: 'Releia o que as pessoas disseram (anote no Caderno, se ainda não anotou). Mude uma coisa só: o nome, a promessa, o formato ou o preço.',
+    whatToDo: 'Releia o que as pessoas disseram e fizeram (anote no Caderno, se ainda não anotou). Mude uma coisa só: o nome, a promessa, o formato ou o preço.',
     howToKnowItIsGood: [
       'Você sabe dizer o que mudou e por quê',
       'A sua frase do passo 1 ficou mais clara'
@@ -754,15 +788,19 @@ const ROADMAP: TaskItem[] = [
     phaseId: 'marketing',
     phaseName: 'Teste',
     chapterId: 2,
-    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
+    chapterTitle: 'Capítulo 2: Testar a solução',
     title: 'Fazer a primeira entrega de teste',
-    description: 'Entregar para quem disse sim, mesmo que ainda simples.',
+    description: 'Entregar para quem se comprometeu, mesmo que ainda simples.',
     durationMinutes: 60,
     status: 'pending',
-    whatToDo: 'Combine uma data e entregue para a primeira pessoa que topou. Depois, pergunte: o que ajudou? o que faltou? Anote as respostas no Caderno, na pessoa.',
+    whatToDo: 'Combine uma data e entregue para a primeira pessoa que se comprometeu. Depois, pergunte: o que ajudou? o que faltou? Anote as respostas no Caderno, na pessoa. No fim, peça por escrito se pode usar o comentário dela como depoimento (uma mensagem dizendo "pode usar" já serve como registro).',
     howToKnowItIsGood: [
-      'Pelo menos 1 pessoa recebeu',
-      'Você anotou o que ajudou e o que faltou'
+      'Você fez a entrega',
+      'Anotou o que ajudou e o que faltou',
+      'Pediu autorização por escrito para usar o depoimento'
+    ],
+    signals: [
+      'A pessoa autorizou o depoimento ou indicou alguém'
     ],
     resources: [],
     anchorIllustration: {
@@ -780,14 +818,14 @@ const ROADMAP: TaskItem[] = [
     phaseId: 'marketing',
     phaseName: 'Teste',
     chapterId: 2,
-    chapterTitle: 'Capítulo 2: Testar com pessoas reais',
+    chapterTitle: 'Capítulo 2: Testar a solução',
     title: 'Decidir: seguir, ajustar ou trocar',
     description: 'Olhar o teste com honestidade e escolher o próximo passo.',
     durationMinutes: 15,
     status: 'pending',
-    whatToDo: 'Veja no Caderno → Pessoas quantas disseram sim. Se 2 ou mais de 5 disseram sim, siga para as vendas. Se ficou perto, ajuste uma coisa e teste de novo com outras pessoas. Se ninguém se interessou, tudo bem: na aba Você, abra o resultado e escolha outro caminho.',
+    whatToDo: 'Veja o funil no Caderno → Pessoas. Conte compromissos, não "sins": quem marcou uma data, indicou alguém ou pagou. Com 2 compromissos ou mais, sendo pelo menos 1 em dinheiro (pagamento ou sinal), siga para as vendas. Se teve compromissos, mas nenhum em dinheiro, a dor existe: ajuste uma coisa (a oferta ou o preço) e faça mais uma rodada. Se ninguém se comprometeu em 5 apresentações, tudo bem: na aba Você, abra o resultado e escolha outro caminho.',
     howToKnowItIsGood: [
-      'Você decidiu pelo que as pessoas fizeram, não pelo medo',
+      'Você decidiu pelo que as pessoas fizeram, não pelo que disseram',
       'Anotou no Caderno o que aprendeu com o teste'
     ],
     resources: [],
@@ -811,10 +849,11 @@ const ROADMAP: TaskItem[] = [
     description: 'Explicar a oferta numa mensagem ou página simples.',
     durationMinutes: 40,
     status: 'pending',
-    whatToDo: 'Use o modelo de página de venda: o problema, o que você entrega, como funciona, o preço e como comprar. Pode ser uma mensagem longa no WhatsApp ou uma página grátis.',
+    whatToDo: 'Use o modelo de página de venda: o problema, o que você entrega, como funciona, o preço, como comprar, como devolver em até 7 dias e um contato para dúvidas. Pode ser uma mensagem longa no WhatsApp ou uma página grátis.',
     howToKnowItIsGood: [
       'Alguém que não te conhece entende o que é e quanto custa',
-      'Tem um jeito claro de pagar'
+      'Tem um jeito claro de pagar',
+      'Diz como devolver em até 7 dias e onde tirar dúvidas'
     ],
     resources: [],
     anchorIllustration: {
@@ -839,7 +878,9 @@ const ROADMAP: TaskItem[] = [
     status: 'pending',
     whatToDo: 'Pergunte para quem comprou ou gostou: "você conhece alguém que também passa por isso?". Se fizer sentido, ofereça algo simples em troca, como um desconto na próxima.',
     howToKnowItIsGood: [
-      'Você pediu para pelo menos 3 pessoas',
+      'Você pediu para pelo menos 3 pessoas'
+    ],
+    signals: [
       'Entrou pelo menos 1 nome novo no Caderno'
     ],
     resources: [],
@@ -889,9 +930,9 @@ const ROADMAP: TaskItem[] = [
     description: 'Com o que você aprendeu, o preço dos próximos clientes.',
     durationMinutes: 15,
     status: 'pending',
-    whatToDo: 'Recalcule com a calculadora: quanto tempo leva cada entrega e quanto ela vale. Se as pessoas compram fácil e você está ficando sem tempo, é sinal de que o preço pode subir para os próximos.',
+    whatToDo: 'Recalcule com a calculadora: quanto tempo leva cada entrega e quanto ela vale. Desconte a taxa do meio de pagamento (Pix entre pessoas costuma ser grátis; links e plataformas cobram) e separe uma parte para imposto. Se as pessoas compram fácil e você está ficando sem tempo, é sinal de que o preço pode subir para os próximos.',
     howToKnowItIsGood: [
-      'Você sabe quanto ganha por hora em cada entrega',
+      'Você sabe quanto sobra por hora, depois de taxas e imposto',
       'Decidiu o preço dos próximos clientes'
     ],
     resources: [],
@@ -906,19 +947,20 @@ const ROADMAP: TaskItem[] = [
   },
   {
     id: 't17',
-    week: 11,
-    phaseId: 'ritmo',
-    phaseName: 'Ritmo',
-    chapterId: 4,
-    chapterTitle: 'Capítulo 4: Criar ritmo',
-    title: 'Montar a sua semana padrão',
-    description: 'Dias e horários fixos para o que se repete, com folga.',
-    durationMinutes: 20,
+    week: 1,
+    phaseId: 'fundacao',
+    phaseName: 'Fundação',
+    chapterId: 1,
+    chapterTitle: 'Capítulo 1: Entender o problema',
+    title: 'Montar a sua semana leve',
+    description: 'Dias e horários para o Prumo caber na sua semana de verdade.',
+    durationMinutes: 15,
     status: 'pending',
-    whatToDo: 'Escolha dias e horários para conversar com pessoas, mostrar algo útil, entregar e descansar. Anote no "quando vou fazer" das tarefas e respeite a folga: ritmo que cansa não dura.',
+    whatToDo: 'Escolha 2 ou 3 momentos fixos da semana para o Prumo, com dia, hora e lugar (ex.: "terça e quinta, 7h, na mesa da cozinha"). Anote no "Quando vou fazer" dos próximos passos. Deixe pelo menos um dia sem nada: ritmo que cansa não dura.',
     howToKnowItIsGood: [
+      'Você escolheu dia, hora e lugar',
       'Cabe na sua semana de verdade, com folga',
-      'Tem pelo menos um momento de descanso'
+      'Tem pelo menos um dia de descanso'
     ],
     resources: [],
     anchorIllustration: {
@@ -941,9 +983,9 @@ const ROADMAP: TaskItem[] = [
     description: 'As provas do que você já fez, num lugar só.',
     durationMinutes: 30,
     status: 'pending',
-    whatToDo: 'Reúna no Caderno os depoimentos, prints e números: quantas pessoas conversaram, compraram e indicaram. Isso vira prova para quem ainda não te conhece.',
+    whatToDo: 'Reúna no Caderno os depoimentos autorizados, prints e números. O funil do Caderno → Pessoas já mostra quantas pessoas conversaram, viram a proposta, se comprometeram e compraram. Isso vira prova para quem ainda não te conhece.',
     howToKnowItIsGood: [
-      'Pelo menos 2 depoimentos guardados',
+      'Depoimentos guardados, só os autorizados',
       'Você sabe os seus números destes 90 dias'
     ],
     resources: [],
@@ -993,7 +1035,7 @@ const ROADMAP: TaskItem[] = [
     description: 'Fechar os 90 dias com o que aconteceu de verdade.',
     durationMinutes: 20,
     status: 'pending',
-    whatToDo: 'Abra a carta que você escreveu no começo (Início → Sua carta). Escreva no Caderno o que aconteceu, o que aprendeu e o que quer para os próximos 90 dias.',
+    whatToDo: 'Abra a carta que você escreveu no começo (Início → Sua carta). Escreva no Caderno o que aconteceu, o que aprendeu e o que quer para os próximos meses. Depois, responda como se fosse o seu eu do futuro: o que ele diria para você agora?',
     howToKnowItIsGood: [
       'Você reconheceu pelo menos uma coisa que conquistou',
       'Escreveu com honestidade, sem se cobrar'
@@ -1007,8 +1049,100 @@ const ROADMAP: TaskItem[] = [
       color: '#D69E2E',
       bgGradient: 'from-[#FEFCBF] to-[#FAF089]'
     }
+  },
+  // Etapa 52: passos novos da revisão do roteiro
+  {
+    id: 't21',
+    week: 2,
+    phaseId: 'fundacao',
+    phaseName: 'Fundação',
+    chapterId: 1,
+    chapterTitle: 'Capítulo 1: Entender o problema',
+    title: 'Conversar com 5 pessoas sobre o problema',
+    description: 'Ouvir como as pessoas vivem o problema hoje, sem mostrar a sua ideia.',
+    durationMinutes: 15,
+    status: 'pending',
+    whatToDo: 'Uma conversa de 15 minutos por vez, com quem está na sua lista. Não fale da sua ideia: pergunte sobre o passado. "Quando foi a última vez que isso aconteceu?", "O que você tentou?", "Gastou tempo ou dinheiro com isso?". Anote as palavras exatas na nota da pessoa e marque como "Conversou" no Caderno. Depois da quinta, reescreva a sua frase do passo 1 com as palavras delas.',
+    howToKnowItIsGood: [
+      'Você conversou com 5 pessoas',
+      'Não mostrou a sua ideia em nenhuma conversa',
+      'Anotou as palavras exatas de cada uma',
+      'Reescreveu a sua frase com as palavras delas'
+    ],
+    signals: ['Alguém contou que já gastou tempo ou dinheiro tentando resolver isso'],
+    ifNoSignal: 'Se ninguém se importa muito com o problema, isso também é uma descoberta: talvez seja outro problema, ou outro público. Anote e converse sobre isso na revisão da semana.',
+    counter: { kind: 'talked', target: 5 },
+    resources: [],
+    anchorIllustration: {
+      title: 'O Ouvido Atento',
+      symbol: '👂',
+      meaning: 'Entender antes de oferecer',
+      badge: 'Escuta',
+      color: '#1F6F5C',
+      bgGradient: 'from-[#E3F2ED] to-[#C8E6DC]'
+    }
+  },
+  {
+    id: 't22',
+    week: 11,
+    phaseId: 'ritmo',
+    phaseName: 'Ritmo',
+    chapterId: 4,
+    chapterTitle: 'Capítulo 4: Criar ritmo',
+    title: 'Revisar a sua semana padrão',
+    description: 'Ajustar os dias e horários com o que você aprendeu nestes meses.',
+    durationMinutes: 15,
+    status: 'pending',
+    whatToDo: 'Olhe a semana leve que você montou no começo e o que de fato aconteceu. Mantenha o que funcionou, tire o que nunca coube e garanta dias e horários para conversar com pessoas, entregar e descansar.',
+    howToKnowItIsGood: [
+      'Cabe na sua semana de verdade, com folga',
+      'Tem um horário fixo para falar com pessoas novas',
+      'Tem pelo menos um momento de descanso'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'O Calendário Sereno',
+      symbol: '🗓️',
+      meaning: 'Constância sem esgotamento',
+      badge: 'Ritmo',
+      color: '#2E8B73',
+      bgGradient: 'from-[#EAF5F0] to-[#D5EDE3]'
+    }
+  },
+  {
+    id: 't23',
+    week: 12,
+    phaseId: 'ritmo',
+    phaseName: 'Ritmo',
+    chapterId: 4,
+    chapterTitle: 'Capítulo 4: Criar ritmo',
+    title: 'Ver se vale formalizar',
+    description: 'Quando as vendas se repetem, entender o básico para trabalhar no formal.',
+    durationMinutes: 20,
+    status: 'pending',
+    whatToDo: 'No teste não precisava. Agora, se as vendas se repetem, veja se a sua atividade cabe no MEI: o enquadramento depende do que você faz de verdade (dar aulas e cursos costuma ter ocupação própria; criador de conteúdo e influenciador não podem ser MEI). Confira no Portal do Empreendedor (gov.br/mei) quanto custa por mês e, na dúvida, converse com um contador. Isto é uma orientação geral, não aconselhamento jurídico nem contábil.',
+    howToKnowItIsGood: [
+      'Você sabe se a sua atividade cabe no MEI',
+      'Sabe quanto custaria por mês',
+      'Decidiu: formalizar agora, mais pra frente ou conversar com um contador'
+    ],
+    resources: [],
+    anchorIllustration: {
+      title: 'A Casa em Ordem',
+      symbol: '🏠',
+      meaning: 'Crescer com o pé no chão',
+      badge: 'Base',
+      color: '#2E8B73',
+      bgGradient: 'from-[#EAF5F0] to-[#D5EDE3]'
+    }
   }
 ];
 
-/** O roteiro na ordem da jornada: pela semana sugerida (dentro da semana, na ordem escrita) */
-export const INITIAL_TASKS: TaskItem[] = [...ROADMAP].sort((a, b) => (a.week ?? 1) - (b.week ?? 1) || a.chapterId - b.chapterId);
+/**
+ * A ordem da jornada (etapa 52): primeiro o problema, depois a solução. Dentro da semana, na ordem
+ * desta lista. A semana só sugere: dá para adiantar.
+ */
+const ORDER = ['t1', 't8', 't17', 't9', 't21', 't2', 't4', 't3', 't10', 't5', 't6', 't11', 't12', 't13', 't7', 't14', 't15', 't16', 't22', 't18', 't23', 't19', 't20'];
+
+/** O roteiro na ordem da jornada: pela semana sugerida e, dentro dela, pela ordem acima */
+export const INITIAL_TASKS: TaskItem[] = [...ROADMAP].sort((a, b) => (a.week ?? 1) - (b.week ?? 1) || ORDER.indexOf(a.id) - ORDER.indexOf(b.id));

@@ -243,3 +243,23 @@ test('guia do app: abre sozinho na 1ª visita, passa por todas as partes, não r
   await guide.getByRole('button', { name: 'Pular o guia' }).click();
   await expect(guide).toHaveCount(0);
 });
+
+test('roteiro revisado: conversar com 5 vem antes de criar; o contador anda pelo Caderno e o passo separa "Você fez" do sinal', async ({ page }) => {
+  await seedState(page, {
+    startedAt: Date.now(),
+    people: [
+      { id: 'p1', name: 'Ana Souza', stage: 'conversou', stageHistory: [], createdAt: 1, updatedAt: 1 },
+      { id: 'p2', name: 'Beto Lima', stage: 'contato', stageHistory: [], createdAt: 1, updatedAt: 1 },
+    ],
+  });
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await page.getByRole('button', { name: /^Cap\. 1:/ }).click();
+  await expect(page.getByRole('heading', { name: 'Conversar com 5 pessoas sobre o problema' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Criar a versão mais simples/ })).toHaveCount(0);
+
+  await page.getByRole('heading', { name: 'Conversar com 5 pessoas sobre o problema' }).click();
+  await expect(page.getByRole('status', { name: 'Contador do Caderno' })).toContainText('1 de 5 conversas sobre o problema');
+  await expect(page.getByText('Você fez:')).toBeVisible();
+  await expect(page.getByText('O que o mundo respondeu:')).toBeVisible();
+  await expect(page.getByText(/o passo conta como feito mesmo sem resposta/)).toBeVisible();
+});

@@ -8,9 +8,9 @@
 ## O que é
 
 O Prumo conduz a pessoa por uma anamnese curta (7 dimensões), gera um diagnóstico
-(nicho, produto inicial, público e canal) e transforma isso num roteiro em 3 capítulos,
-com micro-tarefas de 15 minutos, um coach de IA contextual e um ritual de compromisso
-com o "eu futuro" de 90 dias.
+(nicho, produto inicial, público e canal) e transforma isso num roteiro de 90 dias em
+4 capítulos (entender o problema, testar a solução, as primeiras vendas e criar ritmo),
+com passos curtos, um coach de IA contextual e uma carta ao "eu futuro".
 
 ## Stack
 

@@ -10,7 +10,7 @@ const plan = (productId: 'servico' | 'sessao' | 'guia' | 'minicurso', channel = 
 describe('buildPlanTasks', () => {
   it('sem diagnóstico, devolve o roteiro base sem capítulos trancados', () => {
     const tasks = buildPlanTasks(null);
-    expect(tasks).toHaveLength(20);
+    expect(tasks).toHaveLength(23);
     expect(tasks.every((t) => !t.isLocked)).toBe(true);
   });
 
@@ -28,13 +28,36 @@ describe('buildPlanTasks', () => {
   it('sem Instagram no canal, a tarefa de postagens vira ajuda em grupos', () => {
     const comInsta = buildPlanTasks(plan('guia')).find((t) => t.id === 't5')!;
     const semInsta = buildPlanTasks(plan('guia', 'Sua rede de contatos (WhatsApp) + grupos e comunidades online do seu tema')).find((t) => t.id === 't5')!;
-    expect(comInsta.title).toContain('Instagram');
+    expect(comInsta.title).toContain('3 posts');
     expect(semInsta.title).toContain('grupos');
   });
 
   it('a tarefa de teste usa o teste da hipótese do diagnóstico', () => {
     const t6 = buildPlanTasks(plan('sessao')).find((t) => t.id === 't6')!;
     expect(t6.whatToDo).toContain('Ofereça para 5 pessoas.');
+    // Pago e barato por padrão; grátis só com compromisso combinado antes
+    expect(t6.whatToDo).toContain('preço de fundador');
+    expect(t6.whatToDo).toContain('compromisso combinado antes');
+    expect(t6.signals?.[0]).toContain('1 em dinheiro');
+  });
+});
+
+describe('ordem do roteiro (etapa 52)', () => {
+  const tasks = buildPlanTasks(null);
+  const pos = (id: string) => tasks.findIndex((t) => t.id === id);
+
+  it('o problema vem antes da solução: conversar com 5 antes de criar e de definir preço', () => {
+    expect(pos('t21')).toBeLessThan(pos('t2'));
+    expect(pos('t21')).toBeLessThan(pos('t4'));
+    expect(tasks.find((t) => t.id === 't21')!.chapterId).toBe(1);
+    expect(pos('t4')).toBeLessThan(pos('t3'));
+  });
+
+  it('a semana leve vem logo na semana 1, e a semana segue crescente', () => {
+    expect(tasks.find((t) => t.id === 't17')!.week).toBe(1);
+    const weeks = tasks.map((t) => t.week ?? 1);
+    expect([...weeks].sort((a, b) => a - b)).toEqual(weeks);
+    expect(new Set(tasks.map((t) => t.id)).size).toBe(tasks.length);
   });
 });
 
