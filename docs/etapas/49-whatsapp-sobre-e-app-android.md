@@ -67,3 +67,16 @@ O Android só atualiza um app se a nova versão for assinada com a **mesma chave
 
 ### Próximos passos possíveis
 - Publicar na Play Store (conta de desenvolvedor, US$ 25 uma vez). O mesmo projeto gera um `.aab` com `bundleRelease`.
+
+## 51 · Instalar no iPhone pela página
+O iPhone não instala .apk: lá só entram apps da App Store.
+- **Por que não a App Store, por enquanto:**
+  - custa US$ 99 por ano e precisa de um Mac;
+  - a Apple costuma recusar apps que só abrem um site.
+- **No lugar do botão "Baixar para Android":** no iPhone, a página mostra **"Instalar no iPhone"**. Ele abre os 3 passos:
+  1. no Safari, tocar em "Abrir o Prumo";
+  2. tocar em Compartilhar;
+  3. escolher Adicionar à Tela de Início.
+- Na Tela de Início, o Prumo abre em tela cheia, e o Safari não apaga os dados depois de 7 dias.
+- Os dois botões somem quando o Prumo já está aberto como app.
+- **Métrica:** `apresentacao_instalar_iphone`.
