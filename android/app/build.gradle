@@ -55,7 +55,7 @@ android {
     namespace "br.com.jardimdofazer.prumo"
     defaultConfig {
         applicationId "br.com.jardimdofazer.prumo"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 36
         // Número e nome da versão vêm do workflow (.github/workflows/android.yml)
         versionCode((project.findProperty('versionCode') ?: '1').toString().toInteger())

@@ -24,7 +24,7 @@ Observações do terceiro teste com usuários.
 
 **Onde fica cada coisa:**
 - **`android/`:** projeto gerado pelo Bubblewrap (`@bubblewrap/core` 1.27).
-  - Pacote `br.com.jardimdofazer.prumo`, Android 5 ou mais novo.
+  - Pacote `br.com.jardimdofazer.prumo`, Android 7 ou mais novo (exigência da biblioteca do TWA).
   - O número da versão vem do workflow.
 - **`.github/workflows/android.yml`:**
   - num PR, só confere se o projeto compila;
