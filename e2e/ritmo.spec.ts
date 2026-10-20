@@ -318,3 +318,22 @@ test('passo longo em partes: cada parte se marca sozinha, conta no dia e fica sa
   await page.getByRole('heading', { name: 'Publicar 3 posts sobre o problema que você resolve' }).click();
   await expect(page.getByRole('region', { name: 'Partes do passo' }).getByRole('button', { name: /Post 1/ })).toHaveAttribute('aria-pressed', 'true');
 });
+
+test('métricas sem dados pessoais: ao concluir, "quanto tempo levou?"; e dá pra pular um passo com motivo', async ({ page }) => {
+  await seedState(page, { startedAt: Date.now() });
+  await page.getByRole('button', { name: 'Abrir tarefa' }).click();
+  await page.getByRole('button', { name: 'Marcar como feita' }).click();
+  const ask = page.getByRole('dialog', { name: 'Quanto tempo levou' });
+  await expect(ask).toContainText('A estimativa era 15 min.');
+  await ask.getByRole('button', { name: 'Mais', exact: true }).click();
+  await expect(ask).toHaveCount(0);
+
+  // O próximo passo: pular, contando o motivo
+  await page.getByRole('button', { name: 'Abrir tarefa' }).click();
+  await page.getByRole('button', { name: 'Pular este passo' }).click();
+  await page.getByRole('group', { name: 'Pular este passo' }).getByRole('button', { name: 'Já fiz antes' }).click();
+  await page.getByRole('button', { name: 'Pular', exact: true }).click();
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await expect(page.getByText('pulado')).toBeVisible();
+  await expect(page.getByText('2 de 23 concluídas')).toBeVisible();
+});

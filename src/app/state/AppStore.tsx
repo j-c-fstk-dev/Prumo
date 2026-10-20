@@ -17,7 +17,8 @@ import { soundEffects } from '../../utils/soundEffects';
 import { speak, stopSpeaking } from '../../utils/voice';
 import { clearAll, loadValue, saveValue } from './storage';
 import { NOTE_MAX, type Note, type NoteTag, type ProfileFieldId, type ProfileOverrides } from '../../domain/notebook';
-import { cleanPerson, normalizePerson, type Commitment, type Person } from '../../domain/people';
+import { cleanPerson, funnel, normalizePerson, testVerdict, type Commitment, type Person } from '../../domain/people';
+import { newMilestones, PAUSE_DAYS, type Milestone, type TimeAnswer } from '../../domain/metrics';
 import { requestPersistence } from '../../utils/install';
 import { deleteImages, saveImageAs } from './images';
 
@@ -115,6 +116,10 @@ interface PersistedState {
   lastExportAt?: number;
   /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
   installHintDismissedAt?: number;
+  /** Marcos já registrados nas métricas (etapa 53): quando aconteceram */
+  milestones?: Partial<Record<Milestone, number>>;
+  /** Passos pulados (etapa 53) e o motivo (opcional) */
+  skipped?: Record<string, string>;
   /** Partes feitas dos passos longos (etapa 53), por passo */
   partsDone?: Record<string, number[]>;
   /** "Quando vou fazer" de cada rotina (etapa 53), ex.: "terça e quinta, 7h" */
@@ -237,6 +242,8 @@ function useAppState() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   /** Guia do app aberto agora (não fica salvo) */
   const [guideOpen, setGuideOpen] = useState(false);
+  /** Depois de concluir um passo: "levou menos, mais ou menos isso, ou mais?" (etapa 53) */
+  const [timeAsk, setTimeAsk] = useState<{ taskId: string; estimated: number } | null>(null);
   /** Em que parte o Caderno abre (as rotinas de conversa levam direto para Pessoas) */
   const [notebookSection, setNotebookSection] = useState<'notas' | 'pessoas'>('notas');
   const [sectionIndex, setSectionIndex] = useState(0);
@@ -268,6 +275,9 @@ function useAppState() {
         if (saved.onboardingDone) setScreen('home');
         // Em que dia da jornada a pessoa abriu o app: mostra quem volta no dia 2, 7, 30... (etapa 38)
         if (saved.startedAt) track('app_aberto', { dia: journeyDayNumber(saved.startedAt) });
+        // Volta depois de uma pausa: mostra se o recomeço acolhe (etapa 53)
+        const away = computeStreak({ actionsByDay: saved.actionsByDay, repairedDays: saved.repairedDays, today: journeyDayKey() }).daysAway;
+        if (away !== null && away >= PAUSE_DAYS) track('volta_apos_pausa', { dias: away });
       }
       if (!saved) loadedData.current = data;
       setHydrated(true);
@@ -315,8 +325,9 @@ function useAppState() {
         title: data.planEdits[t.id]?.title || t.title,
         status: data.taskStatus[t.id] ?? 'pending',
         ...(t.parts && { partsDone: data.partsDone?.[t.id] ?? [] }),
+        ...(data.skipped?.[t.id] !== undefined && { skipped: true }),
       })),
-    [data.diagnosis, data.taskStatus, data.planEdits, data.partsDone],
+    [data.diagnosis, data.taskStatus, data.planEdits, data.partsDone, data.skipped],
   );
   /** Todos os passos do roteiro feitos (etapa 41): a Início mostra "jornada concluída" em vez de repetir a 1ª tarefa */
   const journeyComplete = tasks.length > 0 && tasks.every((t) => t.status === 'completed');
@@ -360,6 +371,20 @@ function useAppState() {
 
   const now = Date.now();
   const journeyDay = data.startedAt ? journeyDayNumber(data.startedAt, new Date(now)) : null;
+
+  // Marcos do roteiro (etapa 53): primeira conversa e primeira venda, uma vez só, com o dia em que aconteceram
+  useEffect(() => {
+    if (!hydrated) return;
+    const fresh = newMilestones(funnel(data.people), data.milestones);
+    if (!fresh.length) return;
+    const reachedAt = (stages: Person['stage'][]) =>
+      Math.min(...data.people.flatMap((p) => p.stageHistory.filter((h) => stages.includes(h.stage)).map((h) => h.at)), Date.now());
+    for (const m of fresh) {
+      const at = reachedAt(m === 'primeira_venda' ? ['cliente'] : ['conversou', 'proposta', 'compromisso', 'cliente']);
+      track(m, { dia: data.startedAt ? journeyDayNumber(data.startedAt, new Date(at)) : 0 });
+    }
+    setData((d) => ({ ...d, milestones: { ...d.milestones, ...Object.fromEntries(fresh.map((m) => [m, Date.now()])) } }));
+  }, [hydrated, data.people]);
   const pacingDay = journeyDay === null ? null : journeyDay - (data.paceShiftDays ?? 0);
   const currentWeek = suggestedWeek(pacingDay);
   const restartOffer =
@@ -613,8 +638,12 @@ function useAppState() {
 
     toggleTaskStatus: (taskId: string) => {
       const next: TaskItem['status'] = (data.taskStatus[taskId] ?? 'pending') === 'completed' ? 'pending' : 'completed';
+      const task = tasks.find((t) => t.id === taskId);
       if (next === 'completed') {
-        track('tarefa_concluida', { capitulo: tasks.find((t) => t.id === taskId)?.chapterId ?? 0 });
+        track('tarefa_concluida', { capitulo: task?.chapterId ?? 0 });
+        // A decisão da semana 6, qualquer que seja, é sinal de que o roteiro leva a uma conclusão
+        if (taskId === 't12') track('decisao_registrada', { veredito: testVerdict(funnel(data.people)) ?? 'testando', dia: journeyDay ?? 0 });
+        if (task) setTimeAsk({ taskId, estimated: task.durationMinutes });
         soundEffects.playCompleteTask();
         confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
       } else {
@@ -624,7 +653,9 @@ function useAppState() {
         const completedAt = { ...d.completedAt };
         if (next === 'completed') completedAt[taskId] = Date.now();
         else delete completedAt[taskId];
-        const updated = { ...d, taskStatus: { ...d.taskStatus, [taskId]: next }, completedAt };
+        const skipped = { ...d.skipped };
+        delete skipped[taskId];
+        const updated = { ...d, taskStatus: { ...d.taskStatus, [taskId]: next }, completedAt, skipped };
         return next === 'completed' ? withAction(updated) : updated;
       });
     },
@@ -891,6 +922,17 @@ function useAppState() {
       const extra = restartShift(pacingDay ?? journeyDay, nextStepTask.week);
       setData((d) => ({ ...d, paceShiftDays: (d.paceShiftDays ?? 0) + extra, restartDismissedOn: today }));
     },
+    /** Pular um passo (etapa 53): conta como resolvido para seguir o roteiro, mas não como ação do dia */
+    skipTask: (taskId: string, reason: string) => {
+      track('passo_pulado', { passo: taskId, motivo: reason || 'sem motivo' });
+      soundEffects.playSoftTap();
+      setData((d) => ({ ...d, taskStatus: { ...d.taskStatus, [taskId]: 'completed' }, skipped: { ...d.skipped, [taskId]: reason } }));
+    },
+    /** Resposta rápida ao concluir: o tempo real comparado ao estimado (ou fechar sem responder) */
+    answerTimeAsk: (answer: TimeAnswer | null) => {
+      if (answer && timeAsk) track('tempo_do_passo', { passo: timeAsk.taskId, estimado: timeAsk.estimated, resposta: answer });
+      setTimeAsk(null);
+    },
     /** Marca ou desmarca uma parte de um passo longo; cada parte feita conta como ação do dia */
     togglePart: (taskId: string, index: number) => {
       if (!(data.partsDone?.[taskId] ?? []).includes(index)) soundEffects.playSelectOption();
@@ -1044,6 +1086,7 @@ function useAppState() {
     currentWeek,
     restartOffer,
     pace: data.pace,
+    timeAsk,
     routines,
     weeklyGoal,
     reviewedThisWeek,

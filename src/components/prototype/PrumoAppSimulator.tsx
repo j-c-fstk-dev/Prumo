@@ -38,6 +38,7 @@ import { PaywallScreen } from '../../app/screens/PaywallScreen';
 import { NextCycleScreen } from '../../app/screens/NextCycleScreen';
 import { BottomNav } from '../../app/screens/BottomNav';
 import { ChapterComplete } from '../../app/components/ChapterComplete';
+import { TimeAsk } from '../../app/components/TimeAsk';
 import { GuideTour } from '../../app/components/GuideTour';
 
 const SCREENS: Record<Exclude<ScreenState, 'home'>, React.FC> = {
@@ -68,6 +69,7 @@ const CurrentScreen: React.FC = () => {
       <>
         <Tab key={`tab-${tab}`} />
         <BottomNav />
+        <TimeAsk />
         <ChapterComplete />
         {guideOpen && <GuideTour />}
       </>

@@ -21,6 +21,7 @@ import { QuoteByTheme } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
 import type { TemaCitacao } from '../../data/citacoes';
 import { funnel } from '../../domain/people';
+import { SKIP_REASONS } from '../../domain/metrics';
 
 /** Citação para as tarefas em que a trava mais aparece */
 const QUOTE_BY_TASK: Record<string, TemaCitacao> = { t2: 'perfeccionismo', t6: 'medo' };
@@ -49,6 +50,8 @@ export const TaskDetailScreen: React.FC = () => {
   const [renaming, setRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(selectedTask.title);
   const [showTranscript, setShowTranscript] = useState(false);
+  const [skipping, setSkipping] = useState(false);
+  const [skipReason, setSkipReason] = useState('');
   const transcriptOpen = showTranscript || (voiceUnavailable && activeAudioTaskId === selectedTask.id);
   // Quando e onde (etapa 53): sem combinado, a pergunta vem logo no começo do passo. Decidido ao abrir,
   // para o cartão não pular de lugar enquanto a pessoa escolhe.
@@ -350,6 +353,46 @@ export const TaskDetailScreen: React.FC = () => {
           <CheckCircle2 className="w-4 h-4" />
           <span>{selectedTask.status === 'completed' ? 'Marcar como pendente' : 'Marcar como feita'}</span>
         </button>
+        {selectedTask.skipped && <p className="text-[13px] text-muted text-center">Você pulou este passo. Dá pra voltar a ele quando quiser.</p>}
+
+        {/* Pular com motivo (etapa 53): mostra quais passos não fazem sentido */}
+        {selectedTask.status !== 'completed' &&
+          (skipping ? (
+            <div className="p-3 rounded-xl bg-surface border border-line space-y-2" role="group" aria-label="Pular este passo">
+              <span className="text-sm text-ink block">Por que pular? (se quiser contar)</span>
+              <div className="flex flex-wrap gap-1.5">
+                {SKIP_REASONS.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    aria-pressed={skipReason === r}
+                    onClick={() => setSkipReason(skipReason === r ? '' : r)}
+                    className={`px-2.5 py-1 rounded-full text-[13px] border cursor-pointer ${skipReason === r ? 'bg-primary border-primary text-on-primary' : 'border-line text-muted'}`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    actions.skipTask(selectedTask.id, skipReason);
+                    actions.go('home');
+                  }}
+                  className="flex-1 min-h-10 rounded-xl border border-line text-sm font-semibold text-ink cursor-pointer"
+                >
+                  Pular
+                </button>
+                <button onClick={() => setSkipping(false)} className="px-3 min-h-10 text-sm text-muted cursor-pointer">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setSkipping(true)} className="w-full min-h-9 text-[13px] text-muted underline underline-offset-2 cursor-pointer">
+              Pular este passo
+            </button>
+          ))}
 
         <button
           onClick={() => {

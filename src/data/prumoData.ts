@@ -395,6 +395,8 @@ export interface TaskItem {
   ifNoSignal?: string;
   /** Passo longo quebrado em partes de 15 a 20 minutos (etapa 53); durationMinutes é a soma */
   parts?: { title: string; minutes: number }[];
+  /** A pessoa pulou este passo (etapa 53) */
+  skipped?: boolean;
   /** Partes já feitas (índices), vindas do que ficou salvo */
   partsDone?: number[];
   /** Contador que vem do Caderno → Pessoas (ex.: 3 de 5 conversas) */

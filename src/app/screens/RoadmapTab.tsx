@@ -136,7 +136,7 @@ const TaskRow: React.FC<{ task: TaskItem }> = ({ task }) => {
               <span className="text-sm">{task.anchorIllustration.symbol}</span>
               <h4 className={`text-sm font-bold truncate ${isCompleted ? 'line-through text-muted' : 'text-ink'}`}>{task.title}</h4>
             </div>
-            <span className="text-xs bg-primary-soft text-primary px-1.5 py-0.2 rounded font-medium shrink-0">{task.anchorIllustration.badge}</span>
+            <span className="text-xs bg-primary-soft text-primary px-1.5 py-0.2 rounded font-medium shrink-0">{task.skipped ? 'pulado' : task.anchorIllustration.badge}</span>
           </div>
 
           <p className="text-[13px] text-muted line-clamp-1 mt-0.5">{task.description}</p>
