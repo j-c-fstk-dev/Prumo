@@ -25,10 +25,10 @@ export const STAGES: { id: Stage; label: string; emoji: string; hint: string }[]
 /** Tipo de compromisso, do mais fraco ao mais forte: uma etiqueta da pessoa, não uma etapa */
 export type Commitment = 'tempo' | 'indicacao' | 'dinheiro';
 
-export const COMMITMENTS: { id: Commitment; label: string; emoji: string }[] = [
-  { id: 'tempo', label: 'Marcou uma data', emoji: '📅' },
-  { id: 'indicacao', label: 'Indicou alguém', emoji: '🙋' },
-  { id: 'dinheiro', label: 'Pagou ou deu sinal', emoji: '💰' },
+export const COMMITMENTS: { id: Commitment; label: string; emoji: string; hint: string }[] = [
+  { id: 'tempo', label: 'Marcou uma data', emoji: '📅', hint: 'Combinou um dia para a entrega ou a conversa (vale também no teste grátis)' },
+  { id: 'indicacao', label: 'Indicou alguém', emoji: '🙋', hint: 'Indicou outra pessoa ou autorizou usar o depoimento' },
+  { id: 'dinheiro', label: 'Pagou ou deu sinal', emoji: '💰', hint: 'Pagou o teste ou deu um sinal. Teste grátis nunca conta como dinheiro' },
 ];
 
 export const SOURCES = ['Indicação', 'Conhecido', 'Grupo', 'Instagram', 'Outro'] as const;
@@ -178,9 +178,12 @@ export type TestVerdict = 'seguir' | 'ajustar' | 'trocar';
 export const TEST_ROUND = 5;
 
 /**
- * A decisão da semana 6 conta compromissos, não "sins": 2 compromissos, 1 deles em dinheiro, é seguir.
- * Sem dinheiro, mas com tempo ou indicação, a dor existe: ajustar a oferta ou o preço. Nenhum
- * compromisso em 5 apresentações: trocar de caminho. Antes disso, ainda está testando (null).
+ * A decisão da semana 6 conta compromissos, não "sins". Toda combinação cai em uma saída só:
+ *   - seguir: 2 ou mais compromissos, com pelo menos 1 em dinheiro;
+ *   - ajustar: qualquer outro caso com pelo menos 1 compromisso (ex.: 1 só, mesmo em dinheiro);
+ *   - trocar: nenhum compromisso (antes, conferir se as 5 eram o público certo).
+ * Teste grátis com compromisso conta como tempo ou indicação, nunca como dinheiro.
+ * Antes de 5 apresentações, sem o sinal de seguir, ainda está testando (null).
  */
 export function testVerdict(f: Funnel): TestVerdict | null {
   if (f.committed >= 2 && f.money >= 1) return 'seguir';

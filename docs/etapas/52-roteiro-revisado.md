@@ -20,10 +20,12 @@ Mudanças que vieram da "Revisão do Roteiro de 90 dias do Prumo" (out/2026), ap
   - Marcar uma etiqueta leva a pessoa para "Se comprometeu", se ela ainda estava antes.
 - **Dados antigos:** "Interessado" vira "Viu a proposta", porque interesse não é compromisso. Isso vale no histórico e nos backups antigos (`normalizePerson`, chamado no `migrate`).
 - **O card "Seu funil":** nomes → conversas → viram a proposta → compromissos. Cada pessoa conta até a etapa mais longe a que chegou (`funnel`).
-- **Decisão da semana 6** (`testVerdict`):
-  - **seguir:** 2 compromissos, sendo pelo menos 1 em dinheiro;
-  - **ajustar:** teve compromisso, mas nenhum em dinheiro. A dor existe: mude a oferta ou o preço;
-  - **trocar de caminho:** nenhum compromisso em 5 apresentações.
+- **Decisão da semana 6** (`testVerdict`): toda combinação cai em exatamente uma saída.
+  - **seguir:** 2 ou mais compromissos em 5 apresentações, com pelo menos 1 em dinheiro;
+  - **ajustar:** qualquer outro caso com pelo menos 1 compromisso, até 1 compromisso só, mesmo em dinheiro. Mude uma coisa e faça mais uma rodada;
+  - **trocar:** nenhum compromisso. Antes de trocar a ideia, confira se as 5 pessoas eram o público certo: muitas vezes são as pessoas erradas, e não a ideia errada.
+  - Antes de chegar a 5 apresentações, se o sinal de seguir ainda não veio, a pessoa continua testando.
+- **Teste grátis com compromisso** conta como tempo ou indicação, nunca como dinheiro. A dica da etiqueta 💰 diz isso.
 - **Coach:** as orientações de mensagem seguem as etapas novas. O servidor ainda aceita `interessado`, para as versões do app que estão em cache.
 
 ## Roteiro: primeiro o problema
@@ -68,13 +70,23 @@ Agora são 23 passos, com 3 novos.
 - Cartas antigas, sem o número de anos, continuam como "daqui a 90 dias".
 - O passo da semana 13 continua sendo reler e responder.
 
+## Recomeço sem culpa
+- **Quando aparece:**
+  - assim que a pessoa volta depois de 7 dias ou mais parada, em qualquer dia da semana;
+  - na segunda-feira e no dia 1 do mês, como um empurrão a mais para quem ficou para trás.
+- **Só quando faz sentido:** o próximo passo tem que ser de uma semana que já passou.
+- **"Recomeçar a partir de hoje":** a semana do próximo passo passa a ser "esta semana".
+  - O desconto fica em `paceShiftDays` e só mexe na semana sugerida.
+  - O que foi feito continua feito, e o dia da jornada, a carta e os ciclos não mudam.
+- **"Agora não":** esconde a oferta até o dia seguinte.
+- **Métrica:** `recomeco`.
+
 ## Fica para a parte 2
 - **Ritmo leve ou firme:**
   - a pessoa escolhe na entrada;
   - "15 min no que vai oferecer" acaba no capítulo 3;
   - "Mostrar algo útil" passa para 1× por semana nessa fase.
 - **"Quando vou fazer":** pedir dia e hora ao começar cada passo.
-- **Recomeço:** "Recomeçar a partir de hoje" logo na volta, depois de 7 dias ou mais parada. Segunda-feira e dia 1 ficam como um empurrão extra.
 - **Passos longos:** quebrar os de 30 a 60 minutos em partes de 15 a 20.
 - **Métricas:**
   - primeira conversa em até 7 dias;

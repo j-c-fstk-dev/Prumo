@@ -134,10 +134,10 @@ export function buildPlanTasks(plan: PlanInput | null): TaskItem[] {
           description: 'A hora de descobrir se as pessoas pagam pelo que você criou.',
           whatToDo:
             `${plan.test} Seja honesto: diga que é um teste, com preço de fundador. ` +
-            'Se ainda não tem coragem de cobrar, pode fazer de graça para 1 ou 2 pessoas, mas só em troca de um compromisso combinado antes: data marcada, depoimento autorizado ou uma indicação.',
+            'Se ainda não tem coragem de cobrar, pode fazer de graça para 1 ou 2 pessoas, mas só em troca de um compromisso combinado antes: data marcada, depoimento autorizado ou uma indicação. Esse compromisso conta como tempo ou indicação, nunca como dinheiro.',
           howToKnowItIsGood: ['Você ofereceu para 5 pessoas, uma de cada vez', 'Anotou no Caderno o que cada uma fez'],
           signals: ['2 compromissos, sendo pelo menos 1 em dinheiro (pagamento ou sinal)'],
-          ifNoSignal: 'Teve compromisso, mas ninguém pagou? A dor existe: mude uma coisa só (a oferta ou o preço) e faça mais uma rodada.',
+          ifNoSignal: 'Teve compromisso, mas não chegou a 2 com 1 em dinheiro? A dor existe: mude uma coisa só (a oferta ou o preço) e faça mais uma rodada.',
         };
       default:
         return task;

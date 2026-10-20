@@ -75,6 +75,11 @@ describe('pessoas', () => {
     expect(testVerdict(f(3, 1, 0))).toBeNull();
     expect(testVerdict(f(5, 2, 0))).toBe('ajustar');
     expect(testVerdict(f(5, 0, 0))).toBe('trocar');
+    // 1 compromisso só, mesmo em dinheiro, é ajustar (sem buraco na regra)
+    expect(testVerdict(f(5, 1, 1))).toBe('ajustar');
+    expect(testVerdict(f(6, 3, 0))).toBe('ajustar');
+    // Toda combinação com 5 apresentações cai em exatamente uma saída
+    for (let c = 0; c <= 5; c++) for (let m = 0; m <= c; m++) expect(['seguir', 'ajustar', 'trocar']).toContain(testVerdict(f(5, c, m)));
   });
 
   it('dados antigos: "Interessado" vira "Viu a proposta", também no histórico', () => {

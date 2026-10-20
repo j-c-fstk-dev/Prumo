@@ -380,6 +380,7 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string; ope
                 key={c.id}
                 type="button"
                 aria-pressed={on}
+                title={c.hint}
                 onClick={() => {
                   soundEffects.playSelectOption();
                   actions.toggleCommitment(person.id, c.id);
@@ -575,9 +576,9 @@ export const PeopleSection: React.FC = () => {
           {verdict === 'seguir'
             ? 'Sinal de seguir: 2 compromissos, 1 deles em dinheiro. Hora das vendas.'
             : verdict === 'ajustar'
-              ? 'Tem gente se comprometendo, mas ninguém pagou: mude uma coisa só (a oferta ou o preço) e faça mais uma rodada.'
+              ? 'Tem gente se comprometendo, mas ainda não deu o sinal de seguir: mude uma coisa só (a oferta ou o preço) e faça mais uma rodada.'
               : verdict === 'trocar'
-                ? `Nenhum compromisso em ${TEST_ROUND} apresentações. Tudo bem trocar de caminho: você aprendeu o que não é.`
+                ? `Nenhum compromisso em ${TEST_ROUND} apresentações. Antes de trocar a ideia, confira se eram o público certo: muitas vezes são as pessoas erradas, e não a ideia. Se eram, tudo bem trocar de caminho.`
                 : `Elogio não conta: conta quem marcou uma data, indicou alguém ou pagou. O sinal de seguir é 2 compromissos, 1 deles em dinheiro, em até ${TEST_ROUND} apresentações.`}
           {f.clients > 0 && ` Clientes: ${f.clients}.`}
         </p>

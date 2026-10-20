@@ -628,7 +628,7 @@ const ROADMAP: TaskItem[] = [
     description: 'Oferecer o teste com preço de fundador para quem tem o problema.',
     durationMinutes: 30,
     status: 'pending',
-    whatToDo: 'Chame, uma de cada vez, quem curtiu, comentou, conversou com você ou já te pediu ajuda. Ofereça o teste com o preço de fundador, dito como teste. Se você ainda não tem coragem de cobrar, pode fazer de graça para 1 ou 2 pessoas, mas só em troca de um compromisso combinado antes: data marcada, depoimento autorizado ou uma indicação. Grátis "pra ver se gosta" não conta.',
+    whatToDo: 'Chame, uma de cada vez, quem curtiu, comentou, conversou com você ou já te pediu ajuda. Ofereça o teste com o preço de fundador, dito como teste. Se você ainda não tem coragem de cobrar, pode fazer de graça para 1 ou 2 pessoas, mas só em troca de um compromisso combinado antes: data marcada, depoimento autorizado ou uma indicação. Esse compromisso conta como tempo ou indicação, nunca como dinheiro. Grátis "pra ver se gosta" não conta.',
     howToKnowItIsGood: [
       'Você mandou 10 convites, um de cada vez',
       'Disse com clareza que é um teste e quanto custa'
@@ -823,7 +823,7 @@ const ROADMAP: TaskItem[] = [
     description: 'Olhar o teste com honestidade e escolher o próximo passo.',
     durationMinutes: 15,
     status: 'pending',
-    whatToDo: 'Veja o funil no Caderno → Pessoas. Conte compromissos, não "sins": quem marcou uma data, indicou alguém ou pagou. Com 2 compromissos ou mais, sendo pelo menos 1 em dinheiro (pagamento ou sinal), siga para as vendas. Se teve compromissos, mas nenhum em dinheiro, a dor existe: ajuste uma coisa (a oferta ou o preço) e faça mais uma rodada. Se ninguém se comprometeu em 5 apresentações, tudo bem: na aba Você, abra o resultado e escolha outro caminho.',
+    whatToDo: 'Veja o funil no Caderno → Pessoas. Conte compromissos, não "sins": quem marcou uma data, indicou alguém ou pagou. Seguir: 2 compromissos ou mais em 5 apresentações, com pelo menos 1 em dinheiro (pagamento ou sinal); hora das vendas. Ajustar: qualquer outro caso com pelo menos 1 compromisso; a dor existe, então mude uma coisa só (a oferta ou o preço) e faça mais uma rodada. Trocar: nenhum compromisso. Antes de trocar a ideia, confira se as 5 pessoas eram mesmo o público certo: muitas vezes eram as pessoas erradas, e não a ideia errada. Se eram, tudo bem: na aba Você, abra o resultado e escolha outro caminho.',
     howToKnowItIsGood: [
       'Você decidiu pelo que as pessoas fizeram, não pelo que disseram',
       'Anotou no Caderno o que aprendeu com o teste'
