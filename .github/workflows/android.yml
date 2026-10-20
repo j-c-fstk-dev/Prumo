@@ -1,0 +1,98 @@
+name: App Android (.apk)
+
+# Gera o Prumo.apk (etapa 50): o app Android abre o site prumo.jardimdofazer.com.br/app/ em tela cheia (TWA).
+# - Pull request que mexe em android/: só confere se o projeto compila (sem assinar, sem publicar).
+# - Push na main que mexe em android/, ou à mão (aba Actions → App Android → Run workflow): compila,
+#   assina e publica nas Releases. O link da página (releases/latest/download/Prumo.apk) pega sempre o último.
+# Mudanças no site NÃO pedem .apk novo: o app carrega o site. Só refaça quando mudar algo em android/.
+# Precisa dos secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS e ANDROID_KEY_PASSWORD.
+on:
+  pull_request:
+    paths: ['android/**', '.github/workflows/android.yml']
+  push:
+    branches: [main]
+    paths: ['android/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PUBLISH: ${{ github.event_name != 'pull_request' }}
+      HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      VERSION_CODE: ${{ github.run_number }}
+      VERSION_NAME: 1.0.${{ github.run_number }}
+      BUILD_TOOLS: '36.0.0'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Ferramentas do Android
+        run: sdkmanager "build-tools;${BUILD_TOOLS}" "platforms;android-36"
+
+      - name: Compilar
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME"
+
+      - name: Sem chave de assinatura
+        if: env.PUBLISH == 'true' && env.HAS_KEY != 'true'
+        run: |
+          echo "::error::Configure os secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS e ANDROID_KEY_PASSWORD (docs/etapas/50-app-android.md)."
+          exit 1
+
+      - name: Assinar
+        if: env.PUBLISH == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          BT="$ANDROID_HOME/build-tools/$BUILD_TOOLS"
+          KS="$RUNNER_TEMP/prumo.keystore"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$KS"
+          "$BT/zipalign" -p -f 4 android/app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" sign --ks "$KS" --ks-key-alias "$KEY_ALIAS" \
+            --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEY_PASSWORD \
+            --out Prumo.apk "$RUNNER_TEMP/aligned.apk"
+          rm -f "$KS"
+          FP=$("$BT/apksigner" verify --print-certs Prumo.apk | grep -m1 'SHA-256 digest' | sed 's/.*: //' | tr 'a-f' 'A-F' | sed 's/../&:/g; s/:$//')
+          {
+            echo "### Prumo.apk ${VERSION_NAME}"
+            echo ""
+            echo "Impressão digital SHA-256 do certificado (variável ANDROID_CERT_SHA256 do repositório):"
+            echo ""
+            echo '```'
+            echo "$FP"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publicar nas Releases
+        if: env.PUBLISH == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ env.VERSION_NAME }}
+          name: Prumo para Android ${{ env.VERSION_NAME }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          files: Prumo.apk
+          body: |
+            App Android do Prumo. Baixe o **Prumo.apk** no celular e abra o arquivo para instalar.
+            O app abre o Prumo em tela cheia; as novidades do site chegam sem precisar baixar de novo.

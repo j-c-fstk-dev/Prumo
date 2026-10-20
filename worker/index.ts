@@ -6,6 +6,7 @@
 
 import { handleCoachChat, handleHealth, handleIdea, handleMessageSuggestion, handleReport, type LiveCallGuard } from '../server/coach.ts';
 import type { LlmEnv } from '../server/llm.ts';
+import { assetLinks } from '../server/assetLinks.ts';
 import { clientErrorLog } from '../server/log.ts';
 import { buildRules, cleanClientId, type LimitEnv, type LimitRule } from '../server/limits.ts';
 
@@ -19,7 +20,10 @@ interface Env extends LlmEnv, LimitEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
   /** Durable Object do limite de uso (wrangler.jsonc). Sem ele, o coach roda sem limite. */
   LIMITER?: { idFromName(name: string): unknown; get(id: unknown): LimiterStub };
+  /** Impressão digital SHA-256 do certificado do .apk (etapa 50); várias separadas por vírgula */
+  ANDROID_CERT_SHA256?: string;
 }
+
 
 /** Limite de uso por aparelho, por IP e total do dia (server/limits.ts) */
 function usageGuard(request: Request, env: Env, body: unknown): LiveCallGuard | undefined {
@@ -82,6 +86,12 @@ export default {
       if (body instanceof Response) return body;
       console.error(JSON.stringify(clientErrorLog(body)));
       return new Response(null, { status: 204 });
+    }
+
+    if (pathname === '/.well-known/assetlinks.json') {
+      return new Response(JSON.stringify(assetLinks(env.ANDROID_CERT_SHA256)), {
+        headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=300' },
+      });
     }
 
     if (pathname.startsWith('/api/')) return json(404, { error: 'Rota não encontrada.' });

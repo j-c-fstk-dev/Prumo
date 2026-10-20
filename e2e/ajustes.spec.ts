@@ -142,6 +142,22 @@ test('app instalável: manifesto e ícones no ar, convite no início e cartão d
   await expect(page.getByText('3. Guarde uma cópia (nenhuma ainda)')).toBeVisible();
 });
 
+test('app Android (.apk): a página oferece o download e, dentro do app, o convite de instalar não aparece', async ({ page }) => {
+  await page.goto('/');
+  const apk = page.getByRole('link', { name: 'Baixar para Android' }).first();
+  await expect(apk).toHaveAttribute('href', /releases\/latest\/download\/Prumo\.apk$/);
+
+  // O app Android abre /app/?origem=apk; depois disso o app lembra, mesmo sem o ?origem
+  await page.goto('/app/?origem=apk');
+  await passSplash(page);
+  await onboard(page);
+  await commitAndSeal(page);
+  await expect(page.getByText(/^Olá, /)).toBeVisible();
+  await expect(page.getByText('Instale o Prumo na tela de início')).toHaveCount(0);
+  await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Baixar para Android' })).toHaveCount(0);
+});
+
 test('apresentação em /, app em /app/, políticas no rodapé e no "Sobre" do app', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Ache o seu caminho no digital.' })).toBeVisible();
