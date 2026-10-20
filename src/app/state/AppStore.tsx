@@ -98,6 +98,11 @@ interface PersistedState {
   routineLog: Record<string, string[]>;
   /** Revisões da semana, pela segunda-feira da semana em que foram feitas */
   weeklyReviews: Record<string, WeeklyReview>;
+  /**
+   * Abriu o WhatsApp ou o e-mail para alguém e ainda não disse se mandou (etapa 49). Fica salvo porque o
+   * Android costuma recarregar a página ao voltar de outro app, e a pergunta "Mandou?" sumia.
+   */
+  pendingSent?: { personId: string; at: number };
   /** Quando a pessoa terminou ou pulou o guia do app (etapa 47); sem isso, ele abre na 1ª visita à Início */
   guideSeenAt?: number;
   /** Ciclos de 30 dias depois do roteiro (etapa 44) */
@@ -345,6 +350,9 @@ function useAppState() {
   const routines = activeRoutines(currentChapterId, journeyComplete).map((r) => ({ ...r, ...routineProgress(r, data.routineLog[r.id], today) }));
   const weeklyGoal = currentGoal(data.weeklyReviews);
   const reviewedThisWeek = Boolean(data.weeklyReviews[weekKey(today)]);
+  // A pergunta "Mandou?" vale por 12 horas depois de abrir o WhatsApp ou o e-mail
+  const pendingSentPerson =
+    data.pendingSent && now - data.pendingSent.at < 12 * 3_600_000 ? (data.people.find((p) => p.id === data.pendingSent!.personId) ?? null) : null;
   const cycle = activeCycle(data.cycles);
   const cycleInfo = cycle ? { ...cycle, ...cycleStatus(cycle, data.people, now), number: data.cycles.length } : null;
   /** Hora de escolher o próximo ciclo: roteiro feito ou Dia 90, sem ciclo aberto (ou com o ciclo vencido) */
@@ -375,6 +383,23 @@ function useAppState() {
     goTab: (t: TabId) => {
       setTab(t);
       setScreen('home');
+    },
+    /** Abriu o WhatsApp ou o e-mail para alguém: guarda para perguntar "Mandou?" na volta */
+    messageOpened: (personId: string) => setData((d) => ({ ...d, pendingSent: { personId, at: Date.now() } })),
+    /** Respondeu o "Mandou?": se sim e a pessoa era "Novo", vira "Conversou" */
+    answerSent: (personId: string, sent: boolean) => {
+      if (sent) soundEffects.playSelectOption();
+      setData((d) => ({
+        ...d,
+        pendingSent: undefined,
+        people: sent
+          ? d.people.map((p) =>
+              p.id === personId && p.stage === 'contato'
+                ? { ...p, stage: 'conversou', updatedAt: Date.now(), stageHistory: [...p.stageHistory, { stage: 'conversou', at: Date.now() }] }
+                : p,
+            )
+          : d.people,
+      }));
     },
     /** Guia do app (etapa 47): abre na Início, que é onde ficam as partes que ele mostra */
     startGuide: () => {
@@ -948,6 +973,7 @@ function useAppState() {
     selectedTask,
     nextStepTask,
     journeyComplete,
+    pendingSentPerson,
     guideOpen,
     cycleInfo,
     canChooseCycle,

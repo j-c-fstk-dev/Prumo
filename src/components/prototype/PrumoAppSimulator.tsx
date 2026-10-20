@@ -1,5 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { setScreenForLogs } from '../../utils/telemetry';
+
+const TAB_KEY = 'prumo_splash_tab';
+function splashShownThisTab(): boolean {
+  try {
+    return sessionStorage.getItem(TAB_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+function markSplashShownThisTab(): void {
+  try {
+    sessionStorage.setItem(TAB_KEY, '1');
+  } catch {
+    // sem sessionStorage: a abertura só repete
+  }
+}
 import { CompassSplash } from '../brand/CompassSplash';
 import { AppProvider, useApp, type ScreenState } from '../../app/state/AppStore';
 import { WelcomeScreen } from '../../app/screens/WelcomeScreen';
@@ -67,13 +83,19 @@ const CurrentScreen: React.FC = () => {
  */
 const DeviceFrame: React.FC = () => {
   const { hydrated } = useApp();
-  const [showBrandSplash, setShowBrandSplash] = useState(true);
+  // A abertura toca uma vez por aba. Se o celular recarregar a página sozinho (por exemplo, ao voltar do
+  // WhatsApp, quando o Android fecha a aba para liberar memória), o app entra direto (etapa 49).
+  const [showBrandSplash, setShowBrandSplash] = useState(() => !splashShownThisTab());
+  const doneSplash = () => {
+    markSplashShownThisTab();
+    setShowBrandSplash(false);
+  };
 
   return (
     <div className="w-full sm:w-auto flex flex-col items-center justify-center sm:p-6">
       <div className="w-full h-[100dvh] sm:max-w-[400px] sm:h-[min(820px,calc(100dvh-48px))] sm:rounded-[32px] sm:shadow-2xl sm:border sm:border-line relative flex flex-col overflow-hidden">
-        <div id="app-screen" className="flex-1 bg-canvas overflow-hidden flex flex-col relative text-ink">
-          {showBrandSplash && <CompassSplash onDone={() => setShowBrandSplash(false)} />}
+        <div id="app-screen" data-ready={hydrated && !showBrandSplash ? '' : undefined} className="flex-1 bg-canvas overflow-hidden flex flex-col relative text-ink">
+          {showBrandSplash && <CompassSplash onDone={doneSplash} />}
           {hydrated && <CurrentScreen />}
         </div>
       </div>
