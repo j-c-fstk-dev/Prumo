@@ -556,7 +556,8 @@ export const PeopleSection: React.FC = () => {
             [f.names, f.names === 1 ? 'nome' : 'nomes'],
             [f.talked, f.talked === 1 ? 'conversa' : 'conversas'],
             [f.presented, f.presented === 1 ? 'viu a proposta' : 'viram a proposta'],
-            [f.committed, f.committed === 1 ? 'compromisso' : 'compromissos'],
+            // Hífen suave: no celular estreito, "compromisso" quebra em vez de vazar da caixa
+            [f.committed, f.committed === 1 ? 'compro\u00admisso' : 'compro\u00admissos'],
           ].map(([n, label]) => (
             <li key={label as string} className="rounded-xl bg-surface border border-line py-1.5 px-1">
               <span className="block text-lg font-bold text-ink leading-none">{n}</span>
