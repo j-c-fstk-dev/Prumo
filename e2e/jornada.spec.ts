@@ -13,7 +13,10 @@ test('jornada completa: diagnóstico, carta, tarefas, check-in, capítulo e reca
 
   // Constelação e "quando vou fazer"
   await expect(page.getByText('0 de 5 estrelas')).toBeVisible();
+  await expect(page.getByRole('button', { name: '⏰ Combinar quando e onde' })).toBeVisible();
   await page.getByRole('button', { name: 'Abrir tarefa' }).click();
+  // Sem combinado, a pergunta vem logo no começo do passo (etapa 53)
+  await expect(page.getByText('Antes de começar: quando e onde você vai fazer?')).toBeVisible();
   await page.getByRole('button', { name: 'no almoço' }).click();
   await page.getByRole('button', { name: 'Voltar' }).or(page.locator('button:has(svg.lucide-arrow-left)')).first().click();
   await expect(page.getByText('⏰ Combinado: no almoço')).toBeVisible();

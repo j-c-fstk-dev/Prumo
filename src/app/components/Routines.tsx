@@ -5,6 +5,7 @@ import { useApp } from '../state/AppStore';
 import { REVIEW_LIMIT } from '../../domain/routines';
 import { journeyDayKey, weekKey } from '../../domain/journey';
 import { soundEffects } from '../../utils/soundEffects';
+import { WhenPicker } from './WhenPicker';
 
 const inputClass =
   'w-full px-3 py-2 text-sm rounded-xl border border-line bg-surface text-ink placeholder:text-muted focus:outline-none focus:border-primary resize-none';
@@ -72,8 +73,9 @@ export const WeeklyReviewModal: React.FC<{ onClose: () => void }> = ({ onClose }
  * Marcar conta como ação do dia (dias de prumo), igual a concluir um passo.
  */
 export const RoutinesCard: React.FC<{ title?: string }> = ({ title = 'Rotina da semana' }) => {
-  const { routines, weeklyGoal, actions } = useApp();
+  const { routines, weeklyGoal, reflections, actions } = useApp();
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [whenFor, setWhenFor] = useState<string | null>(null);
   if (!routines.length) return null;
 
   return (
@@ -95,7 +97,8 @@ export const RoutinesCard: React.FC<{ title?: string }> = ({ title = 'Rotina da 
             if (r.link === 'pessoas') actions.openPeople();
           };
           return (
-            <li key={r.id} className={`flex items-center gap-2.5 p-2 rounded-xl border ${r.doneToday ? 'border-success/30 bg-success-soft/40' : 'border-line'}`}>
+            <li key={r.id} className={`p-2 rounded-xl border ${r.doneToday ? 'border-success/30 bg-success-soft/40' : 'border-line'}`}>
+              <div className="flex items-center gap-2.5">
               <button
                 onClick={() => (r.link === 'revisao' && !r.doneToday ? setReviewOpen(true) : actions.toggleRoutine(r.id))}
                 aria-pressed={r.doneToday}
@@ -114,6 +117,29 @@ export const RoutinesCard: React.FC<{ title?: string }> = ({ title = 'Rotina da 
                 </span>
               </button>
               {r.link && <ChevronRight className="w-4 h-4 text-muted shrink-0" aria-hidden="true" />}
+              </div>
+              {/* Quando e onde (etapa 53): também para as rotinas */}
+              <button
+                type="button"
+                onClick={() => setWhenFor(whenFor === r.id ? null : r.id)}
+                aria-expanded={whenFor === r.id}
+                aria-label={`Quando fazer: ${r.title}`}
+                className="ml-7.5 mt-0.5 text-xs text-primary cursor-pointer"
+              >
+                {r.when ? `⏰ ${r.when}` : '⏰ combinar quando'}
+              </button>
+              {whenFor === r.id && (
+                <div className="mt-1.5 ml-7.5">
+                  <WhenPicker
+                    value={r.when}
+                    onChange={(when) => {
+                      actions.setRoutineWhen(r.id, when);
+                      if (when) setWhenFor(null);
+                    }}
+                    timeThieves={reflections.q3_hours}
+                  />
+                </div>
+              )}
             </li>
           );
         })}

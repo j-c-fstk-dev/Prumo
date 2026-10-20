@@ -150,6 +150,11 @@ test('rotinas: as do capítulo aparecem, marcar conta no dia, e a revisão da se
   await expect(card.getByText('Falar com 1 pessoa nova')).toBeVisible();
   await expect(card.getByText('Retomar quem ficou de responder')).toHaveCount(0);
 
+  // Quando e onde também para as rotinas (etapa 53)
+  await card.getByRole('button', { name: 'Quando fazer: Falar com 1 pessoa nova' }).click();
+  await card.getByRole('button', { name: 'depois do café' }).click();
+  await expect(card.getByRole('button', { name: 'Quando fazer: Falar com 1 pessoa nova' })).toHaveText('⏰ depois do café');
+
   await card.getByRole('button', { name: 'Falar com 1 pessoa nova: marcar como feita hoje' }).click();
   await expect(card.getByText('1 de 5 esta semana')).toBeVisible();
   await expect(page.getByText(/1 dia de prumo/)).toBeVisible();
@@ -168,6 +173,12 @@ test('rotinas: as do capítulo aparecem, marcar conta no dia, e a revisão da se
   await expect(page.getByRole('region', { name: 'Semana 1', exact: true })).toBeVisible();
   await expect(page.getByText('● esta semana')).toBeVisible();
   await expect(page.getByRole('region', { name: 'Rotinas' })).toBeVisible();
+
+  // Ritmo leve (etapa 53): em Você, as frequências se ajustam sozinhas
+  await page.getByRole('button', { name: 'Você', exact: true }).click();
+  await page.getByRole('radiogroup', { name: 'Seu ritmo' }).getByRole('radio', { name: /Leve/ }).click();
+  await page.getByRole('button', { name: 'Início', exact: true }).click();
+  await expect(card.getByText('1 de 3 esta semana')).toBeVisible();
 });
 
 test('ciclos: depois do roteiro, continuar com meta do Caderno; ao bater a meta, trocar de caminho recomeça o roteiro', async ({ page }) => {
@@ -286,4 +297,43 @@ test('recomeço sem culpa: quem volta depois de 7+ dias recomeça a partir de ho
   await page.reload();
   await passSplash(page);
   await expect(page.getByRole('region', { name: 'Recomeçar' })).toHaveCount(0);
+});
+
+test('passo longo em partes: cada parte se marca sozinha, conta no dia e fica salva', async ({ page }) => {
+  const ch1 = INITIAL_TASKS.filter((t) => t.chapterId === 1).map((t) => t.id);
+  await seedState(page, { taskStatus: Object.fromEntries(ch1.map((id) => [id, 'completed'])), startedAt: Date.now(), celebratedChapters: [1] });
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await page.getByRole('button', { name: /^Cap\. 2:/ }).click();
+  await expect(page.getByText(/⏱ 3 × 20 min/).first()).toBeVisible();
+  await page.getByRole('heading', { name: 'Publicar 3 posts sobre o problema que você resolve' }).click();
+  const parts = page.getByRole('region', { name: 'Partes do passo' });
+  await expect(parts).toContainText('Em 3 partes');
+  await parts.getByRole('button', { name: /Post 1: um erro comum/ }).click();
+  await expect(parts.getByRole('button', { name: /Post 1: um erro comum/ })).toHaveAttribute('aria-pressed', 'true');
+  await page.reload();
+  await passSplash(page);
+  await expect(page.getByText(/1 dia de prumo/)).toBeVisible();
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await page.getByRole('button', { name: /^Cap\. 2:/ }).click();
+  await page.getByRole('heading', { name: 'Publicar 3 posts sobre o problema que você resolve' }).click();
+  await expect(page.getByRole('region', { name: 'Partes do passo' }).getByRole('button', { name: /Post 1/ })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('métricas sem dados pessoais: ao concluir, "quanto tempo levou?"; e dá pra pular um passo com motivo', async ({ page }) => {
+  await seedState(page, { startedAt: Date.now() });
+  await page.getByRole('button', { name: 'Abrir tarefa' }).click();
+  await page.getByRole('button', { name: 'Marcar como feita' }).click();
+  const ask = page.getByRole('dialog', { name: 'Quanto tempo levou' });
+  await expect(ask).toContainText('A estimativa era 15 min.');
+  await ask.getByRole('button', { name: 'Mais', exact: true }).click();
+  await expect(ask).toHaveCount(0);
+
+  // O próximo passo: pular, contando o motivo
+  await page.getByRole('button', { name: 'Abrir tarefa' }).click();
+  await page.getByRole('button', { name: 'Pular este passo' }).click();
+  await page.getByRole('group', { name: 'Pular este passo' }).getByRole('button', { name: 'Já fiz antes' }).click();
+  await page.getByRole('button', { name: 'Pular', exact: true }).click();
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await expect(page.getByText('pulado')).toBeVisible();
+  await expect(page.getByText('2 de 23 concluídas')).toBeVisible();
 });

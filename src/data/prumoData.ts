@@ -393,6 +393,12 @@ export interface TaskItem {
   signals?: string[];
   /** O que fazer se o sinal não veio */
   ifNoSignal?: string;
+  /** Passo longo quebrado em partes de 15 a 20 minutos (etapa 53); durationMinutes é a soma */
+  parts?: { title: string; minutes: number }[];
+  /** A pessoa pulou este passo (etapa 53) */
+  skipped?: boolean;
+  /** Partes já feitas (índices), vindas do que ficou salvo */
+  partsDone?: number[];
   /** Contador que vem do Caderno → Pessoas (ex.: 3 de 5 conversas) */
   counter?: { kind: 'names' | 'talked' | 'presented'; target: number };
   resources: { title: string; type: string }[];
@@ -519,6 +525,10 @@ const ROADMAP: TaskItem[] = [
     ],
     ifNoSignal: 'Elogio sem compromisso não conta, mas também não é fracasso: anote o que travou e use no próximo passo.',
     counter: { kind: 'presented', target: 5 },
+    parts: [
+      { title: 'Preparar o que você vai mostrar', minutes: 15 },
+      { title: 'Mostrar e pedir um próximo passo (uma pessoa por vez)', minutes: 15 }
+    ],
     resources: [
       { title: 'Script de abordagem no WhatsApp sem ser chato', type: 'Script' }
     ],
@@ -585,18 +595,22 @@ const ROADMAP: TaskItem[] = [
     chapterTitle: 'Capítulo 2: Testar a solução',
     title: 'Publicar 3 posts sobre o problema que você resolve',
     description: 'Um por vez, no seu canal: posts que mostram que você entende o que essas pessoas passam.',
-    durationMinutes: 20,
+    durationMinutes: 60,
     status: 'pending',
     whatToDo: 'Faça um post por vez, em dias diferentes (uns 20 minutos cada): 1) um erro comum que essas pessoas cometem, 2) uma ideia errada que muita gente acredita, 3) uma solução simples. Use as palavras exatas das conversas.',
     howToKnowItIsGood: [
-      'Publicou o post 1 (um erro comum)',
-      'Publicou o post 2 (uma ideia errada)',
-      'Publicou o post 3 (uma solução simples)'
+      'Publicou os 3 posts, um por vez',
+      'Usou as palavras exatas das conversas'
     ],
     signals: [
       'Alguém respondeu, salvou ou encaminhou'
     ],
     ifNoSignal: 'No começo é normal ninguém responder. Mande o post para 1 ou 2 pessoas da sua lista e pergunte o que acharam.',
+    parts: [
+      { title: 'Post 1: um erro comum', minutes: 20 },
+      { title: 'Post 2: uma ideia errada', minutes: 20 },
+      { title: 'Post 3: uma solução simples', minutes: 20 }
+    ],
     resources: [
       { title: '5 Modelos de Carrossel que Geram Directs', type: 'Templates' }
     ],
@@ -637,6 +651,10 @@ const ROADMAP: TaskItem[] = [
       'Alguém perguntou como pagar, pagou, deu um sinal ou marcou uma data'
     ],
     ifNoSignal: 'Se ninguém perguntou como pagar, mude uma coisa só (o preço, a promessa ou o formato) e convide mais 5.',
+    parts: [
+      { title: 'Convidar as 5 primeiras pessoas', minutes: 15 },
+      { title: 'Convidar mais 5', minutes: 15 }
+    ],
     resources: [
       { title: 'Fluxo de conversa consultiva no 1 a 1', type: 'Roteiro' }
     ],
@@ -679,6 +697,11 @@ const ROADMAP: TaskItem[] = [
       'Pelo menos 1 venda'
     ],
     ifNoSignal: 'Sem venda ainda? Retome quem viu a proposta (a maioria das vendas sai da segunda mensagem) e confira se o preço e o jeito de pagar estão claros.',
+    parts: [
+      { title: 'Avisar que abriu as vendas', minutes: 15 },
+      { title: 'Acompanhar quem perguntou', minutes: 15 },
+      { title: 'Pedir depoimento a quem comprou', minutes: 15 }
+    ],
     resources: [
       { title: 'Script de coleta de depoimento espontâneo', type: 'Guia' }
     ],
@@ -802,6 +825,11 @@ const ROADMAP: TaskItem[] = [
     signals: [
       'A pessoa autorizou o depoimento ou indicou alguém'
     ],
+    parts: [
+      { title: 'Combinar a data e preparar', minutes: 20 },
+      { title: 'Fazer a entrega', minutes: 20 },
+      { title: 'Perguntar o que ajudou e pedir a autorização do depoimento', minutes: 20 }
+    ],
     resources: [],
     anchorIllustration: {
       title: 'O Primeiro Presente',
@@ -854,6 +882,10 @@ const ROADMAP: TaskItem[] = [
       'Alguém que não te conhece entende o que é e quanto custa',
       'Tem um jeito claro de pagar',
       'Diz como devolver em até 7 dias e onde tirar dúvidas'
+    ],
+    parts: [
+      { title: 'Escrever o problema e o que você entrega', minutes: 20 },
+      { title: 'Preço, como pagar, devolução e contato', minutes: 20 }
     ],
     resources: [],
     anchorIllustration: {
@@ -908,6 +940,10 @@ const ROADMAP: TaskItem[] = [
     howToKnowItIsGood: [
       'Outra pessoa conseguiria seguir o seu passo a passo',
       'A entrega seguinte levou menos tempo'
+    ],
+    parts: [
+      { title: 'Escrever o passo a passo da entrega', minutes: 15 },
+      { title: 'Criar os modelos do que se repete', minutes: 15 }
     ],
     resources: [],
     anchorIllustration: {
@@ -987,6 +1023,10 @@ const ROADMAP: TaskItem[] = [
     howToKnowItIsGood: [
       'Depoimentos guardados, só os autorizados',
       'Você sabe os seus números destes 90 dias'
+    ],
+    parts: [
+      { title: 'Juntar os depoimentos autorizados', minutes: 15 },
+      { title: 'Anotar os números do funil', minutes: 15 }
     ],
     resources: [],
     anchorIllustration: {

@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../../utils/soundEffects';
+import { PaceChooser } from '../components/PaceChooser';
 import { useApp } from '../state/AppStore';
 import { QuoteByTheme } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
@@ -113,6 +114,15 @@ export const CommitmentScreen: React.FC = () => {
             Não é plano pra desistir. É o que você já combina agora pra fazer quando a dificuldade aparecer, e isso ajuda
             muito a não parar no meio do caminho.
           </p>
+        </div>
+        </Reveal>
+
+        {/* Ritmo (etapa 53): o tamanho da semana cabe na vida da pessoa */}
+        <Reveal i={3}>
+        <div className="p-3.5 rounded-xl bg-surface/90 border border-line text-left shadow-2xs mb-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-primary block mb-1.5">Seu ritmo</span>
+          <PaceChooser />
+          <p className="text-xs text-muted mt-1.5 leading-snug">As rotinas se ajustam sozinhas. Dá pra trocar quando quiser, em Você.</p>
         </div>
         </Reveal>
 

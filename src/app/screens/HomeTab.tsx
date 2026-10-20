@@ -8,6 +8,7 @@ import {
   Bookmark,
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
+import { durationLabel } from '../../domain/tasks';
 import { useApp } from '../state/AppStore';
 import { estimateSeconds, formatDuration, VOICE_ENABLED } from '../../utils/voice';
 import { Constellation } from '../../components/brand/Constellation';
@@ -158,7 +159,7 @@ export const HomeTab: React.FC = () => {
               </span>
             </div>
             <span className="text-[13px] text-muted">
-              ⏱ {nextStepTask.durationMinutes} min
+              ⏱ {durationLabel(nextStepTask)}
             </span>
           </div>
 
@@ -168,8 +169,18 @@ export const HomeTab: React.FC = () => {
           <p className="text-sm text-muted mt-1 leading-relaxed">
             {nextStepTask.description}
           </p>
-          {nextStepTask.when && (
+          {nextStepTask.when ? (
             <p className="text-[13px] text-primary font-semibold mt-1.5">⏰ Combinado: {nextStepTask.when}</p>
+          ) : (
+            <button
+              onClick={() => {
+                actions.openTask(nextStepTask.id);
+                actions.go('task_detail');
+              }}
+              className="mt-1.5 text-[13px] text-primary font-semibold underline underline-offset-2 cursor-pointer"
+            >
+              ⏰ Combinar quando e onde
+            </button>
           )}
           {nextStepTask.week && <WeekHint week={nextStepTask.week} current={currentWeek} />}
 

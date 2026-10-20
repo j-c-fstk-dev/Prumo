@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROUTINES, activeRoutines, currentGoal, routineProgress, toggleRoutineDay } from './routines';
+import { ROUTINES, activeRoutines, currentGoal, routineProgress, toggleRoutineDay, weeklyMinutes } from './routines';
 import { suggestedWeek, weekStatus } from './pacing';
 
 const conversa = ROUTINES.find((r) => r.id === 'r_conversa')!;
@@ -10,8 +10,20 @@ describe('rotinas', () => {
     expect(ids(1)).toEqual(['r_revisao', 'r_produto']);
     expect(ids(2)).toContain('r_conversa');
     expect(ids(2)).not.toContain('r_retomar');
-    expect(ids(3)).toEqual(ROUTINES.filter((r) => r.chapterId <= 3).map((r) => r.id));
-    expect(activeRoutines(1, true)).toHaveLength(ROUTINES.length);
+    // "15 min no que vai oferecer" acaba no capítulo 3: o produto já existe
+    expect(ids(3)).toEqual(ROUTINES.filter((r) => r.chapterId <= 3 && r.id !== 'r_produto').map((r) => r.id));
+    expect(activeRoutines(1, true)).toHaveLength(ROUTINES.length - 1);
+  });
+
+  it('ritmo leve ou firme: a frequência se ajusta e "Mostrar algo útil" cai para 1× no capítulo 3', () => {
+    const per = (ch: number, pace: 'leve' | 'firme', id: string) => activeRoutines(ch, false, pace).find((r) => r.id === id)!.perWeek;
+    expect(per(2, 'firme', 'r_conversa')).toBe(5);
+    expect(per(2, 'leve', 'r_conversa')).toBe(3);
+    expect(per(2, 'firme', 'r_conteudo')).toBe(2);
+    expect(per(3, 'firme', 'r_conteudo')).toBe(1);
+    // Leve fica perto de 1h30 por semana; firme, perto de 3h no pico
+    for (const ch of [1, 2, 3]) expect(weeklyMinutes(activeRoutines(ch, false, 'leve'))).toBeLessThanOrEqual(105);
+    expect(weeklyMinutes(activeRoutines(2, false, 'firme'))).toBeLessThanOrEqual(180);
   });
 
   it('conta a semana de segunda a domingo e só uma vez por dia', () => {

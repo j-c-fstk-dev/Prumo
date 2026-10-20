@@ -13,8 +13,14 @@ export interface Routine {
   description: string;
   /** Passa a valer a partir deste capítulo (e continua nos seguintes) */
   chapterId: number;
-  /** Quantas vezes por semana (1 a 7) */
+  /** Quantas vezes por semana (1 a 7) no ritmo firme */
   perWeek: number;
+  /** No ritmo leve (etapa 53) */
+  perWeekLeve: number;
+  /** Deixa de valer depois deste capítulo (ex.: o produto já existe no capítulo 3) */
+  untilChapter?: number;
+  /** A partir deste capítulo, a frequência cai (firme e leve) */
+  later?: { fromChapter: number; perWeek: number; perWeekLeve: number };
   minutes: number;
   /** Atalho ao tocar: a lista de pessoas ou a revisão da semana */
   link?: 'pessoas' | 'revisao';
@@ -28,6 +34,7 @@ export const ROUTINES: Routine[] = [
     description: 'Cinco minutos para olhar a semana: o que funcionou, o que mudar e a meta da próxima.',
     chapterId: 1,
     perWeek: 1,
+    perWeekLeve: 1,
     minutes: 5,
     link: 'revisao',
   },
@@ -38,6 +45,8 @@ export const ROUTINES: Routine[] = [
     description: 'Avance um pouco no esboço, no roteiro ou no exemplo. Pouco e sempre rende mais do que muito de vez em quando.',
     chapterId: 1,
     perWeek: 3,
+    perWeekLeve: 2,
+    untilChapter: 2,
     minutes: 15,
   },
   {
@@ -47,6 +56,7 @@ export const ROUTINES: Routine[] = [
     description: 'Mande a mensagem pronta para alguém da sua lista ou responda alguém num grupo do seu tema. Uma conversa por vez.',
     chapterId: 2,
     perWeek: 5,
+    perWeekLeve: 3,
     minutes: 15,
     link: 'pessoas',
   },
@@ -57,6 +67,8 @@ export const ROUTINES: Routine[] = [
     description: 'Um post, um status ou uma resposta num grupo sobre o problema que você resolve. Sem vender: só ajudar.',
     chapterId: 2,
     perWeek: 2,
+    perWeekLeve: 1,
+    later: { fromChapter: 3, perWeek: 1, perWeekLeve: 1 },
     minutes: 20,
   },
   {
@@ -66,6 +78,7 @@ export const ROUTINES: Routine[] = [
     description: 'Olhe o "Pra hoje" no Caderno e retome uma conversa parada. A maioria das vendas sai da segunda mensagem.',
     chapterId: 3,
     perWeek: 3,
+    perWeekLeve: 2,
     minutes: 10,
     link: 'pessoas',
   },
@@ -76,14 +89,39 @@ export const ROUTINES: Routine[] = [
     description: 'Pergunte como está sendo, ajude no que travou e, se fizer sentido, peça um depoimento.',
     chapterId: 3,
     perWeek: 1,
+    perWeekLeve: 1,
     minutes: 10,
     link: 'pessoas',
   },
 ];
 
-/** Rotinas valendo agora: as do capítulo atual e as dos anteriores (ou todas, depois do roteiro) */
-export function activeRoutines(currentChapter: number, all = false): Routine[] {
-  return ROUTINES.filter((r) => all || r.chapterId <= currentChapter);
+/**
+ * Ritmo (etapa 53): leve (~1h30 por semana de rotinas) ou firme (~3h, com os passos). Quem tem
+ * emprego e família escolhe leve; as frequências se ajustam sozinhas. "Falar com 1 pessoa nova"
+ * continua a principal nos dois: é ela que gera vendas.
+ */
+export type Pace = 'leve' | 'firme';
+
+export const PACES: { id: Pace; label: string; hint: string }[] = [
+  { id: 'leve', label: 'Leve', hint: 'Cerca de 1h30 por semana. Para quem tem emprego, família ou pouco tempo.' },
+  { id: 'firme', label: 'Firme', hint: 'Cerca de 3h por semana. Para quem pode se dedicar um pouco mais agora.' },
+];
+
+/**
+ * Rotinas valendo agora: as do capítulo atual e as dos anteriores (ou todas, depois do roteiro),
+ * com a frequência do ritmo escolhido e da fase.
+ */
+export function activeRoutines(currentChapter: number, all = false, pace: Pace = 'firme'): Routine[] {
+  const chapter = all ? Number.POSITIVE_INFINITY : currentChapter;
+  return ROUTINES.filter((r) => r.chapterId <= chapter && (r.untilChapter === undefined || chapter <= r.untilChapter)).map((r) => {
+    const phase = r.later && chapter >= r.later.fromChapter ? r.later : r;
+    return { ...r, perWeek: pace === 'leve' ? phase.perWeekLeve : phase.perWeek };
+  });
+}
+
+/** Minutos de rotina por semana (para mostrar a carga ao escolher o ritmo) */
+export function weeklyMinutes(routines: Routine[]): number {
+  return routines.reduce((n, r) => n + r.perWeek * r.minutes, 0);
 }
 
 export interface RoutineProgress {

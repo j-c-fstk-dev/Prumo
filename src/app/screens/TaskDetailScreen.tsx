@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   CheckCircle2,
+  Circle,
   Clock,
   ArrowLeft,
   MessageSquare,
@@ -20,6 +21,7 @@ import { QuoteByTheme } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
 import type { TemaCitacao } from '../../data/citacoes';
 import { funnel } from '../../domain/people';
+import { SKIP_REASONS } from '../../domain/metrics';
 
 /** Citação para as tarefas em que a trava mais aparece */
 const QUOTE_BY_TASK: Record<string, TemaCitacao> = { t2: 'perfeccionismo', t6: 'medo' };
@@ -48,7 +50,23 @@ export const TaskDetailScreen: React.FC = () => {
   const [renaming, setRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(selectedTask.title);
   const [showTranscript, setShowTranscript] = useState(false);
+  const [skipping, setSkipping] = useState(false);
+  const [skipReason, setSkipReason] = useState('');
   const transcriptOpen = showTranscript || (voiceUnavailable && activeAudioTaskId === selectedTask.id);
+  // Quando e onde (etapa 53): sem combinado, a pergunta vem logo no começo do passo. Decidido ao abrir,
+  // para o cartão não pular de lugar enquanto a pessoa escolhe.
+  const [askWhenFirst] = useState(!selectedTask.when && selectedTask.status !== 'completed');
+  const whenCard = (
+    <div className="p-3.5 rounded-xl bg-surface border border-primary/30">
+      <strong className="text-sm text-ink block mb-0.5">{askWhenFirst ? 'Antes de começar: quando e onde você vai fazer?' : 'Quando vou fazer:'}</strong>
+      {askWhenFirst && <p className="text-[13px] text-muted mb-2">Combinar dia, hora e lugar aumenta muito a chance de sair do papel.</p>}
+      <WhenPicker
+        value={selectedTask.when}
+        onChange={(when) => actions.setPlanTaskWhen(selectedTask.id, when)}
+        timeThieves={reflections.q3_hours}
+      />
+    </div>
+  );
 
   return (
     <div className="flex-1 flex flex-col justify-between p-5 select-none overflow-y-auto animate-slide-up">
@@ -115,9 +133,15 @@ export const TaskDetailScreen: React.FC = () => {
           )}
           <div className="flex items-center gap-2 mt-0.5 text-sm text-muted">
             <Clock className="w-3.5 h-3.5" />
-            <span>Duração recomendada: {selectedTask.durationMinutes} min</span>
+            <span>
+              {selectedTask.parts
+                ? `${selectedTask.parts.length} partes de até ${Math.max(...selectedTask.parts.map((p) => p.minutes))} min`
+                : `Duração recomendada: ${selectedTask.durationMinutes} min`}
+            </span>
           </div>
         </div>
+
+        {askWhenFirst && whenCard}
 
         {/* Sem voz: as palavras de encorajamento como texto */}
         {selectedTask.audioCoach && !VOICE_ENABLED && (
@@ -206,6 +230,39 @@ export const TaskDetailScreen: React.FC = () => {
         </div>
         </Reveal>
 
+        {/* Passo longo em partes de 15 a 20 minutos (etapa 53): dá pra fazer uma por dia */}
+        {selectedTask.parts && (
+          <Reveal i={2}>
+            <section aria-label="Partes do passo" className="p-3.5 rounded-xl bg-surface border border-line">
+              <strong className="text-sm text-ink block">Em {selectedTask.parts.length} partes</strong>
+              <span className="text-xs text-muted block mb-2">Uma de cada vez, até em dias diferentes. Cada parte conta no seu dia.</span>
+              <ul className="space-y-1.5">
+                {selectedTask.parts.map((part, i) => {
+                  const done = selectedTask.partsDone?.includes(i) ?? false;
+                  return (
+                    <li key={i}>
+                      <button
+                        type="button"
+                        aria-pressed={done}
+                        onClick={() => actions.togglePart(selectedTask.id, i)}
+                        className="w-full flex items-start gap-2 text-left text-sm cursor-pointer"
+                      >
+                        {done ? <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" /> : <Circle className="w-4 h-4 text-muted shrink-0 mt-0.5" />}
+                        <span className={done ? 'text-muted line-through' : 'text-ink'}>
+                          {part.title} <span className="text-xs text-muted no-underline">· {part.minutes} min</span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              {selectedTask.status !== 'completed' && selectedTask.partsDone?.length === selectedTask.parts.length && (
+                <p className="text-[13px] text-success font-semibold mt-2">Todas as partes feitas! Agora é só marcar o passo como feito.</p>
+              )}
+            </section>
+          </Reveal>
+        )}
+
         <Reveal i={2}>
         {/* Duas camadas (etapa 52): o que depende de você marca o passo; o sinal do mundo é informação */}
         <div className="p-3.5 rounded-xl bg-primary-soft/60 border border-primary/20 space-y-2.5">
@@ -241,17 +298,12 @@ export const TaskDetailScreen: React.FC = () => {
         </div>
         </Reveal>
 
-        <Reveal i={3}>
-        {/* Intenção de implementação: o recurso com mais evidência (docs/pesquisa/02) */}
-        <div className="p-3.5 rounded-xl bg-surface border border-primary/30">
-          <strong className="text-sm text-ink block mb-2">Quando vou fazer:</strong>
-          <WhenPicker
-            value={selectedTask.when}
-            onChange={(when) => actions.setPlanTaskWhen(selectedTask.id, when)}
-            timeThieves={reflections.q3_hours}
-          />
-        </div>
-        </Reveal>
+        {!askWhenFirst && (
+          <Reveal i={3}>
+            {/* Intenção de implementação: o recurso com mais evidência (docs/pesquisa/02) */}
+            {whenCard}
+          </Reveal>
+        )}
 
         <Reveal i={4}>
           {/* Caderno: anotações desta tarefa (aparecem também na aba Caderno) */}
@@ -301,6 +353,46 @@ export const TaskDetailScreen: React.FC = () => {
           <CheckCircle2 className="w-4 h-4" />
           <span>{selectedTask.status === 'completed' ? 'Marcar como pendente' : 'Marcar como feita'}</span>
         </button>
+        {selectedTask.skipped && <p className="text-[13px] text-muted text-center">Você pulou este passo. Dá pra voltar a ele quando quiser.</p>}
+
+        {/* Pular com motivo (etapa 53): mostra quais passos não fazem sentido */}
+        {selectedTask.status !== 'completed' &&
+          (skipping ? (
+            <div className="p-3 rounded-xl bg-surface border border-line space-y-2" role="group" aria-label="Pular este passo">
+              <span className="text-sm text-ink block">Por que pular? (se quiser contar)</span>
+              <div className="flex flex-wrap gap-1.5">
+                {SKIP_REASONS.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    aria-pressed={skipReason === r}
+                    onClick={() => setSkipReason(skipReason === r ? '' : r)}
+                    className={`px-2.5 py-1 rounded-full text-[13px] border cursor-pointer ${skipReason === r ? 'bg-primary border-primary text-on-primary' : 'border-line text-muted'}`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    actions.skipTask(selectedTask.id, skipReason);
+                    actions.go('home');
+                  }}
+                  className="flex-1 min-h-10 rounded-xl border border-line text-sm font-semibold text-ink cursor-pointer"
+                >
+                  Pular
+                </button>
+                <button onClick={() => setSkipping(false)} className="px-3 min-h-10 text-sm text-muted cursor-pointer">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setSkipping(true)} className="w-full min-h-9 text-[13px] text-muted underline underline-offset-2 cursor-pointer">
+              Pular este passo
+            </button>
+          ))}
 
         <button
           onClick={() => {

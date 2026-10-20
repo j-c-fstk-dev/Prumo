@@ -7,6 +7,7 @@ import {
   Bookmark,
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
+import { durationLabel } from '../../domain/tasks';
 import { useApp } from '../state/AppStore';
 import { PersonalTasks } from '../components/PersonalTasks';
 import { RoutinesCard } from '../components/Routines';
@@ -135,14 +136,14 @@ const TaskRow: React.FC<{ task: TaskItem }> = ({ task }) => {
               <span className="text-sm">{task.anchorIllustration.symbol}</span>
               <h4 className={`text-sm font-bold truncate ${isCompleted ? 'line-through text-muted' : 'text-ink'}`}>{task.title}</h4>
             </div>
-            <span className="text-xs bg-primary-soft text-primary px-1.5 py-0.2 rounded font-medium shrink-0">{task.anchorIllustration.badge}</span>
+            <span className="text-xs bg-primary-soft text-primary px-1.5 py-0.2 rounded font-medium shrink-0">{task.skipped ? 'pulado' : task.anchorIllustration.badge}</span>
           </div>
 
           <p className="text-[13px] text-muted line-clamp-1 mt-0.5">{task.description}</p>
 
           <div className="flex items-center justify-between mt-2 text-xs text-muted">
             <span>
-              ⏱ {task.durationMinutes} min · {task.chapterTitle.split(':')[0]}
+              ⏱ {durationLabel(task)} · {task.chapterTitle.split(':')[0]}
             </span>
             {task.audioCoach && (
               <span className="text-primary font-semibold flex items-center gap-1">
