@@ -259,3 +259,27 @@ test.describe('com animações ligadas', () => {
     await expect(dialog.getByRole('link', { name: 'Enviar no WhatsApp' })).toBeVisible();
   });
 });
+
+test('voltar do WhatsApp com a página recarregada: entra sem abertura e ainda pergunta se mandou', async ({ page }) => {
+  await page.context().route('https://wa.me/**', (r) => r.fulfill({ body: 'ok' }));
+  await page.goto('/app/');
+  await seedState(page, { people: [{ id: 'p1', name: 'Ana Souza', phone: '11987654321', stage: 'contato', stageHistory: [], createdAt: 1, updatedAt: 1 }] });
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await page.getByRole('tab', { name: /Pessoas/ }).click();
+  await page.getByRole('button', { name: 'Ana Souza, Novo' }).click();
+  await page.getByRole('button', { name: 'Mensagem pronta' }).click();
+  const popup = page.waitForEvent('popup');
+  await page.getByRole('link', { name: 'Enviar no WhatsApp' }).click();
+  await (await popup).close();
+
+  // O Android fechou a aba para liberar memória: a página recarrega
+  await page.reload();
+  await expect(page.locator('[data-splash]')).toHaveCount(0);
+  const prompt = page.getByRole('status', { name: 'Mandou a mensagem?' });
+  await expect(prompt).toContainText('Mandou a mensagem para Ana?');
+  await prompt.getByRole('button', { name: 'Sim, marcar' }).click();
+  await expect(prompt).toHaveCount(0);
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await page.getByRole('tab', { name: /Pessoas/ }).click();
+  await expect(page.getByRole('button', { name: 'Ana Souza, Conversou' })).toBeVisible();
+});

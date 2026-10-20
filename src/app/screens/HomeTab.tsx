@@ -17,6 +17,7 @@ import { DailyInspiration } from '../components/QuoteCard';
 import { Reveal } from '../components/Reveal';
 import { JourneyComplete } from '../components/JourneyComplete';
 import { CycleCard } from '../components/CycleCard';
+import { SentPrompt } from '../components/SentPrompt';
 import { CYCLE_LABEL } from '../../domain/cycles';
 import { RoutinesCard } from '../components/Routines';
 import { WeekHint } from '../components/WeekHint';
@@ -25,7 +26,7 @@ import { lembreteDoDia } from '../../data/encorajamento';
 import { JOURNEY_DAYS, journeyDayLabel } from '../../domain/journey';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, cycleInfo, canChooseCycle, guideSeenAt, guideOpen, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, cycleInfo, canChooseCycle, guideSeenAt, guideOpen, pendingSentPerson, actions } = useApp();
   // Primeira visita à Início: o guia do app abre sozinho, depois que a tela termina de surgir (etapa 47)
   useEffect(() => {
     if (guideSeenAt || guideOpen) return;
@@ -94,6 +95,13 @@ export const HomeTab: React.FC = () => {
                 Escolher o próximo ciclo
               </button>
             )}
+          </Reveal>
+        )}
+
+        {/* Voltou do WhatsApp (mesmo que a página tenha recarregado): "Mandou a mensagem?" (etapa 49) */}
+        {pendingSentPerson && (
+          <Reveal i={1}>
+            <SentPrompt person={pendingSentPerson} onHome />
           </Reveal>
         )}
 

@@ -1,0 +1,9 @@
+# Saídas do build (o .apk sai pelo workflow, nas Releases do GitHub)
+.gradle/
+build/
+app/build/
+local.properties
+*.keystore
+*.jks
+*.apk
+*.aab

@@ -50,4 +50,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4'
-          command: deploy
+          # Impressão digital do .apk (variável do repositório, etapa 50); sem ela o app abre com barra de endereço
+          command: deploy ${{ vars.ANDROID_CERT_SHA256 != '' && format('--var ANDROID_CERT_SHA256:{0}', vars.ANDROID_CERT_SHA256) || '' }}

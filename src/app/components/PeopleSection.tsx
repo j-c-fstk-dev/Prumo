@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTypewriter } from './useTypewriter';
+import { SentPrompt } from './SentPrompt';
 import { Mail, MessageCircle, Pencil, Phone, Sparkles, Trash2, UserPlus, Users } from 'lucide-react';
 import { copyText } from '../../utils/share';
 import { AddPhotoButton, LinkedText, PhotoStrip } from './Photos';
@@ -273,13 +274,11 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string; ope
   open,
   onToggle,
 }) => {
-  const { actions } = useApp();
+  const { pendingSentPerson, actions } = useApp();
   const [editing, setEditing] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [msg, setMsg] = useState('');
   const [askCoach, setAskCoach] = useState(false);
-  // Depois de abrir o WhatsApp ou o e-mail, pergunta se mandou (para a etapa andar sozinha)
-  const [sent, setSent] = useState(false);
   const stage = STAGES.find((s) => s.id === person.stage)!;
   const first = person.name.trim().split(/\s+/)[0] || person.name;
   const late = person.nextDate && person.nextDate < today && person.stage !== 'agora_nao';
@@ -307,7 +306,7 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string; ope
   };
   const subject = messageFor(person, ctx).subject;
   const tel = phoneLink(person.phone);
-  const markSent = () => setSent(true);
+  const markSent = () => actions.messageOpened(person.id);
   const addContact = () => {
     setAskCoach(false);
     setEditing(true);
@@ -423,38 +422,8 @@ const PersonCard: React.FC<{ person: Person; ctx: KitContext; today: string; ope
         </div>
       )}
 
-      {/* Depois de enviar: a etapa anda com um toque */}
-      {sent && (
-        <div className="p-3 rounded-xl bg-primary-soft border border-primary/30 text-sm text-ink space-y-2" role="status">
-          {person.stage === 'contato' ? (
-            <>
-              <p>Mandou a mensagem? Quer marcar {first} como <strong>💬 Conversou</strong>?</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    soundEffects.playSelectOption();
-                    actions.updatePerson(person.id, { stage: 'conversou' });
-                    setSent(false);
-                  }}
-                  className="min-h-9 px-3 rounded-lg bg-primary text-on-primary text-[13px] font-semibold cursor-pointer"
-                >
-                  Sim, marcar
-                </button>
-                <button onClick={() => setSent(false)} className="min-h-9 px-3 rounded-lg border border-line text-[13px] text-muted cursor-pointer">
-                  Ainda não
-                </button>
-              </div>
-            </>
-          ) : (
-            <p className="flex items-center justify-between gap-2">
-              <span>Mandou? Quando {first} responder, mude a etapa ali em cima.</span>
-              <button onClick={() => setSent(false)} className="min-h-9 px-2 text-[13px] text-muted cursor-pointer">
-                Ok
-              </button>
-            </p>
-          )}
-        </div>
-      )}
+      {/* Depois de enviar: a etapa anda com um toque (fica salvo, mesmo se a página recarregar) */}
+      {pendingSentPerson?.id === person.id && <SentPrompt person={person} />}
 
       {/* Gerenciar: discreto, no fim da ficha */}
       <div className="flex flex-wrap items-center gap-1 pt-1.5 border-t border-line -mx-0.5">

@@ -1,9 +1,10 @@
 import React from 'react';
-import { ArrowRight, Check, Lock, X } from 'lucide-react';
+import { ArrowRight, Check, Download, Lock, X } from 'lucide-react';
 import { Seeker } from '../components/brand/Seeker';
 import { Starfield } from '../components/brand/CompassSplash';
 import { CompassMark } from '../components/brand/CompassMark';
 import { track } from '../utils/telemetry';
+import { APK_URL, isApk, platform } from '../utils/install';
 import { SiteFooter } from './SiteFooter';
 
 /**
@@ -23,6 +24,19 @@ const OpenApp: React.FC<{ where: string; className?: string; children?: React.Re
     {children ?? 'Abrir o Prumo'} <ArrowRight className="w-4 h-4" aria-hidden="true" />
   </a>
 );
+
+/** Baixar o app Android: some no iPhone (não instala .apk) e dentro do próprio app */
+const DownloadApk: React.FC<{ where: string }> = ({ where }) =>
+  platform() === 'ios' || isApk() ? null : (
+    <a
+      href={APK_URL}
+      onClick={() => track('apresentacao_baixar_apk', { onde: where })}
+      className="inline-flex items-center justify-center gap-2 min-h-12 px-5 rounded-xl font-semibold text-base border transition-transform active:scale-[0.98]"
+      style={{ borderColor: 'rgba(227,184,96,.55)', color: 'var(--gold)' }}
+    >
+      <Download className="w-4 h-4" aria-hidden="true" /> Baixar para Android
+    </a>
+  );
 
 /** Print real do app numa moldura simples de celular */
 const Phone: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => (
@@ -119,12 +133,13 @@ export const Landing: React.FC = () => (
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <OpenApp where="abertura" />
+            <DownloadApk where="abertura" />
             <a href="#como-funciona" className="min-h-12 px-4 inline-flex items-center text-sm font-semibold" style={{ color: 'var(--night-text)' }}>
               Como funciona
             </a>
           </div>
           <p className="mt-4 text-sm" style={{ color: 'var(--night-muted)' }}>
-            Sem cadastro. Abre no navegador do celular.
+            Sem cadastro. Abre no navegador do celular ou como app no Android (.apk).
           </p>
         </div>
         <div className="flex justify-center sm:justify-end" aria-hidden="true">
@@ -238,9 +253,10 @@ export const Landing: React.FC = () => (
         <CompassMark size={56} tone="night" />
         <h2 className="font-display text-3xl font-bold tracking-tight">Bora dar o primeiro passo?</h2>
         <p style={{ color: 'var(--night-muted)' }}>São uns 15 minutos. Você sai sabendo o que testar primeiro.</p>
-        <OpenApp where="final" className="mt-2">
-          Começar agora
-        </OpenApp>
+        <div className="mt-2 flex flex-wrap justify-center gap-3">
+          <OpenApp where="final">Começar agora</OpenApp>
+          <DownloadApk where="final" />
+        </div>
       </div>
     </section>
 

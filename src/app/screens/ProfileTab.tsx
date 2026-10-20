@@ -151,7 +151,7 @@ export const ProfileTab: React.FC = () => {
         {/* Sobre (etapa 39): links da apresentação, das políticas e do código */}
         <div className="pt-2 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted block px-1">Sobre o Prumo</span>
-          {/* Guia do app e o que é prumo (etapas 45 e 47) */}
+          {/* Guia do app e o que é o Prumo (etapas 47 e 49) */}
           <div className="rounded-xl bg-surface border border-line divide-y divide-line text-sm">
             <button onClick={actions.startGuide} className="w-full p-3 flex items-center justify-between hover:bg-surface-2 cursor-pointer text-left">
               <span>🧭 Guia do app</span>
@@ -159,7 +159,7 @@ export const ProfileTab: React.FC = () => {
             </button>
             <details className="group">
               <summary className="p-3 flex items-center justify-between cursor-pointer list-none">
-                <span>O que é prumo?</span>
+                <span>O que é o Prumo?</span>
                 <ChevronRight className="w-4 h-4 text-muted transition-transform group-open:rotate-90" />
               </summary>
               <p className="px-3 pb-3 text-[13px] text-muted leading-relaxed">

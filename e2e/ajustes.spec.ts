@@ -47,14 +47,14 @@ test('âncora aparece inteira e o botão de assumir explica como segurar', async
   expect(cut).toBe(false);
 });
 
-test('apresentação inicial explica o que é prumo, a constelação e a jornada', async ({ page }) => {
+test('apresentação inicial explica o que é o Prumo, a constelação e a jornada', async ({ page }) => {
   await openApp(page);
   await page.getByRole('button', { name: 'Começar diagnóstico' }).click();
   await page.getByPlaceholder('Seu nome').fill('Jo');
   await page.getByRole('button', { name: 'Continuar' }).click();
 
-  await expect(page.getByText('Mas afinal, o que é prumo?')).toBeVisible();
-  await expect(page.getByText('um fio com um peso na ponta')).toBeVisible();
+  await expect(page.getByText('O que é o Prumo?')).toBeVisible();
+  await expect(page.getByText('encontrar o seu norte no digital')).toBeVisible();
   await page.getByRole('button', { name: 'Próximo' }).click();
   await expect(page.getByText('Cada passo acende uma estrela')).toBeVisible();
   await page.getByRole('button', { name: 'Próximo' }).click();
@@ -140,6 +140,22 @@ test('app instalável: manifesto e ícones no ar, convite no início e cartão d
   await page.getByRole('button', { name: 'Você', exact: true }).click();
   await expect(page.getByRole('heading', { name: /Proteja seus dados/ })).toBeVisible();
   await expect(page.getByText('3. Guarde uma cópia (nenhuma ainda)')).toBeVisible();
+});
+
+test('app Android (.apk): a página oferece o download e, dentro do app, o convite de instalar não aparece', async ({ page }) => {
+  await page.goto('/');
+  const apk = page.getByRole('link', { name: 'Baixar para Android' }).first();
+  await expect(apk).toHaveAttribute('href', /releases\/latest\/download\/Prumo\.apk$/);
+
+  // O app Android abre /app/?origem=apk; depois disso o app lembra, mesmo sem o ?origem
+  await page.goto('/app/?origem=apk');
+  await passSplash(page);
+  await onboard(page);
+  await commitAndSeal(page);
+  await expect(page.getByText(/^Olá, /)).toBeVisible();
+  await expect(page.getByText('Instale o Prumo na tela de início')).toHaveCount(0);
+  await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Baixar para Android' })).toHaveCount(0);
 });
 
 test('apresentação em /, app em /app/, políticas no rodapé e no "Sobre" do app', async ({ page }) => {

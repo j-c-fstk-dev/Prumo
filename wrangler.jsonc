@@ -8,7 +8,7 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     // A API passa pelo Worker; o resto é servido direto como arquivo estático
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*", "/.well-known/assetlinks.json"]
   },
   // Domínio próprio: a Cloudflare cria o DNS e o certificado (o endereço *.workers.dev continua ativo)
   "routes": [{ "pattern": "prumo.jardimdofazer.com.br", "custom_domain": true }],
@@ -17,6 +17,7 @@
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["UsageLimiter"] }],
   // Logs no painel da Cloudflare (inclui as denúncias de resposta do coach)
   "observability": { "enabled": true }
+  // ANDROID_CERT_SHA256 (app Android, etapa 50) vem da variável do repositório, no deploy.yml
   // Variáveis da IA: configure como SECRETS, nunca aqui
   // (LLM_PROVIDER, LLM_API_KEY, LLM_MODEL, LLM_BASE_URL — ver .env.example)
 }

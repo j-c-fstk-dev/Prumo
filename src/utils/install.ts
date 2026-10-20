@@ -42,10 +42,33 @@ export async function promptInstall(): Promise<boolean> {
   return outcome === 'accepted';
 }
 
-/** Aberto como app instalado (Tela de Início), não dentro do navegador */
+/** O .apk mais recente, publicado pelo workflow "App Android" (etapa 50) */
+export const APK_URL = 'https://github.com/j-c-fstk-dev/Prumo/releases/latest/download/Prumo.apk';
+
+const APK_KEY = 'prumo_apk';
+
+/**
+ * Aberto pelo app Android (.apk, etapa 50). O app abre /app/?origem=apk e o Android manda o
+ * referrer android-app://; guardamos para as próximas páginas, que não trazem mais nenhum dos dois.
+ */
+export function isApk(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (localStorage.getItem(APK_KEY) === '1') return true;
+    const fromApk =
+      new URLSearchParams(window.location.search).get('origem') === 'apk' || document.referrer.startsWith('android-app://br.com.jardimdofazer.prumo');
+    if (fromApk) localStorage.setItem(APK_KEY, '1');
+    return fromApk;
+  } catch {
+    return false;
+  }
+}
+
+/** Aberto como app instalado (Tela de Início ou o .apk), não dentro do navegador */
 export function isStandalone(): boolean {
   if (typeof window === 'undefined') return false;
   return (
+    isApk() ||
     window.matchMedia?.('(display-mode: standalone)').matches === true ||
     (navigator as unknown as { standalone?: boolean }).standalone === true
   );

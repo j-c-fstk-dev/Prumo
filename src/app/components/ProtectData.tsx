@@ -3,7 +3,7 @@ import { Download, ShieldCheck, Smartphone } from 'lucide-react';
 import { useApp } from '../state/AppStore';
 import { useBackupExport } from './useBackup';
 import { RestoreBackup } from './RestoreBackup';
-import { canPromptInstall, isPersisted, isStandalone, onInstallChange, platform, promptInstall } from '../../utils/install';
+import { APK_URL, canPromptInstall, isPersisted, isStandalone, onInstallChange, platform, promptInstall } from '../../utils/install';
 
 function useInstallState() {
   const [, force] = useState(0);
@@ -42,6 +42,13 @@ const InstallSteps: React.FC<{ os: ReturnType<typeof platform>; canPrompt: boole
       <li>No <strong>Chrome</strong>, toque no menu <strong>⋮</strong> (canto de cima).</li>
       <li>Escolha <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>.</li>
       <li>Daqui pra frente, abra pelo ícone da bússola.</li>
+      <li className="list-none -ml-5 pt-1 text-muted">
+        Não apareceu a opção? Alguns celulares (como os Samsung) bloqueiam.{' '}
+        <a href={APK_URL} className="text-primary font-semibold underline">
+          Baixe o app para Android
+        </a>
+        .
+      </li>
     </ol>
   );
 };
