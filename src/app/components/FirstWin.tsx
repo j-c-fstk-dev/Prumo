@@ -30,7 +30,10 @@ export const FirstWin: React.FC = () => {
       </div>
 
       <label className="block">
-        <span className="text-sm font-semibold text-ink block mb-1">1. Rascunhe a sua frase</span>
+        <span className="flex items-center gap-2 mb-1">
+          <span className="text-sm font-semibold text-ink">1. Troque pelas suas palavras</span>
+          <span className="text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-surface border border-gold-line text-gold-ink">Rascunho</span>
+        </span>
         <textarea rows={3} value={phrase} onChange={(e) => setPhrase(e.target.value)} aria-label="Sua frase" className={`${inputClass} resize-none`} />
         <span className="text-xs text-muted block mt-1">
           Troque o que está entre [colchetes].{diagnosis?.pain && ` O problema que apareceu no seu resultado: ${lowerFirst(diagnosis.pain)}.`} É rascunho: na semana 2

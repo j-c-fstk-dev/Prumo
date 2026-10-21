@@ -4,7 +4,7 @@ import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, TaskItem } from '../../data/prumo
 import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption, buildCustomDiagnosis, type CustomPathInput } from '../../domain/diagnosis';
 import { buildPlanTasks } from '../../domain/tasks';
 import { ACTIONS_TO_REPAIR, JOURNEY_DAYS, addDays, buildTimeline, computeStreak, isFreshStart, journeyDayKey, journeyDayNumber, tasksDoneOn, weekKey } from '../../domain/journey';
-import { track } from '../../utils/telemetry';
+import { setCohort, track } from '../../utils/telemetry';
 import { REVIEW_LIMIT, activeRoutines, currentGoal, routineProgress, toggleRoutineDay, type Pace, type WeeklyReview } from '../../domain/routines';
 import { restartShift, shouldOfferRestart, suggestedWeek } from '../../domain/pacing';
 import { CYCLE_LABEL, CYCLE_NOTE_LIMIT, activeCycle, cycleStatus, type Cycle, type CycleKind, type PastJourney } from '../../domain/cycles';
@@ -280,6 +280,7 @@ function useAppState() {
         setData(saved);
         if (saved.onboardingDone) setScreen('home');
         // Em que dia da jornada a pessoa abriu o app: mostra quem volta no dia 2, 7, 30... (etapa 38)
+        if (saved.startedAt) setCohort(weekKey(journeyDayKey(new Date(saved.startedAt))));
         if (saved.startedAt) track('app_aberto', { dia: journeyDayNumber(saved.startedAt) });
         // Volta depois de uma pausa: mostra se o recomeço acolhe (etapa 53)
         const away = computeStreak({ actionsByDay: saved.actionsByDay, repairedDays: saved.repairedDays, today: journeyDayKey() }).daysAway;
@@ -549,6 +550,7 @@ function useAppState() {
 
     completeOnboarding: () => {
       setData((d) => ({ ...d, onboardingDone: true, startedAt: d.startedAt ?? Date.now() }));
+      setCohort(weekKey(journeyDayKey(new Date(data.startedAt ?? Date.now()))));
       track('jornada_iniciada');
       // A partir daqui há dados que importam: pede ao navegador para não apagá-los (etapa 30)
       void requestPersistence();

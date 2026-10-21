@@ -41,8 +41,19 @@ Tudo aqui funciona sem conta e sem servidor de usuários: os dados continuam só
 - **Serve para:** o parceiro, a turma no WhatsApp e o check-in semanal do coach no piloto.
 - **Métrica:** `parceiro_avisado {o_que}`.
 
+## 4. Turma nas métricas
+- Todo evento leva `turma`: a segunda-feira da semana em que a pessoa começou (`setCohort`).
+- Não identifica ninguém, porque muita gente começa na mesma semana.
+- Permite ver cada turma ao longo do tempo. Contar aberturas por semana da jornada misturaria quem parou com quem acabou de chegar.
+
+## Ajustes da revisão
+- **Passo "Listar 20 pessoas":** agora diz que puxar da agenda é só no Android. O navegador do iPhone não deixa escolher contatos, e o botão "Da agenda" já some lá.
+- **Frase da primeira visita:** ganhou o selo "Rascunho" e o título "Troque pelas suas palavras".
+- **Arquivo .ics no iPhone:** precisa ser testado num aparelho de verdade. Se o Safari não abrir bem o arquivo baixado, a saída é o Worker devolver o `.ics` (`text/calendar`), só com o título e o horário, sem guardar nada.
+
 ## Fora do app (piloto)
 - Turmas de 5 a 8 pessoas que começam na mesma segunda, com um encontro curto por semana.
+- Uma Comunidade do WhatsApp com um grupo pequeno por turma, avisando antes de adicionar alguém: num grupo, todos veem o número de todos.
 - Check-in semanal de 10 minutos feito pelo fundador nas primeiras pessoas. O resumo da semana chega pelo WhatsApp.
 - Isso pode virar a parte paga: acompanhamento humano ou em turma.
 

@@ -734,7 +734,7 @@ const ROADMAP: TaskItem[] = [
     description: 'Gente que você conhece, que já te pediu ajuda ou que está em grupos do tema.',
     durationMinutes: 20,
     status: 'pending',
-    whatToDo: 'Abra o Caderno → Pessoas e adicione pelo menos 10 nomes hoje (dá pra puxar da agenda). Na nota de cada um, escreva em poucas palavras por que você acha que essa pessoa tem o problema. Ao longo da semana, chegue a 20. Guarde só o nome e o contato: são dados de outras pessoas, para você falar com uma de cada vez.',
+    whatToDo: 'Abra o Caderno → Pessoas e adicione pelo menos 10 nomes hoje (no Android, dá pra puxar da agenda; no iPhone, é digitando mesmo). Na nota de cada um, escreva em poucas palavras por que você acha que essa pessoa tem o problema. Ao longo da semana, chegue a 20. Guarde só o nome e o contato: são dados de outras pessoas, para você falar com uma de cada vez.',
     howToKnowItIsGood: [
       'Pelo menos 10 nomes no Caderno',
       'Cada nome tem um "por que" na nota',
