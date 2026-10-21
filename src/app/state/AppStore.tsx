@@ -958,6 +958,12 @@ function useAppState() {
     /** Parceiro de prumo (etapa 54): só conta quantas vezes a pessoa compartilhou */
     sharedProgress: (what: 'passo' | 'semana') => track('parceiro_avisado', { o_que: what }),
     dismissWeekSummary: () => setData((d) => ({ ...d, summarySeenWeek: weekKey(today) })),
+    /** "Hoje só tenho 5 minutos" (etapa 55): a coisa pequena feita conta como ação do dia */
+    didFiveMinutes: (kind: string) => {
+      track('cinco_minutos', { tipo: kind });
+      soundEffects.playCompleteTask();
+      setData((d) => withAction(d));
+    },
     dismissFirstWin: () => setData((d) => ({ ...d, firstWinDismissedAt: Date.now() })),
     /** Pular um passo (etapa 53): conta como resolvido para seguir o roteiro, mas não como ação do dia */
     skipTask: (taskId: string, reason: string) => {

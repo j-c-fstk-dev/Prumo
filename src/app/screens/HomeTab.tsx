@@ -11,6 +11,7 @@ import { soundEffects } from '../../utils/soundEffects';
 import { durationLabel } from '../../domain/tasks';
 import { FirstWin } from '../components/FirstWin';
 import { WeekSummary } from '../components/WeekSummary';
+import { FiveMinutes } from '../components/FiveMinutes';
 import { useApp } from '../state/AppStore';
 import { estimateSeconds, formatDuration, VOICE_ENABLED } from '../../utils/voice';
 import { Constellation } from '../../components/brand/Constellation';
@@ -258,6 +259,13 @@ export const HomeTab: React.FC = () => {
         </div>
                 )}
         </Reveal>
+
+        {/* Dia corrido: uma coisa pequena que conta (etapa 55) */}
+        {!journeyComplete && (
+          <Reveal i={4}>
+            <FiveMinutes />
+          </Reveal>
+        )}
 
         {/* Rotina da semana: o que se repete no capítulo (etapa 42) */}
         <Reveal i={5}>

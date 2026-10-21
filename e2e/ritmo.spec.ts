@@ -439,3 +439,18 @@ test('semana 6: o passo "Decidir" mostra o que o teste ensinou e troca de caminh
   await page.getByRole('button', { name: 'Caderno', exact: true }).click();
   await expect(page.getByRole('tab', { name: /Pessoas \(2\)/ })).toBeVisible();
 });
+
+test('"Hoje só tenho 5 minutos": uma coisa só, pequena, que conta no dia', async ({ page }) => {
+  await seedState(page, {
+    startedAt: Date.now(),
+    taskStatus: { t1: 'completed' },
+    people: [{ id: 'p1', name: 'Ana Souza', stage: 'contato', stageHistory: [], createdAt: 1, updatedAt: 1 }],
+  });
+  await page.getByRole('button', { name: '⏱ Hoje só tenho 5 minutos' }).click();
+  const five = page.getByRole('region', { name: 'Só 5 minutos' });
+  await expect(five).toContainText('Mandar 1 mensagem pronta');
+  await expect(five).toContainText('Abra Ana no Caderno');
+  await five.getByRole('button', { name: 'Fiz!' }).click();
+  await expect(five.getByRole('status')).toContainText('Isso conta no seu dia de prumo');
+  await expect(page.getByText(/1 dia de prumo/)).toBeVisible();
+});
