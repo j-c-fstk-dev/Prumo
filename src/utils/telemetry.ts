@@ -101,9 +101,20 @@ function flush(tries = 0): void {
   setTimeout(() => flush(tries + 1), 500);
 }
 
+let cohort: string | null = null;
+
+/**
+ * Turma (etapa 54): a segunda-feira da semana em que a pessoa começou, junto de todo evento.
+ * Não identifica ninguém (muita gente começa na mesma semana) e permite ver cada turma ao longo
+ * do tempo: contar aberturas por semana da jornada mistura quem parou com quem acabou de chegar.
+ */
+export function setCohort(week: string | null): void {
+  cohort = week;
+}
+
 /** Evento de uso (Umami). Nunca passe texto escrito pela pessoa aqui. */
 export function track(event: string, data?: UmamiData): void {
-  pending.push([event, data]);
+  pending.push([event, cohort ? { ...data, turma: cohort } : data]);
   if (!flushing) {
     flushing = true;
     flush();

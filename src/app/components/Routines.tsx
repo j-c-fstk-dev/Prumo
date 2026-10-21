@@ -6,6 +6,8 @@ import { REVIEW_LIMIT } from '../../domain/routines';
 import { journeyDayKey, weekKey } from '../../domain/journey';
 import { soundEffects } from '../../utils/soundEffects';
 import { WhenPicker } from './WhenPicker';
+import { weeklySummaryText, weekStats, whatsappShare } from '../../domain/share';
+import { AddToCalendar } from './AddToCalendar';
 
 const inputClass =
   'w-full px-3 py-2 text-sm rounded-xl border border-line bg-surface text-ink placeholder:text-muted focus:outline-none focus:border-primary resize-none';
@@ -15,7 +17,7 @@ const inputClass =
  * Abre por cima da tela do app (mesmo jeito do modal do coach nas Pessoas).
  */
 export const WeeklyReviewModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { weeklyReviews, routines, tasks, completedAt, people, actions } = useApp();
+  const { weeklyReviews, routines, tasks, completedAt, people, routineLog, actions } = useApp();
   // Refazer a revisão na mesma semana abre o que já foi escrito
   const existing = weeklyReviews[weekKey(journeyDayKey())];
   const [worked, setWorked] = useState(existing?.worked ?? '');
@@ -53,6 +55,16 @@ export const WeeklyReviewModal: React.FC<{ onClose: () => void }> = ({ onClose }
           </label>
         ))}
         <p className="text-xs text-muted">Fica só neste celular. Não precisa responder tudo: uma linha já ajuda.</p>
+        {/* Resumo da semana (etapa 54): só números, para o parceiro de prumo, a turma ou o coach */}
+        <a
+          href={whatsappShare(weeklySummaryText(weekStats(weekKey(journeyDayKey()), { completedAt, routineLog, people }), { goal: goal.trim() || undefined }))}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => actions.sharedProgress('semana')}
+          className="block text-center text-[13px] text-primary font-semibold"
+        >
+          📣 Mandar o resumo pro meu parceiro (só números)
+        </a>
         <button
           onClick={() => {
             actions.saveWeeklyReview({ worked, change, goal });
@@ -138,6 +150,7 @@ export const RoutinesCard: React.FC<{ title?: string }> = ({ title = 'Rotina da 
                     }}
                     timeThieves={reflections.q3_hours}
                   />
+                  <AddToCalendar title={r.title} details={r.description} minutes={r.minutes} mode="weekly" kind="rotina" />
                 </div>
               )}
             </li>

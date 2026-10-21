@@ -215,12 +215,17 @@ test('ciclos: depois do roteiro, continuar com meta do Caderno; ao bater a meta,
   await cycle.getByRole('button', { name: 'Fechar o ciclo e escolher o próximo' }).click();
   await expect(page.getByText('Fim do ciclo 1. E agora?')).toBeVisible();
   await page.getByRole('radio', { name: /Não rolou: trocar de caminho/ }).click();
-  await page.getByRole('button', { name: 'Escolher outro caminho' }).click();
-  await page.getByRole('button', { name: 'Sim, recomeçar o roteiro' }).click();
+  // Mesmo público (etapa 55): o capítulo 1 continua feito e o roteiro novo começa na semana 3
+  const switcher = page.getByRole('group', { name: 'Trocar de caminho' });
+  await switcher.getByRole('button', { name: /Sim, o mesmo público/ }).click();
+  await switcher.getByRole('button', { name: 'Escolher o novo caminho' }).click();
   await expect(page.getByText(/este é o seu prumo/)).toBeVisible();
   await page.getByRole('button', { name: /Voltar para a jornada/ }).click();
   await expect(page.getByText('Dia 1 de 90')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Abrir tarefa' })).toBeVisible();
+  await page.getByRole('button', { name: 'Roteiro', exact: true }).click();
+  await expect(page.getByText(`${INITIAL_TASKS.filter((t) => t.chapterId === 1).length} de ${INITIAL_TASKS.length} concluídas`)).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Semana 3', exact: true })).toContainText('esta semana');
 
   await page.getByRole('button', { name: 'Você', exact: true }).click();
   await expect(page.getByText(/Jornada anterior:/)).toBeVisible();
@@ -325,6 +330,8 @@ test('métricas sem dados pessoais: ao concluir, "quanto tempo levou?"; e dá pr
   await page.getByRole('button', { name: 'Marcar como feita' }).click();
   const ask = page.getByRole('dialog', { name: 'Quanto tempo levou' });
   await expect(ask).toContainText('A estimativa era 15 min.');
+  // Parceiro de prumo: a mensagem sai pelo WhatsApp, e a pessoa escolhe para quem
+  await expect(ask.getByRole('link', { name: /Contar pro meu parceiro/ })).toHaveAttribute('href', /^https:\/\/wa\.me\/\?text=Conclu/);
   await ask.getByRole('button', { name: 'Mais', exact: true }).click();
   await expect(ask).toHaveCount(0);
 
@@ -336,4 +343,114 @@ test('métricas sem dados pessoais: ao concluir, "quanto tempo levou?"; e dá pr
   await page.getByRole('button', { name: 'Roteiro' }).click();
   await expect(page.getByText('pulado')).toBeVisible();
   await expect(page.getByText('2 de 23 concluídas')).toBeVisible();
+});
+
+test('lembrete pela agenda: o passo vira evento com alarme no Google Agenda ou no calendário do celular', async ({ page }) => {
+  await seedState(page, { startedAt: Date.now() });
+  await page.getByRole('button', { name: 'Abrir tarefa' }).click();
+  await page.getByRole('button', { name: 'Pôr na minha agenda' }).click();
+  const box = page.getByRole('group', { name: 'Pôr na minha agenda' });
+  await box.getByLabel('Dia').fill('2026-12-01');
+  await box.getByLabel('Hora').fill('07:30');
+  const google = box.getByRole('link', { name: 'Google Agenda' });
+  await expect(google).toHaveAttribute('href', /calendar\.google\.com.*dates=20261201T073000%2F20261201T074500/);
+  const [download] = await Promise.all([page.waitForEvent('download'), box.getByRole('button', { name: 'Calendário do celular' }).click()]);
+  expect(download.suggestedFilename()).toBe('prumo-lembrete.ics');
+  const ics = await (await download.createReadStream()).toArray();
+  const text = Buffer.concat(ics).toString('utf8');
+  expect(text).toContain('DTSTART:20261201T073000');
+  expect(text).toContain('TRIGGER:-PT10M');
+  await expect(box.getByRole('status')).toContainText('Abra o arquivo baixado');
+});
+
+test('primeira visita: em 5 minutos sai com a frase, 3 nomes no Caderno e o passo 1 feito', async ({ page }) => {
+  await seedState(page, { startedAt: Date.now() });
+  const win = page.getByRole('region', { name: 'Seu primeiro passo' });
+  await expect(win).toBeVisible();
+  const done = win.getByRole('button', { name: 'Pronto: primeiro passo feito' });
+  // O rascunho ainda tem [colchetes]: precisa trocar antes
+  await expect(done).toBeDisabled();
+  await win.getByLabel('Sua frase').fill('Eu ajudo mães que trabalham fora a organizar a semana, mesmo que tenham pouco tempo.');
+  await win.getByLabel('Pessoa 1').fill('Ana');
+  await win.getByLabel('Pessoa 2').fill('Beto');
+  await done.click();
+  await expect(win).toHaveCount(0);
+  await expect(page.getByText(/1 dia de prumo/)).toBeVisible();
+
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await page.getByRole('tab', { name: /Pessoas \(2\)/ }).click();
+  await expect(page.getByRole('button', { name: 'Ana, Novo' })).toBeVisible();
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await expect(page.getByText('1 de 23 concluídas')).toBeVisible();
+  await page.reload();
+  await passSplash(page);
+  await expect(page.getByRole('region', { name: 'Seu primeiro passo' })).toHaveCount(0);
+});
+
+test('resumo da semana passada: na segunda, só números, pronto para mandar ao parceiro', async ({ page }) => {
+  await page.clock.setFixedTime(new Date(2026, 9, 19, 10, 0)); // segunda-feira
+  await page.goto('/app/');
+  await seedState(page, {
+    startedAt: new Date(2026, 9, 5).getTime(),
+    taskStatus: { t1: 'completed', t8: 'completed' },
+    completedAt: { t1: new Date(2026, 9, 13, 9).getTime(), t8: new Date(2026, 9, 15, 9).getTime() },
+    actionsByDay: { '2026-10-13': 1, '2026-10-15': 1 },
+    routineLog: { r_revisao: ['2026-10-18'] },
+    people: [{ id: 'p1', name: 'Ana Souza', stage: 'conversou', stageHistory: [{ stage: 'conversou', at: new Date(2026, 9, 14).getTime() }], createdAt: 1, updatedAt: 1 }],
+  });
+  const card = page.getByRole('region', { name: 'Sua semana passada' });
+  await expect(card.getByRole('listitem').nth(0)).toHaveText('2passos');
+  await expect(card.getByRole('listitem').nth(2)).toHaveText('1conversas');
+  const link = card.getByRole('link', { name: /Mandar pro meu parceiro/ });
+  const text = decodeURIComponent((await link.getAttribute('href'))!.split('text=')[1]);
+  expect(text).toContain('2 passos concluídos');
+  expect(text).not.toContain('Ana');
+  await card.getByRole('button', { name: 'Ok' }).click();
+  await expect(card).toHaveCount(0);
+});
+
+test('semana 6: o passo "Decidir" mostra o que o teste ensinou e troca de caminho levando o Caderno', async ({ page }) => {
+  const before = INITIAL_TASKS.filter((t) => (t.week ?? 1) <= 5).map((t) => t.id);
+  await seedState(page, {
+    startedAt: Date.now() - 36 * 86_400_000,
+    taskStatus: Object.fromEntries(before.map((id) => [id, 'completed'])),
+    celebratedChapters: [1],
+    taskNotes: { t1: 'Minha frase (rascunho): Eu ajudo mães a organizar a semana.' },
+    profileOverrides: { promise: 'Eu ajudo mães que trabalham fora a ter 1 hora livre por dia.' },
+    people: [
+      { id: 'p1', name: 'Ana Souza', stage: 'proposta', note: 'Disse que perde a manhã de domingo planejando', stageHistory: [], createdAt: 1, updatedAt: 1 },
+      { id: 'p2', name: 'Beto Lima', stage: 'conversou', stageHistory: [], createdAt: 1, updatedAt: 1 },
+    ],
+  });
+  await page.getByRole('button', { name: 'Abrir tarefa' }).click();
+  const card = page.getByRole('region', { name: 'O que o teste te mostrou' });
+  await expect(card).toContainText('2 conversas sobre o problema · 1 apresentação · 0 compromissos');
+  await expect(card).toContainText('"Disse que perde a manhã de domingo planejando"');
+  await expect(card).toContainText('Sua frase no começo: Eu ajudo mães a organizar a semana.');
+  await expect(card).toContainText('Sua frase agora: Eu ajudo mães que trabalham fora');
+
+  // Público novo: recomeça da semana 1, e os contatos continuam no Caderno
+  await card.getByRole('button', { name: 'Decidi trocar de caminho' }).click();
+  await card.getByRole('button', { name: /Não, um público novo/ }).click();
+  await card.getByRole('button', { name: 'Escolher o novo caminho' }).click();
+  await page.getByRole('button', { name: /Voltar para a jornada/ }).click();
+  await page.getByRole('button', { name: 'Roteiro', exact: true }).click();
+  await expect(page.getByText(`0 de ${INITIAL_TASKS.length} concluídas`)).toBeVisible();
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await expect(page.getByRole('tab', { name: /Pessoas \(2\)/ })).toBeVisible();
+});
+
+test('"Hoje só tenho 5 minutos": uma coisa só, pequena, que conta no dia', async ({ page }) => {
+  await seedState(page, {
+    startedAt: Date.now(),
+    taskStatus: { t1: 'completed' },
+    people: [{ id: 'p1', name: 'Ana Souza', stage: 'contato', stageHistory: [], createdAt: 1, updatedAt: 1 }],
+  });
+  await page.getByRole('button', { name: '⏱ Hoje só tenho 5 minutos' }).click();
+  const five = page.getByRole('region', { name: 'Só 5 minutos' });
+  await expect(five).toContainText('Mandar 1 mensagem pronta');
+  await expect(five).toContainText('Abra Ana no Caderno');
+  await five.getByRole('button', { name: 'Fiz!' }).click();
+  await expect(five.getByRole('status')).toContainText('Isso conta no seu dia de prumo');
+  await expect(page.getByText(/1 dia de prumo/)).toBeVisible();
 });

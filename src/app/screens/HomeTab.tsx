@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { durationLabel } from '../../domain/tasks';
+import { FirstWin } from '../components/FirstWin';
+import { WeekSummary } from '../components/WeekSummary';
+import { FiveMinutes } from '../components/FiveMinutes';
 import { useApp } from '../state/AppStore';
 import { estimateSeconds, formatDuration, VOICE_ENABLED } from '../../utils/voice';
 import { Constellation } from '../../components/brand/Constellation';
@@ -27,7 +30,7 @@ import { lembreteDoDia } from '../../data/encorajamento';
 import { JOURNEY_DAYS, journeyDayLabel } from '../../domain/journey';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, cycleInfo, canChooseCycle, guideSeenAt, guideOpen, pendingSentPerson, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, cycleInfo, canChooseCycle, guideSeenAt, guideOpen, pendingSentPerson, showFirstWin, actions } = useApp();
   // Primeira visita à Início: o guia do app abre sozinho, depois que a tela termina de surgir (etapa 47)
   useEffect(() => {
     if (guideSeenAt || guideOpen) return;
@@ -99,12 +102,21 @@ export const HomeTab: React.FC = () => {
           </Reveal>
         )}
 
+        {/* Uma vitória já na primeira visita (etapa 54) */}
+        {showFirstWin && (
+          <Reveal i={1}>
+            <FirstWin />
+          </Reveal>
+        )}
+
         {/* Voltou do WhatsApp (mesmo que a página tenha recarregado): "Mandou a mensagem?" (etapa 49) */}
         {pendingSentPerson && (
           <Reveal i={1}>
             <SentPrompt person={pendingSentPerson} onHome />
           </Reveal>
         )}
+
+        <WeekSummary />
 
         {/* Ritmo diário: check-in, sequência gentil, remendo e boas-vindas de volta */}
 
@@ -247,6 +259,13 @@ export const HomeTab: React.FC = () => {
         </div>
                 )}
         </Reveal>
+
+        {/* Dia corrido: uma coisa pequena que conta (etapa 55) */}
+        {!journeyComplete && (
+          <Reveal i={4}>
+            <FiveMinutes />
+          </Reveal>
+        )}
 
         {/* Rotina da semana: o que se repete no capítulo (etapa 42) */}
         <Reveal i={5}>

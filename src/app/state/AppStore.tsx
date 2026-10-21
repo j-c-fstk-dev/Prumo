@@ -4,7 +4,7 @@ import { ANAMNESE_SECTIONS, DEFAULT_DIAGNOSIS, TaskItem } from '../../data/prumo
 import { applyAlternative, calculateDiagnosis, type Diagnosis, type DiagnosisOption, buildCustomDiagnosis, type CustomPathInput } from '../../domain/diagnosis';
 import { buildPlanTasks } from '../../domain/tasks';
 import { ACTIONS_TO_REPAIR, JOURNEY_DAYS, addDays, buildTimeline, computeStreak, isFreshStart, journeyDayKey, journeyDayNumber, tasksDoneOn, weekKey } from '../../domain/journey';
-import { track } from '../../utils/telemetry';
+import { setCohort, track } from '../../utils/telemetry';
 import { REVIEW_LIMIT, activeRoutines, currentGoal, routineProgress, toggleRoutineDay, type Pace, type WeeklyReview } from '../../domain/routines';
 import { restartShift, shouldOfferRestart, suggestedWeek } from '../../domain/pacing';
 import { CYCLE_LABEL, CYCLE_NOTE_LIMIT, activeCycle, cycleStatus, type Cycle, type CycleKind, type PastJourney } from '../../domain/cycles';
@@ -18,6 +18,7 @@ import { speak, stopSpeaking } from '../../utils/voice';
 import { clearAll, loadValue, saveValue } from './storage';
 import { NOTE_MAX, type Note, type NoteTag, type ProfileFieldId, type ProfileOverrides } from '../../domain/notebook';
 import { cleanPerson, funnel, normalizePerson, testVerdict, type Commitment, type Person } from '../../domain/people';
+import { hasActivity, lastMonday, weekStats } from '../../domain/share';
 import { newMilestones, PAUSE_DAYS, type Milestone, type TimeAnswer } from '../../domain/metrics';
 import { requestPersistence } from '../../utils/install';
 import { deleteImages, saveImageAs } from './images';
@@ -116,6 +117,11 @@ interface PersistedState {
   lastExportAt?: number;
   /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
   installHintDismissedAt?: number;
+  /** Semana (segunda, AAAA-MM-DD) em que o resumo da semana passada já foi visto (etapa 54) */
+  summarySeenWeek?: string;
+  /** Primeira vitória (etapa 54): quando fez ou disse "depois" */
+  firstWinAt?: number;
+  firstWinDismissedAt?: number;
   /** Marcos já registrados nas métricas (etapa 53): quando aconteceram */
   milestones?: Partial<Record<Milestone, number>>;
   /** Passos pulados (etapa 53) e o motivo (opcional) */
@@ -243,7 +249,7 @@ function useAppState() {
   /** Guia do app aberto agora (não fica salvo) */
   const [guideOpen, setGuideOpen] = useState(false);
   /** Depois de concluir um passo: "levou menos, mais ou menos isso, ou mais?" (etapa 53) */
-  const [timeAsk, setTimeAsk] = useState<{ taskId: string; estimated: number } | null>(null);
+  const [timeAsk, setTimeAsk] = useState<{ taskId: string; title: string; estimated: number } | null>(null);
   /** Em que parte o Caderno abre (as rotinas de conversa levam direto para Pessoas) */
   const [notebookSection, setNotebookSection] = useState<'notas' | 'pessoas'>('notas');
   const [sectionIndex, setSectionIndex] = useState(0);
@@ -274,6 +280,7 @@ function useAppState() {
         setData(saved);
         if (saved.onboardingDone) setScreen('home');
         // Em que dia da jornada a pessoa abriu o app: mostra quem volta no dia 2, 7, 30... (etapa 38)
+        if (saved.startedAt) setCohort(weekKey(journeyDayKey(new Date(saved.startedAt))));
         if (saved.startedAt) track('app_aberto', { dia: journeyDayNumber(saved.startedAt) });
         // Volta depois de uma pausa: mostra se o recomeço acolhe (etapa 53)
         const away = computeStreak({ actionsByDay: saved.actionsByDay, repairedDays: saved.repairedDays, today: journeyDayKey() }).daysAway;
@@ -543,6 +550,7 @@ function useAppState() {
 
     completeOnboarding: () => {
       setData((d) => ({ ...d, onboardingDone: true, startedAt: d.startedAt ?? Date.now() }));
+      setCohort(weekKey(journeyDayKey(new Date(data.startedAt ?? Date.now()))));
       track('jornada_iniciada');
       // A partir daqui há dados que importam: pede ao navegador para não apagá-los (etapa 30)
       void requestPersistence();
@@ -643,7 +651,7 @@ function useAppState() {
         track('tarefa_concluida', { capitulo: task?.chapterId ?? 0 });
         // A decisão da semana 6, qualquer que seja, é sinal de que o roteiro leva a uma conclusão
         if (taskId === 't12') track('decisao_registrada', { veredito: testVerdict(funnel(data.people)) ?? 'testando', dia: journeyDay ?? 0 });
-        if (task) setTimeAsk({ taskId, estimated: task.durationMinutes });
+        if (task) setTimeAsk({ taskId, title: task.title, estimated: task.durationMinutes });
         soundEffects.playCompleteTask();
         confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
       } else {
@@ -922,6 +930,41 @@ function useAppState() {
       const extra = restartShift(pacingDay ?? journeyDay, nextStepTask.week);
       setData((d) => ({ ...d, paceShiftDays: (d.paceShiftDays ?? 0) + extra, restartDismissedOn: today }));
     },
+    /** Primeira vitória (etapa 54): a frase vai para a ficha, os nomes para o Caderno, e o passo 1 fica feito */
+    completeFirstWin: (phrase: string, names: string[]) => {
+      track('primeira_sessao_completa', { nomes: names.length });
+      setData((d) => {
+        const now = Date.now();
+        const people: Person[] = names.map((name, i) => ({
+          ...cleanPerson({ name }),
+          id: `p${now}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+          stage: 'contato',
+          stageHistory: [{ stage: 'contato', at: now }],
+          createdAt: now,
+          updatedAt: now,
+        }));
+        const updated = {
+          ...d,
+          firstWinAt: now,
+          profileOverrides: { ...d.profileOverrides, promise: phrase.slice(0, 300) },
+          people: [...people, ...d.people],
+          taskStatus: { ...d.taskStatus, t1: 'completed' as const },
+          completedAt: { ...d.completedAt, t1: now },
+          taskNotes: d.taskNotes.t1 ? d.taskNotes : { ...d.taskNotes, t1: `Minha frase (rascunho): ${phrase}` },
+        };
+        return withAction(updated);
+      });
+    },
+    /** Parceiro de prumo (etapa 54): só conta quantas vezes a pessoa compartilhou */
+    sharedProgress: (what: 'passo' | 'semana') => track('parceiro_avisado', { o_que: what }),
+    dismissWeekSummary: () => setData((d) => ({ ...d, summarySeenWeek: weekKey(today) })),
+    /** "Hoje só tenho 5 minutos" (etapa 55): a coisa pequena feita conta como ação do dia */
+    didFiveMinutes: (kind: string) => {
+      track('cinco_minutos', { tipo: kind });
+      soundEffects.playCompleteTask();
+      setData((d) => withAction(d));
+    },
+    dismissFirstWin: () => setData((d) => ({ ...d, firstWinDismissedAt: Date.now() })),
     /** Pular um passo (etapa 53): conta como resolvido para seguir o roteiro, mas não como ação do dia */
     skipTask: (taskId: string, reason: string) => {
       track('passo_pulado', { passo: taskId, motivo: reason || 'sem motivo' });
@@ -1014,25 +1057,35 @@ function useAppState() {
     },
 
     /**
-     * Trocar de caminho depois do roteiro: começa um roteiro novo (passos do zero, novo Dia 1).
+     * Trocar de caminho (na semana 6 ou depois do roteiro): começa um roteiro novo, com um novo Dia 1.
      * O Caderno, as pessoas, as cartas e as rotinas ficam; a jornada anterior vai para a linha do tempo.
+     * Mesmo público (etapa 55): as conversas sobre o problema continuam valendo, então o capítulo 1
+     * fica feito e o roteiro novo começa na semana 3. Público novo: começa da semana 1, com os contatos.
      */
-    switchPath: () => {
+    switchPath: (sameAudience = false) => {
       const now = Date.now();
-      track('caminho_trocado', { depois_do_roteiro: true });
-      setData((d) => ({
-        ...d,
-        pastJourneys: [
-          ...d.pastJourneys,
-          { endedAt: now, title: d.diagnosis?.niche ?? 'primeiro caminho', tasksDone: Object.values(d.taskStatus).filter((x) => x === 'completed').length },
-        ],
-        cycles: d.cycles.map((c) => (c.closedAt ? c : { ...c, closedAt: now })),
-        taskStatus: {},
-        completedAt: {},
-        celebratedChapters: [],
-        planEdits: {},
-        startedAt: now,
-      }));
+      track('caminho_trocado', { depois_do_roteiro: journeyComplete, mesmo_publico: sameAudience });
+      setData((d) => {
+        const kept = sameAudience ? tasks.filter((t) => t.chapterId === 1 && d.taskStatus[t.id] === 'completed').map((t) => t.id) : [];
+        const pick = <T,>(rec: Record<string, T> | undefined) => Object.fromEntries(kept.filter((id) => rec?.[id] !== undefined).map((id) => [id, rec![id]]));
+        return {
+          ...d,
+          pastJourneys: [
+            ...d.pastJourneys,
+            { endedAt: now, title: d.diagnosis?.niche ?? 'primeiro caminho', tasksDone: Object.values(d.taskStatus).filter((x) => x === 'completed').length },
+          ],
+          cycles: d.cycles.map((c) => (c.closedAt ? c : { ...c, closedAt: now })),
+          taskStatus: pick(d.taskStatus),
+          completedAt: pick(d.completedAt),
+          partsDone: pick(d.partsDone),
+          skipped: pick(d.skipped),
+          celebratedChapters: sameAudience ? [1] : [],
+          planEdits: pick(d.planEdits),
+          startedAt: now,
+          // Semana 3 já hoje: a semana sugerida anda 14 dias na frente
+          paceShiftDays: sameAudience ? -14 : 0,
+        };
+      });
       setScreen('result');
     },
 
@@ -1086,6 +1139,17 @@ function useAppState() {
     currentWeek,
     restartOffer,
     pace: data.pace,
+    // Resumo da semana passada (etapa 54): de segunda a quarta, se teve alguma coisa
+    lastWeek: (() => {
+      if (data.summarySeenWeek === weekKey(today) || !data.onboardingDone) return null;
+      const weekday = (new Date().getDay() + 6) % 7;
+      if (weekday > 2) return null;
+      const stats = weekStats(lastMonday(today), data);
+      return hasActivity(stats) ? stats : null;
+    })(),
+    // Primeira vitória: só para quem ainda não fez nada (nenhum passo, nenhuma pessoa)
+    showFirstWin:
+      data.onboardingDone && !data.firstWinAt && !data.firstWinDismissedAt && data.people.length === 0 && !Object.values(data.taskStatus).includes('completed'),
     timeAsk,
     routines,
     weeklyGoal,

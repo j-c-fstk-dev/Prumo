@@ -15,6 +15,8 @@ import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { estimateSeconds, formatDuration, VOICE_ENABLED } from '../../utils/voice';
 import { WhenPicker } from '../components/WhenPicker';
+import { AddToCalendar } from '../components/AddToCalendar';
+import { LearningCard } from '../components/LearningCard';
 import { ToolSuggestions } from '../components/ToolSuggestions';
 import { ExecutionKit } from '../components/ExecutionKit';
 import { QuoteByTheme } from '../components/QuoteCard';
@@ -65,6 +67,9 @@ export const TaskDetailScreen: React.FC = () => {
         onChange={(when) => actions.setPlanTaskWhen(selectedTask.id, when)}
         timeThieves={reflections.q3_hours}
       />
+      {selectedTask.status !== 'completed' && (
+        <AddToCalendar title={selectedTask.title} details={selectedTask.description} minutes={selectedTask.parts?.[0]?.minutes ?? selectedTask.durationMinutes} mode="once" kind="passo" />
+      )}
     </div>
   );
 
@@ -142,6 +147,9 @@ export const TaskDetailScreen: React.FC = () => {
         </div>
 
         {askWhenFirst && whenCard}
+
+        {/* Semana 6 (etapa 55): o que o teste mostrou, antes de decidir */}
+        {selectedTask.id === 't12' && <LearningCard />}
 
         {/* Sem voz: as palavras de encorajamento como texto */}
         {selectedTask.audioCoach && !VOICE_ENABLED && (
