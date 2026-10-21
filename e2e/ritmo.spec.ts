@@ -337,3 +337,21 @@ test('métricas sem dados pessoais: ao concluir, "quanto tempo levou?"; e dá pr
   await expect(page.getByText('pulado')).toBeVisible();
   await expect(page.getByText('2 de 23 concluídas')).toBeVisible();
 });
+
+test('lembrete pela agenda: o passo vira evento com alarme no Google Agenda ou no calendário do celular', async ({ page }) => {
+  await seedState(page, { startedAt: Date.now() });
+  await page.getByRole('button', { name: 'Abrir tarefa' }).click();
+  await page.getByRole('button', { name: 'Pôr na minha agenda' }).click();
+  const box = page.getByRole('group', { name: 'Pôr na minha agenda' });
+  await box.getByLabel('Dia').fill('2026-12-01');
+  await box.getByLabel('Hora').fill('07:30');
+  const google = box.getByRole('link', { name: 'Google Agenda' });
+  await expect(google).toHaveAttribute('href', /calendar\.google\.com.*dates=20261201T073000%2F20261201T074500/);
+  const [download] = await Promise.all([page.waitForEvent('download'), box.getByRole('button', { name: 'Calendário do celular' }).click()]);
+  expect(download.suggestedFilename()).toBe('prumo-lembrete.ics');
+  const ics = await (await download.createReadStream()).toArray();
+  const text = Buffer.concat(ics).toString('utf8');
+  expect(text).toContain('DTSTART:20261201T073000');
+  expect(text).toContain('TRIGGER:-PT10M');
+  await expect(box.getByRole('status')).toContainText('Abra o arquivo baixado');
+});

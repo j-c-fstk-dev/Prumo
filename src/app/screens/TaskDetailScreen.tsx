@@ -15,6 +15,7 @@ import { soundEffects } from '../../utils/soundEffects';
 import { useApp } from '../state/AppStore';
 import { estimateSeconds, formatDuration, VOICE_ENABLED } from '../../utils/voice';
 import { WhenPicker } from '../components/WhenPicker';
+import { AddToCalendar } from '../components/AddToCalendar';
 import { ToolSuggestions } from '../components/ToolSuggestions';
 import { ExecutionKit } from '../components/ExecutionKit';
 import { QuoteByTheme } from '../components/QuoteCard';
@@ -65,6 +66,9 @@ export const TaskDetailScreen: React.FC = () => {
         onChange={(when) => actions.setPlanTaskWhen(selectedTask.id, when)}
         timeThieves={reflections.q3_hours}
       />
+      {selectedTask.status !== 'completed' && (
+        <AddToCalendar title={selectedTask.title} details={selectedTask.description} minutes={selectedTask.parts?.[0]?.minutes ?? selectedTask.durationMinutes} mode="once" kind="passo" />
+      )}
     </div>
   );
 

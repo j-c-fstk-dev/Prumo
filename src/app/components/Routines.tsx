@@ -6,6 +6,7 @@ import { REVIEW_LIMIT } from '../../domain/routines';
 import { journeyDayKey, weekKey } from '../../domain/journey';
 import { soundEffects } from '../../utils/soundEffects';
 import { WhenPicker } from './WhenPicker';
+import { AddToCalendar } from './AddToCalendar';
 
 const inputClass =
   'w-full px-3 py-2 text-sm rounded-xl border border-line bg-surface text-ink placeholder:text-muted focus:outline-none focus:border-primary resize-none';
@@ -138,6 +139,7 @@ export const RoutinesCard: React.FC<{ title?: string }> = ({ title = 'Rotina da 
                     }}
                     timeThieves={reflections.q3_hours}
                   />
+                  <AddToCalendar title={r.title} details={r.description} minutes={r.minutes} mode="weekly" kind="rotina" />
                 </div>
               )}
             </li>
