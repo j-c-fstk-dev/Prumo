@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
 import { durationLabel } from '../../domain/tasks';
+import { FirstWin } from '../components/FirstWin';
 import { useApp } from '../state/AppStore';
 import { estimateSeconds, formatDuration, VOICE_ENABLED } from '../../utils/voice';
 import { Constellation } from '../../components/brand/Constellation';
@@ -27,7 +28,7 @@ import { lembreteDoDia } from '../../data/encorajamento';
 import { JOURNEY_DAYS, journeyDayLabel } from '../../domain/journey';
 
 export const HomeTab: React.FC = () => {
-  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, cycleInfo, canChooseCycle, guideSeenAt, guideOpen, pendingSentPerson, actions } = useApp();
+  const { userName, tasks, nextStepTask, personalAnchor, activeAudioTaskId, isPlayingAudio, audioElapsedSec, voiceUnavailable, streak, daysSinceStart, journeyDay, letter, journeyComplete, currentWeek, cycleInfo, canChooseCycle, guideSeenAt, guideOpen, pendingSentPerson, showFirstWin, actions } = useApp();
   // Primeira visita à Início: o guia do app abre sozinho, depois que a tela termina de surgir (etapa 47)
   useEffect(() => {
     if (guideSeenAt || guideOpen) return;
@@ -96,6 +97,13 @@ export const HomeTab: React.FC = () => {
                 Escolher o próximo ciclo
               </button>
             )}
+          </Reveal>
+        )}
+
+        {/* Uma vitória já na primeira visita (etapa 54) */}
+        {showFirstWin && (
+          <Reveal i={1}>
+            <FirstWin />
           </Reveal>
         )}
 

@@ -116,6 +116,9 @@ interface PersistedState {
   lastExportAt?: number;
   /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
   installHintDismissedAt?: number;
+  /** Primeira vitória (etapa 54): quando fez ou disse "depois" */
+  firstWinAt?: number;
+  firstWinDismissedAt?: number;
   /** Marcos já registrados nas métricas (etapa 53): quando aconteceram */
   milestones?: Partial<Record<Milestone, number>>;
   /** Passos pulados (etapa 53) e o motivo (opcional) */
@@ -922,6 +925,32 @@ function useAppState() {
       const extra = restartShift(pacingDay ?? journeyDay, nextStepTask.week);
       setData((d) => ({ ...d, paceShiftDays: (d.paceShiftDays ?? 0) + extra, restartDismissedOn: today }));
     },
+    /** Primeira vitória (etapa 54): a frase vai para a ficha, os nomes para o Caderno, e o passo 1 fica feito */
+    completeFirstWin: (phrase: string, names: string[]) => {
+      track('primeira_sessao_completa', { nomes: names.length });
+      setData((d) => {
+        const now = Date.now();
+        const people: Person[] = names.map((name, i) => ({
+          ...cleanPerson({ name }),
+          id: `p${now}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+          stage: 'contato',
+          stageHistory: [{ stage: 'contato', at: now }],
+          createdAt: now,
+          updatedAt: now,
+        }));
+        const updated = {
+          ...d,
+          firstWinAt: now,
+          profileOverrides: { ...d.profileOverrides, promise: phrase.slice(0, 300) },
+          people: [...people, ...d.people],
+          taskStatus: { ...d.taskStatus, t1: 'completed' as const },
+          completedAt: { ...d.completedAt, t1: now },
+          taskNotes: d.taskNotes.t1 ? d.taskNotes : { ...d.taskNotes, t1: `Minha frase (rascunho): ${phrase}` },
+        };
+        return withAction(updated);
+      });
+    },
+    dismissFirstWin: () => setData((d) => ({ ...d, firstWinDismissedAt: Date.now() })),
     /** Pular um passo (etapa 53): conta como resolvido para seguir o roteiro, mas não como ação do dia */
     skipTask: (taskId: string, reason: string) => {
       track('passo_pulado', { passo: taskId, motivo: reason || 'sem motivo' });
@@ -1086,6 +1115,9 @@ function useAppState() {
     currentWeek,
     restartOffer,
     pace: data.pace,
+    // Primeira vitória: só para quem ainda não fez nada (nenhum passo, nenhuma pessoa)
+    showFirstWin:
+      data.onboardingDone && !data.firstWinAt && !data.firstWinDismissedAt && data.people.length === 0 && !Object.values(data.taskStatus).includes('completed'),
     timeAsk,
     routines,
     weeklyGoal,

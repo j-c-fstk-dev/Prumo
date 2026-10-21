@@ -355,3 +355,27 @@ test('lembrete pela agenda: o passo vira evento com alarme no Google Agenda ou n
   expect(text).toContain('TRIGGER:-PT10M');
   await expect(box.getByRole('status')).toContainText('Abra o arquivo baixado');
 });
+
+test('primeira visita: em 5 minutos sai com a frase, 3 nomes no Caderno e o passo 1 feito', async ({ page }) => {
+  await seedState(page, { startedAt: Date.now() });
+  const win = page.getByRole('region', { name: 'Seu primeiro passo' });
+  await expect(win).toBeVisible();
+  const done = win.getByRole('button', { name: 'Pronto: primeiro passo feito' });
+  // O rascunho ainda tem [colchetes]: precisa trocar antes
+  await expect(done).toBeDisabled();
+  await win.getByLabel('Sua frase').fill('Eu ajudo mães que trabalham fora a organizar a semana, mesmo que tenham pouco tempo.');
+  await win.getByLabel('Pessoa 1').fill('Ana');
+  await win.getByLabel('Pessoa 2').fill('Beto');
+  await done.click();
+  await expect(win).toHaveCount(0);
+  await expect(page.getByText(/1 dia de prumo/)).toBeVisible();
+
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await page.getByRole('tab', { name: /Pessoas \(2\)/ }).click();
+  await expect(page.getByRole('button', { name: 'Ana, Novo' })).toBeVisible();
+  await page.getByRole('button', { name: 'Roteiro' }).click();
+  await expect(page.getByText('1 de 23 concluídas')).toBeVisible();
+  await page.reload();
+  await passSplash(page);
+  await expect(page.getByRole('region', { name: 'Seu primeiro passo' })).toHaveCount(0);
+});
