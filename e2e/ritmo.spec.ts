@@ -325,6 +325,8 @@ test('métricas sem dados pessoais: ao concluir, "quanto tempo levou?"; e dá pr
   await page.getByRole('button', { name: 'Marcar como feita' }).click();
   const ask = page.getByRole('dialog', { name: 'Quanto tempo levou' });
   await expect(ask).toContainText('A estimativa era 15 min.');
+  // Parceiro de prumo: a mensagem sai pelo WhatsApp, e a pessoa escolhe para quem
+  await expect(ask.getByRole('link', { name: /Contar pro meu parceiro/ })).toHaveAttribute('href', /^https:\/\/wa\.me\/\?text=Conclu/);
   await ask.getByRole('button', { name: 'Mais', exact: true }).click();
   await expect(ask).toHaveCount(0);
 
@@ -378,4 +380,26 @@ test('primeira visita: em 5 minutos sai com a frase, 3 nomes no Caderno e o pass
   await page.reload();
   await passSplash(page);
   await expect(page.getByRole('region', { name: 'Seu primeiro passo' })).toHaveCount(0);
+});
+
+test('resumo da semana passada: na segunda, só números, pronto para mandar ao parceiro', async ({ page }) => {
+  await page.clock.setFixedTime(new Date(2026, 9, 19, 10, 0)); // segunda-feira
+  await page.goto('/app/');
+  await seedState(page, {
+    startedAt: new Date(2026, 9, 5).getTime(),
+    taskStatus: { t1: 'completed', t8: 'completed' },
+    completedAt: { t1: new Date(2026, 9, 13, 9).getTime(), t8: new Date(2026, 9, 15, 9).getTime() },
+    actionsByDay: { '2026-10-13': 1, '2026-10-15': 1 },
+    routineLog: { r_revisao: ['2026-10-18'] },
+    people: [{ id: 'p1', name: 'Ana Souza', stage: 'conversou', stageHistory: [{ stage: 'conversou', at: new Date(2026, 9, 14).getTime() }], createdAt: 1, updatedAt: 1 }],
+  });
+  const card = page.getByRole('region', { name: 'Sua semana passada' });
+  await expect(card.getByRole('listitem').nth(0)).toHaveText('2passos');
+  await expect(card.getByRole('listitem').nth(2)).toHaveText('1conversas');
+  const link = card.getByRole('link', { name: /Mandar pro meu parceiro/ });
+  const text = decodeURIComponent((await link.getAttribute('href'))!.split('text=')[1]);
+  expect(text).toContain('2 passos concluídos');
+  expect(text).not.toContain('Ana');
+  await card.getByRole('button', { name: 'Ok' }).click();
+  await expect(card).toHaveCount(0);
 });

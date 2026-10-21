@@ -18,6 +18,7 @@ import { speak, stopSpeaking } from '../../utils/voice';
 import { clearAll, loadValue, saveValue } from './storage';
 import { NOTE_MAX, type Note, type NoteTag, type ProfileFieldId, type ProfileOverrides } from '../../domain/notebook';
 import { cleanPerson, funnel, normalizePerson, testVerdict, type Commitment, type Person } from '../../domain/people';
+import { hasActivity, lastMonday, weekStats } from '../../domain/share';
 import { newMilestones, PAUSE_DAYS, type Milestone, type TimeAnswer } from '../../domain/metrics';
 import { requestPersistence } from '../../utils/install';
 import { deleteImages, saveImageAs } from './images';
@@ -116,6 +117,8 @@ interface PersistedState {
   lastExportAt?: number;
   /** Quando dispensou o convite para instalar o app (volta depois de 7 dias) */
   installHintDismissedAt?: number;
+  /** Semana (segunda, AAAA-MM-DD) em que o resumo da semana passada já foi visto (etapa 54) */
+  summarySeenWeek?: string;
   /** Primeira vitória (etapa 54): quando fez ou disse "depois" */
   firstWinAt?: number;
   firstWinDismissedAt?: number;
@@ -246,7 +249,7 @@ function useAppState() {
   /** Guia do app aberto agora (não fica salvo) */
   const [guideOpen, setGuideOpen] = useState(false);
   /** Depois de concluir um passo: "levou menos, mais ou menos isso, ou mais?" (etapa 53) */
-  const [timeAsk, setTimeAsk] = useState<{ taskId: string; estimated: number } | null>(null);
+  const [timeAsk, setTimeAsk] = useState<{ taskId: string; title: string; estimated: number } | null>(null);
   /** Em que parte o Caderno abre (as rotinas de conversa levam direto para Pessoas) */
   const [notebookSection, setNotebookSection] = useState<'notas' | 'pessoas'>('notas');
   const [sectionIndex, setSectionIndex] = useState(0);
@@ -646,7 +649,7 @@ function useAppState() {
         track('tarefa_concluida', { capitulo: task?.chapterId ?? 0 });
         // A decisão da semana 6, qualquer que seja, é sinal de que o roteiro leva a uma conclusão
         if (taskId === 't12') track('decisao_registrada', { veredito: testVerdict(funnel(data.people)) ?? 'testando', dia: journeyDay ?? 0 });
-        if (task) setTimeAsk({ taskId, estimated: task.durationMinutes });
+        if (task) setTimeAsk({ taskId, title: task.title, estimated: task.durationMinutes });
         soundEffects.playCompleteTask();
         confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
       } else {
@@ -950,6 +953,9 @@ function useAppState() {
         return withAction(updated);
       });
     },
+    /** Parceiro de prumo (etapa 54): só conta quantas vezes a pessoa compartilhou */
+    sharedProgress: (what: 'passo' | 'semana') => track('parceiro_avisado', { o_que: what }),
+    dismissWeekSummary: () => setData((d) => ({ ...d, summarySeenWeek: weekKey(today) })),
     dismissFirstWin: () => setData((d) => ({ ...d, firstWinDismissedAt: Date.now() })),
     /** Pular um passo (etapa 53): conta como resolvido para seguir o roteiro, mas não como ação do dia */
     skipTask: (taskId: string, reason: string) => {
@@ -1115,6 +1121,14 @@ function useAppState() {
     currentWeek,
     restartOffer,
     pace: data.pace,
+    // Resumo da semana passada (etapa 54): de segunda a quarta, se teve alguma coisa
+    lastWeek: (() => {
+      if (data.summarySeenWeek === weekKey(today) || !data.onboardingDone) return null;
+      const weekday = (new Date().getDay() + 6) % 7;
+      if (weekday > 2) return null;
+      const stats = weekStats(lastMonday(today), data);
+      return hasActivity(stats) ? stats : null;
+    })(),
     // Primeira vitória: só para quem ainda não fez nada (nenhum passo, nenhuma pessoa)
     showFirstWin:
       data.onboardingDone && !data.firstWinAt && !data.firstWinDismissedAt && data.people.length === 0 && !Object.values(data.taskStatus).includes('completed'),

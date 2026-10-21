@@ -10,6 +10,7 @@ import {
 import { soundEffects } from '../../utils/soundEffects';
 import { durationLabel } from '../../domain/tasks';
 import { FirstWin } from '../components/FirstWin';
+import { WeekSummary } from '../components/WeekSummary';
 import { useApp } from '../state/AppStore';
 import { estimateSeconds, formatDuration, VOICE_ENABLED } from '../../utils/voice';
 import { Constellation } from '../../components/brand/Constellation';
@@ -113,6 +114,8 @@ export const HomeTab: React.FC = () => {
             <SentPrompt person={pendingSentPerson} onHome />
           </Reveal>
         )}
+
+        <WeekSummary />
 
         {/* Ritmo diário: check-in, sequência gentil, remendo e boas-vindas de volta */}
 

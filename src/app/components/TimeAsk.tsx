@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { TIME_ANSWERS } from '../../domain/metrics';
+import { stepDoneText, whatsappShare } from '../../domain/share';
 import { useApp } from '../state/AppStore';
 
 /**
@@ -35,6 +36,16 @@ export const TimeAsk: React.FC = () => {
           </button>
         ))}
       </div>
+      {/* Parceiro de prumo (etapa 54): avisar alguém de confiança segura o ritmo */}
+      <a
+        href={whatsappShare(stepDoneText(timeAsk.title))}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => actions.sharedProgress('passo')}
+        className="mt-2 block text-center text-[13px] text-primary font-semibold"
+      >
+        📣 Contar pro meu parceiro de prumo
+      </a>
     </div>
   );
 };
