@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { soundEffects } from '../../utils/soundEffects';
+import { SwitchPath } from '../components/SwitchPath';
 import { useApp } from '../state/AppStore';
 import { funnel } from '../../domain/people';
 import { CYCLE_DAYS, CYCLE_LABEL, CYCLE_NOTE_LIMIT, suggestedTarget, type CycleKind } from '../../domain/cycles';
@@ -23,7 +24,6 @@ export const NextCycleScreen: React.FC = () => {
   const [choice, setChoice] = useState<Choice | null>(null);
   const [target, setTarget] = useState(0);
   const [note, setNote] = useState('');
-  const [confirmSwitch, setConfirmSwitch] = useState(false);
 
   const stats = funnel(people);
   const done = tasks.filter((t) => t.status === 'completed').length;
@@ -32,7 +32,6 @@ export const NextCycleScreen: React.FC = () => {
   const pick = (c: Choice) => {
     soundEffects.playSelectOption();
     setChoice(c);
-    setConfirmSwitch(false);
     if (c !== 'trocar') setTarget(suggestedTarget(c, people));
   };
 
@@ -145,34 +144,7 @@ export const NextCycleScreen: React.FC = () => {
         </div>
       )}
 
-      {choice === 'trocar' && (
-        <div className="p-4 rounded-2xl bg-surface border border-primary/40 space-y-3 animate-fadeIn">
-          <p className="text-sm text-ink leading-relaxed">
-            O roteiro recomeça do passo 1 para o novo caminho, com um novo Dia 1. <strong>Ficam:</strong> o Caderno, as pessoas, as cartas, as
-            rotinas e a sua linha do tempo.
-          </p>
-          {!confirmSwitch ? (
-            <button onClick={() => setConfirmSwitch(true)} className="w-full min-h-11 rounded-xl bg-primary text-on-primary text-sm font-semibold cursor-pointer">
-              Escolher outro caminho
-            </button>
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => {
-                  soundEffects.playTransition();
-                  actions.switchPath();
-                }}
-                className="min-h-11 rounded-xl bg-primary text-on-primary text-sm font-semibold cursor-pointer"
-              >
-                Sim, recomeçar o roteiro
-              </button>
-              <button onClick={() => setConfirmSwitch(false)} className="min-h-11 rounded-xl border border-line text-sm text-ink cursor-pointer">
-                Cancelar
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      {choice === 'trocar' && <SwitchPath onCancel={() => setChoice(null)} />}
     </div>
   );
 };

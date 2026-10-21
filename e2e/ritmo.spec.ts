@@ -215,12 +215,17 @@ test('ciclos: depois do roteiro, continuar com meta do Caderno; ao bater a meta,
   await cycle.getByRole('button', { name: 'Fechar o ciclo e escolher o próximo' }).click();
   await expect(page.getByText('Fim do ciclo 1. E agora?')).toBeVisible();
   await page.getByRole('radio', { name: /Não rolou: trocar de caminho/ }).click();
-  await page.getByRole('button', { name: 'Escolher outro caminho' }).click();
-  await page.getByRole('button', { name: 'Sim, recomeçar o roteiro' }).click();
+  // Mesmo público (etapa 55): o capítulo 1 continua feito e o roteiro novo começa na semana 3
+  const switcher = page.getByRole('group', { name: 'Trocar de caminho' });
+  await switcher.getByRole('button', { name: /Sim, o mesmo público/ }).click();
+  await switcher.getByRole('button', { name: 'Escolher o novo caminho' }).click();
   await expect(page.getByText(/este é o seu prumo/)).toBeVisible();
   await page.getByRole('button', { name: /Voltar para a jornada/ }).click();
   await expect(page.getByText('Dia 1 de 90')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Abrir tarefa' })).toBeVisible();
+  await page.getByRole('button', { name: 'Roteiro', exact: true }).click();
+  await expect(page.getByText(`${INITIAL_TASKS.filter((t) => t.chapterId === 1).length} de ${INITIAL_TASKS.length} concluídas`)).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Semana 3', exact: true })).toContainText('esta semana');
 
   await page.getByRole('button', { name: 'Você', exact: true }).click();
   await expect(page.getByText(/Jornada anterior:/)).toBeVisible();
@@ -402,4 +407,35 @@ test('resumo da semana passada: na segunda, só números, pronto para mandar ao 
   expect(text).not.toContain('Ana');
   await card.getByRole('button', { name: 'Ok' }).click();
   await expect(card).toHaveCount(0);
+});
+
+test('semana 6: o passo "Decidir" mostra o que o teste ensinou e troca de caminho levando o Caderno', async ({ page }) => {
+  const before = INITIAL_TASKS.filter((t) => (t.week ?? 1) <= 5).map((t) => t.id);
+  await seedState(page, {
+    startedAt: Date.now() - 36 * 86_400_000,
+    taskStatus: Object.fromEntries(before.map((id) => [id, 'completed'])),
+    celebratedChapters: [1],
+    taskNotes: { t1: 'Minha frase (rascunho): Eu ajudo mães a organizar a semana.' },
+    profileOverrides: { promise: 'Eu ajudo mães que trabalham fora a ter 1 hora livre por dia.' },
+    people: [
+      { id: 'p1', name: 'Ana Souza', stage: 'proposta', note: 'Disse que perde a manhã de domingo planejando', stageHistory: [], createdAt: 1, updatedAt: 1 },
+      { id: 'p2', name: 'Beto Lima', stage: 'conversou', stageHistory: [], createdAt: 1, updatedAt: 1 },
+    ],
+  });
+  await page.getByRole('button', { name: 'Abrir tarefa' }).click();
+  const card = page.getByRole('region', { name: 'O que o teste te mostrou' });
+  await expect(card).toContainText('2 conversas sobre o problema · 1 apresentação · 0 compromissos');
+  await expect(card).toContainText('"Disse que perde a manhã de domingo planejando"');
+  await expect(card).toContainText('Sua frase no começo: Eu ajudo mães a organizar a semana.');
+  await expect(card).toContainText('Sua frase agora: Eu ajudo mães que trabalham fora');
+
+  // Público novo: recomeça da semana 1, e os contatos continuam no Caderno
+  await card.getByRole('button', { name: 'Decidi trocar de caminho' }).click();
+  await card.getByRole('button', { name: /Não, um público novo/ }).click();
+  await card.getByRole('button', { name: 'Escolher o novo caminho' }).click();
+  await page.getByRole('button', { name: /Voltar para a jornada/ }).click();
+  await page.getByRole('button', { name: 'Roteiro', exact: true }).click();
+  await expect(page.getByText(`0 de ${INITIAL_TASKS.length} concluídas`)).toBeVisible();
+  await page.getByRole('button', { name: 'Caderno', exact: true }).click();
+  await expect(page.getByRole('tab', { name: /Pessoas \(2\)/ })).toBeVisible();
 });

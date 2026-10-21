@@ -851,7 +851,7 @@ const ROADMAP: TaskItem[] = [
     description: 'Olhar o teste com honestidade e escolher o próximo passo.',
     durationMinutes: 15,
     status: 'pending',
-    whatToDo: 'Veja o funil no Caderno → Pessoas. Conte compromissos, não "sins": quem marcou uma data, indicou alguém ou pagou. Seguir: 2 compromissos ou mais em 5 apresentações, com pelo menos 1 em dinheiro (pagamento ou sinal); hora das vendas. Ajustar: qualquer outro caso com pelo menos 1 compromisso; a dor existe, então mude uma coisa só (a oferta ou o preço) e faça mais uma rodada. Trocar: nenhum compromisso. Antes de trocar a ideia, confira se as 5 pessoas eram mesmo o público certo: muitas vezes eram as pessoas erradas, e não a ideia errada. Se eram, tudo bem: na aba Você, abra o resultado e escolha outro caminho.',
+    whatToDo: 'Veja o funil no Caderno → Pessoas. Conte compromissos, não "sins": quem marcou uma data, indicou alguém ou pagou. Seguir: 2 compromissos ou mais em 5 apresentações, com pelo menos 1 em dinheiro (pagamento ou sinal); hora das vendas. Ajustar: qualquer outro caso com pelo menos 1 compromisso; a dor existe, então mude uma coisa só (a oferta ou o preço) e faça mais uma rodada. Trocar: nenhum compromisso. Antes de trocar a ideia, confira se as 5 pessoas eram mesmo o público certo: muitas vezes eram as pessoas erradas, e não a ideia errada. Se eram, tudo bem: toque em "Decidi trocar de caminho" aqui mesmo. O Caderno e os contatos vão junto, e com o mesmo público você recomeça na semana 3.',
     howToKnowItIsGood: [
       'Você decidiu pelo que as pessoas fizeram, não pelo que disseram',
       'Anotou no Caderno o que aprendeu com o teste'

@@ -1051,25 +1051,35 @@ function useAppState() {
     },
 
     /**
-     * Trocar de caminho depois do roteiro: começa um roteiro novo (passos do zero, novo Dia 1).
+     * Trocar de caminho (na semana 6 ou depois do roteiro): começa um roteiro novo, com um novo Dia 1.
      * O Caderno, as pessoas, as cartas e as rotinas ficam; a jornada anterior vai para a linha do tempo.
+     * Mesmo público (etapa 55): as conversas sobre o problema continuam valendo, então o capítulo 1
+     * fica feito e o roteiro novo começa na semana 3. Público novo: começa da semana 1, com os contatos.
      */
-    switchPath: () => {
+    switchPath: (sameAudience = false) => {
       const now = Date.now();
-      track('caminho_trocado', { depois_do_roteiro: true });
-      setData((d) => ({
-        ...d,
-        pastJourneys: [
-          ...d.pastJourneys,
-          { endedAt: now, title: d.diagnosis?.niche ?? 'primeiro caminho', tasksDone: Object.values(d.taskStatus).filter((x) => x === 'completed').length },
-        ],
-        cycles: d.cycles.map((c) => (c.closedAt ? c : { ...c, closedAt: now })),
-        taskStatus: {},
-        completedAt: {},
-        celebratedChapters: [],
-        planEdits: {},
-        startedAt: now,
-      }));
+      track('caminho_trocado', { depois_do_roteiro: journeyComplete, mesmo_publico: sameAudience });
+      setData((d) => {
+        const kept = sameAudience ? tasks.filter((t) => t.chapterId === 1 && d.taskStatus[t.id] === 'completed').map((t) => t.id) : [];
+        const pick = <T,>(rec: Record<string, T> | undefined) => Object.fromEntries(kept.filter((id) => rec?.[id] !== undefined).map((id) => [id, rec![id]]));
+        return {
+          ...d,
+          pastJourneys: [
+            ...d.pastJourneys,
+            { endedAt: now, title: d.diagnosis?.niche ?? 'primeiro caminho', tasksDone: Object.values(d.taskStatus).filter((x) => x === 'completed').length },
+          ],
+          cycles: d.cycles.map((c) => (c.closedAt ? c : { ...c, closedAt: now })),
+          taskStatus: pick(d.taskStatus),
+          completedAt: pick(d.completedAt),
+          partsDone: pick(d.partsDone),
+          skipped: pick(d.skipped),
+          celebratedChapters: sameAudience ? [1] : [],
+          planEdits: pick(d.planEdits),
+          startedAt: now,
+          // Semana 3 já hoje: a semana sugerida anda 14 dias na frente
+          paceShiftDays: sameAudience ? -14 : 0,
+        };
+      });
       setScreen('result');
     },
 
